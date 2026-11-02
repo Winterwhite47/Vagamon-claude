@@ -1,0 +1,6 @@
+t=15.00 retry reset
+frames=1681 sim=30.0s (hitches 33 ms and 100 ms included)
+worst stretch=4.64% at t=28.07 (limit 6.0%)
+tip ahead of rider at speed: 0 frames; particles inside body: 0
+sled flex: peak 1.80 deg (max 6.0), settles in 0.49 s
+RESULT PASS

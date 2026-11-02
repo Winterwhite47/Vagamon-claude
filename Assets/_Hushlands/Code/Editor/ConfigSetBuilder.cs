@@ -28,6 +28,7 @@ namespace Hushlands.Editor
             set.pickups = Make<PickupConfig>("Meta");
             set.score = Make<ScoreConfig>("Meta");
             set.vehicles = Make<VehicleConfig>("Meta");
+            set.cloth = Make<ClothConfig>("Characters");
             EditorUtility.SetDirty(set);
 
             foreach (string error in set.ValidateAll()) Debug.LogError("[Hushlands] Config: " + error, set);

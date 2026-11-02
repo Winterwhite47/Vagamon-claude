@@ -39,7 +39,15 @@ def scalars(body: str) -> dict:
     for m in re.finditer(r"public (float|int|bool) (\w+) = ([^;]+);", body):
         t, n, v = m.groups()
         v = v.strip()
-        out[n] = (v == "true") if t == "bool" else (int(v) if t == "int" else float(v.rstrip("f")))
+        if t == "bool":
+            out[n] = v == "true"
+        elif t == "int":
+            out[n] = int(v)
+        elif re.fullmatch(r"[\d.]+f\s*/\s*[\d.]+f", v):
+            num, den = (float(x.strip().rstrip("f")) for x in v.split("/"))
+            out[n] = num / den
+        else:
+            out[n] = float(v.rstrip("f"))
     return out
 
 

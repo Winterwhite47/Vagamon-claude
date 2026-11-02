@@ -60,6 +60,14 @@ Free assists switch on automatically after 3 consecutive failures (setting can r
 (gives ≥ 0.5 s extra reveal), landing tolerance +15°. They switch off after 2 clean checkpoints.
 Lines live in `MessageSettings`; validation bans words like hurt, fall, lost, drown, crash, fail, bad.
 
+## Scarf and sled flex (T6)
+Scarf: 10-segment verlet rope (1.2 m), ≤ 4 substeps of 1/120 s, 6 constraint passes, 85% of anchor motion carried
+(rider-relative frame) with drag on true world velocity, rider body sphere. Hitches longer than the substep budget carry
+the rope instead of exploding. Quality bar: ≤ 6% stretch at 18 m/s through jumps and hitches.
+Alternative: Unity Cloth strip (same length, root pinned). `ScarfBenchmark` measures both; `ScarfMethodSelector` takes
+the cheaper per-scarf cost, ties (within 10%) to Verlet, flags rework if both exceed 0.05 ms.
+Sled flex: damped spring kicked by landing speed (≤ 6°), settles in about 0.5 s.
+
 ## Duckling safety (absolute)
 - Never shown injured, drowning or falling.
 - Nest cover closes on crash.

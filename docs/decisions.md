@@ -116,3 +116,15 @@ Format: ID · date · question · default used · status.
 ## D-028 · 2026-11-02 · Retry timing
 - Hold 0.9 s (skippable by tap after 0.3 s) + 0.6 s mist wipe; rider moved at the wipe midpoint so no teleport is visible. Retry speed = minimum speed; run time keeps counting, so the ramp resumes.
 - Status: open (playtest).
+
+## D-029 · 2026-11-02 · Scarf method pending measurement
+- T6 says "choose by measured cost". No Unity here, so `ClothSettings.method` stays Verlet (the tie-break default) until `ScarfBenchmarkTests` runs and "Hushlands/Tech/Apply Scarf Benchmark Result" writes the measured choice. Editor timings are relative; T17 re-measures in a player build on the GPU matrix.
+- Status: open (needs a Unity run).
+
+## D-030 · 2026-11-02 · Scarf anchor carry
+- Plain verlet stretched 180% at 18 m/s and during a 100 ms hitch (Python model). Default: carry 85% of anchor motion per substep, drag on true world velocity, translate the rope through unsimulated hitch time, 6 iterations. Worst stretch 4.6% (limit 6%).
+- Status: decided.
+
+## D-031 · 2026-11-02 · Benchmark harness constants
+- Anchor test motion (arc amplitudes, spacing, body offset) in `ScarfBenchmark` are QA-harness constants, not gameplay tuning; kept in code.
+- Status: decided.

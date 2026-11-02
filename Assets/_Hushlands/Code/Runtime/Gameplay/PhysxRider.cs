@@ -44,6 +44,8 @@ namespace Hushlands
 
         public event Action<RiderState, RiderState> StateChanged;
         public event Action<CrashCause> Crashed;
+        /// <summary>Safe touchdown; argument is the downward speed at contact (m/s). Drives sled flex.</summary>
+        public event Action<float> Landed;
 
         public void Initialize(RiderSettings rider, SpeedSettings speed, SurfaceSettings surfaces,
             ISlopeSpline slope, IInputSource input, bool stepAutomatically)
@@ -187,6 +189,7 @@ namespace Hushlands
             }
             CompletedFlips += Mathf.RoundToInt(_flipAccum / 360f);
             _flipAccum = 0f;
+            Landed?.Invoke(Mathf.Max(0f, -_rb.linearVelocity.y));
             return true;
         }
 

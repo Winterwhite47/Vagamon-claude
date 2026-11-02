@@ -28,6 +28,7 @@ namespace Hushlands
         public PickupConfig pickups;
         public ScoreConfig score;
         public VehicleConfig vehicles;
+        public ClothConfig cloth;
 
         public static HushConfigSet Load()
         {
@@ -56,6 +57,7 @@ namespace Hushlands
             Collect(errors, nameof(uiMotion), uiMotion == null ? null : uiMotion.Validate());
             Collect(errors, nameof(pickups), pickups == null ? null : pickups.Validate());
             Collect(errors, nameof(score), score == null ? null : score.Validate());
+            Collect(errors, nameof(cloth), cloth == null ? null : cloth.Validate());
             Collect(errors, nameof(vehicles), vehicles == null ? null : vehicles.Validate());
             if (targets != null && rider != null && !Mathf.Approximately(targets.fixedTimestep, rider.Settings.physicsStep))
                 errors.Add("rider.physicsStep must equal targets.fixedTimestep");

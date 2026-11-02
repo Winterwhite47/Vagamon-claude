@@ -25,6 +25,7 @@ namespace Hushlands.Tests
             yield return new PickupSettings();
             yield return new ScoreSettings();
             yield return new VehicleSettings();
+            yield return new ClothSettings();
         }
 
         [TestCaseSource(nameof(AllDefaults))]
