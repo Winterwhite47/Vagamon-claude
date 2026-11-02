@@ -175,13 +175,111 @@ namespace Hushlands.Core
         public float retryTransitionSeconds = 0.6f;
         /// <summary>Free assists offered after this many consecutive failures (canon: 3).</summary>
         public int assistAfterFailures = 3;
+        /// <summary>A tap may skip the hold once this much of it has passed (instant retry).</summary>
+        public float minHoldBeforeSkipSeconds = 0.3f;
+        /// <summary>Fraction of the retry transition at which the rider is moved (mist fully covers the view).</summary>
+        public float retryTeleportFraction = 0.5f;
+        /// <summary>Accept free assists without a prompt when offered (they can be switched off in settings).</summary>
+        public bool autoAcceptAssists = true;
 
         public void Validate(List<string> e)
         {
             const string o = nameof(FailureSettings);
+            SettingsCheck.NonNegative(e, o, nameof(minHoldBeforeSkipSeconds), minHoldBeforeSkipSeconds);
+            SettingsCheck.Ordered(e, o, nameof(minHoldBeforeSkipSeconds), minHoldBeforeSkipSeconds, nameof(failureHoldSeconds), failureHoldSeconds);
+            SettingsCheck.Range(e, o, nameof(retryTeleportFraction), retryTeleportFraction, 0f, 1f);
             SettingsCheck.NonNegative(e, o, nameof(failureHoldSeconds), failureHoldSeconds);
             SettingsCheck.NonNegative(e, o, nameof(retryTransitionSeconds), retryTransitionSeconds);
             SettingsCheck.Positive(e, o, nameof(assistAfterFailures), assistAfterFailures);
+        }
+    }
+
+    /// <summary>
+    /// Calm, kind failure lines (original text). Validation enforces duckling safety and tone: no banned words,
+    /// short lines, every cause covered.
+    /// </summary>
+    [Serializable]
+    public sealed class MessageSettings : ISettings
+    {
+        public string[] obstacle =
+        {
+            "Steady now. The hill is patient.",
+            "A small bump. Breathe, and ride again.",
+            "The path remembers you. Once more.",
+            "Soft snow, soft start. Off you go.",
+        };
+        public string[] badLanding =
+        {
+            "Land with the slope, nose to the hill.",
+            "Almost. Let the spin finish before the ground.",
+            "Easy on the flip. The hill will wait.",
+        };
+        public string[] landslide =
+        {
+            "The hillside stirred. Keep your pace up.",
+            "Stay ahead of the rumble. Tuck to gain speed.",
+        };
+        public string[] gap =
+        {
+            "The ground opened. Tap just before the edge.",
+            "A gap in the path. Jump a breath earlier.",
+        };
+        public string[] assistOffer =
+        {
+            "A friendly wind will help for a while.",
+        };
+        public string retryHint = "Tap to ride again";
+        public int maxLength = 60;
+        /// <summary>Words that must never appear in player-facing failure text (duckling safety, calm tone).</summary>
+        public string[] bannedWords =
+        {
+            "hurt", "injur", "dead", "die", "drown", "fall", "fell", "lost", "fail", "blood", "broke", "pain",
+            "kill", "crash", "game over", "wrong", "bad",
+        };
+
+        public string[] For(CrashCause cause)
+        {
+            switch (cause)
+            {
+                case CrashCause.Obstacle: return obstacle;
+                case CrashCause.BadLanding: return badLanding;
+                case CrashCause.Landslide: return landslide;
+                default: return gap;
+            }
+        }
+
+        public bool IsClean(string text)
+        {
+            if (string.IsNullOrEmpty(text) || text.Length > maxLength) return false;
+            string lower = text.ToLowerInvariant();
+            foreach (string w in bannedWords)
+            {
+                if (lower.Contains(w)) return false;
+            }
+            return true;
+        }
+
+        public void Validate(List<string> e)
+        {
+            const string o = nameof(MessageSettings);
+            SettingsCheck.Positive(e, o, nameof(maxLength), maxLength);
+            foreach (CrashCause c in (CrashCause[])Enum.GetValues(typeof(CrashCause)))
+            {
+                string[] lines = For(c);
+                if (lines == null || lines.Length == 0) e.Add(o + ": no lines for " + c);
+                else CheckAll(e, o, c.ToString(), lines);
+            }
+            if (assistOffer == null || assistOffer.Length == 0) e.Add(o + ": no assistOffer lines");
+            else CheckAll(e, o, nameof(assistOffer), assistOffer);
+            if (!IsClean(retryHint)) e.Add(o + ": retryHint not clean");
+        }
+
+        private void CheckAll(List<string> e, string o, string group, string[] lines)
+        {
+            foreach (string l in lines)
+            {
+                if (!IsClean(l)) e.Add(o + "." + group + ": line not clean or too long: '" + l + "'");
+            }
         }
     }
 
@@ -189,6 +287,7 @@ namespace Hushlands.Core
     public sealed class AssistSettings : ISettings
     {
         public float speedScale = 0.85f;
+        /// <summary>Extra reveal time under assists; delivered by speedScale (checked in HushConfigSet, D-026).</summary>
         public float extraRevealSeconds = 0.5f;
         public float landingToleranceBonusDegrees = 15f;
         /// <summary>Successful checkpoints before assists switch off again.</summary>

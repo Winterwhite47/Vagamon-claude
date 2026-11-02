@@ -17,6 +17,7 @@ namespace Hushlands.Editor
             set.track = Make<TrackConfig>("Gameplay");
             set.failure = Make<FailureConfig>("Gameplay");
             set.assist = Make<AssistConfig>("Gameplay");
+            set.messages = Make<MessageConfig>("Gameplay");
             set.ducklings = Make<DucklingConfig>("Gameplay");
             set.fairness = Make<FairnessConfig>("Content");
             set.content = Make<ContentConfig>("Content");

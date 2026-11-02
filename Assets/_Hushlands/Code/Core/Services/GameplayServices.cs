@@ -14,10 +14,13 @@ namespace Hushlands.Core
 
         public float MinSpeed => _s.minSpeed;
         public float MaxSpeed => _s.maxSpeed;
+        /// <summary>Assist scale on the cruise target (1 = none). Never pushes the target below minSpeed.</summary>
+        public float TargetScale { get; set; } = 1f;
 
         public float TargetSpeed(double runSeconds)
         {
-            return _s.TargetAt(runSeconds);
+            float t = _s.TargetAt(runSeconds) * TargetScale;
+            return t < _s.minSpeed ? _s.minSpeed : t;
         }
 
         public float Step(float currentSpeed, float slopeAngle, float friction, bool tucking, double runSeconds, float dt)
@@ -114,11 +117,11 @@ namespace Hushlands.Core
     /// Kinematic reference rider on the 2.5D plane. Stub for T1; the PhysX rider (T3) replaces it in play,
     /// and the bot validator (T2) keeps using it as a deterministic model.
     /// </summary>
-    public sealed class KinematicRider : IRider
+    public sealed class KinematicRider : IRider, IAssistable
     {
         private readonly RiderSettings _rider;
         private readonly SpeedSettings _speedSettings;
-        private readonly ISpeedModel _speed;
+        private readonly SpeedModel _speed;
         private readonly ISlopeSpline _slope;
         private readonly ISurfaceProvider _surfaces;
         private readonly RiderBrain _brain;
@@ -147,6 +150,25 @@ namespace Hushlands.Core
 
         public event Action<RiderState, RiderState> StateChanged;
         public event Action<CrashCause> Crashed;
+        public float LandingBonusDegrees { get; private set; }
+
+        public void SetLandingBonus(float degrees)
+        {
+            LandingBonusDegrees = Math.Max(0f, degrees);
+        }
+
+        public void SetSpeedScale(float scale)
+        {
+            _speed.TargetScale = scale;
+        }
+
+        /// <summary>External crash (obstacle contact or landslide), used by collision checks and tests.</summary>
+        public void ForceCrash(CrashCause cause)
+        {
+            if (State == RiderState.Crashed) return;
+            SetState(RiderState.Crashed);
+            Crashed?.Invoke(cause);
+        }
 
         public void FixedStep(IInputSource input, float dt)
         {
@@ -211,7 +233,7 @@ namespace Hushlands.Core
             float offBy = Math.Min(rem, 360f - rem);
             int flips = (int)Math.Round(FlipAngle / 360f);
             FlipAngle = 0f;
-            if (offBy > _rider.safeLandingToleranceDegrees)
+            if (offBy > _rider.safeLandingToleranceDegrees + LandingBonusDegrees)
             {
                 SetState(RiderState.Crashed);
                 Crashed?.Invoke(CrashCause.BadLanding);

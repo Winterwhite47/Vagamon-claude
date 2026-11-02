@@ -94,7 +94,7 @@ for doc in ["docs/game-bible.md", "docs/playbook.md", "docs/decisions.md"]:
 # 10. T1: every settings block has a config asset wrapper, is linked in HushConfigSet and built by bootstrap.
 settings_src = "".join(f.read_text() for f in (CODE / "Core/Config").glob("*.cs"))
 settings = sorted(set(re.findall(r"class (\w+)Settings\s*:\s*ISettings", settings_src)))
-check(len(settings) == 16, f"expected 16 settings blocks, found {len(settings)}")
+check(len(settings) == 17, f"expected 17 settings blocks, found {len(settings)}")
 config_set = (CODE / "Runtime/Config/HushConfigSet.cs").read_text()
 builder = (CODE / "Editor/ConfigSetBuilder.cs").read_text()
 for name in settings:
@@ -107,7 +107,7 @@ for name in settings:
     check(f"new {name}Settings()" in (CODE / "Tests/EditMode/SettingsTests.cs").read_text(), f"SettingsTests missing {name}")
 
 # 11. Service stubs carry no tuning literals (only 0, 1, 360-degree constants).
-for cs in [*(CODE / "Core/Services").glob("*.cs"), *(CODE / "Core/Content").glob("*.cs"), *(CODE / "Core/Gameplay").glob("*.cs")]:
+for cs in [*(CODE / "Core/Services").glob("*.cs"), *(CODE / "Core/Content").glob("*.cs"), *(CODE / "Core/Gameplay").glob("*.cs"), *(CODE / "Core/Flow").glob("*.cs")]:
     src = re.sub(r'"(?:\\.|[^"\\])*"', '""', re.sub(r"//.*", "", cs.read_text()))
     for lit in re.findall(r"(?<![\w.])(\d+\.\d+|\d+)f\b", src):
         check(lit in ("0", "1", "360"), f"{cs.name}: tuning literal {lit}f outside config")
@@ -140,6 +140,17 @@ check((ROOT / "tools/qa/camera_sim.py").is_file(), "missing camera reference mod
 for cs in (CODE / "Core/Camera").glob("*.cs"):
     src = re.sub(r"//.*", "", cs.read_text())
     check("UnityEngine" not in src, f"{cs.name}: Core camera must be engine-free")
+
+# 15. T5: failure lines are calm and duckling-safe (mirrors MessageSettings.IsClean).
+gp = (CODE / "Core/Config/GameplaySettings.cs").read_text()
+msg_body = gp[gp.index("class MessageSettings"):gp.index("public string[] For(")]
+banned = re.findall(r'"([^"]+)"', msg_body[msg_body.index("bannedWords"):])
+lines = re.findall(r'"([^"]+)"', msg_body[:msg_body.index("public int maxLength")])
+check(len(lines) >= 10 and len(banned) >= 10, "message catalogue too small")
+for line in lines:
+    low = line.lower()
+    check(len(line) <= 60 and not any(b in low for b in banned), f"failure line not clean: {line!r}")
+check((CODE / "Core/Flow/RunFlow.cs").is_file(), "missing RunFlow")
 
 for e in errors:
     print("FAIL:", e)

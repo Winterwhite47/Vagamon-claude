@@ -17,6 +17,7 @@ namespace Hushlands
         public TrackConfig track;
         public FailureConfig failure;
         public AssistConfig assist;
+        public MessageConfig messages;
         public DucklingConfig ducklings;
         public FairnessConfig fairness;
         public ContentConfig content;
@@ -45,6 +46,7 @@ namespace Hushlands
             Collect(errors, nameof(track), track == null ? null : track.Validate());
             Collect(errors, nameof(failure), failure == null ? null : failure.Validate());
             Collect(errors, nameof(assist), assist == null ? null : assist.Validate());
+            Collect(errors, nameof(messages), messages == null ? null : messages.Validate());
             Collect(errors, nameof(ducklings), ducklings == null ? null : ducklings.Validate());
             Collect(errors, nameof(fairness), fairness == null ? null : fairness.Validate());
             Collect(errors, nameof(content), content == null ? null : content.Validate());
@@ -62,6 +64,13 @@ namespace Hushlands
                 errors.Add("fairness.riderFootprintMeters must cover half the rider collider length");
             if (camera != null && fairness != null)
                 errors.AddRange(Hushlands.Core.FramingMath.CheckContract(camera.Settings, fairness.Settings.visibleAheadMeters));
+            if (assist != null && fairness != null && speed != null)
+            {
+                float assistedSpeed = speed.Settings.maxSpeed * assist.Settings.speedScale;
+                float revealSeconds = fairness.Settings.visibleAheadMeters / assistedSpeed;
+                if (revealSeconds < fairness.Settings.obstacleRevealSeconds + assist.Settings.extraRevealSeconds)
+                    errors.Add("assist.speedScale too high to give extraRevealSeconds within visibleAheadMeters");
+            }
             if (camera != null && content != null &&
                 camera.Settings.maxSlopeForFramingDegrees < content.Settings.maxSlopeDegrees)
                 errors.Add("camera.maxSlopeForFramingDegrees must cover content.maxSlopeDegrees");

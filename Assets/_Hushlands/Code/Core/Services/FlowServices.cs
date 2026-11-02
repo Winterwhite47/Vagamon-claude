@@ -8,6 +8,13 @@ namespace Hushlands.Core
         public int LastCheckpointIndex { get; private set; } = -1;
         public SlopePoint LastCheckpointPoint { get; private set; }
 
+        /// <summary>Run start: retry point before any checkpoint is reached.</summary>
+        public void Begin(SlopePoint start)
+        {
+            LastCheckpointIndex = -1;
+            LastCheckpointPoint = start;
+        }
+
         public void Reach(int index, SlopePoint point)
         {
             if (index <= LastCheckpointIndex) return;

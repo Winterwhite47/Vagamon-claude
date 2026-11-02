@@ -14,6 +14,7 @@ namespace Hushlands.Tests
             yield return new TrackSettings();
             yield return new FailureSettings();
             yield return new AssistSettings();
+            yield return new MessageSettings();
             yield return new DucklingSettings();
             yield return new FairnessSettings();
             yield return new ContentSettings();

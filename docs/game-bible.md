@@ -52,6 +52,14 @@ Continuous camera and mist transitions; no loading cuts. Reduced-motion option.
 - Pickups: spice coins, mist lantern, wind feather, tea flask, magnet bell, golden mistbell.
 - Biomes v1: Windmouth Ridge, Meadow Sea, Pine Hollow, Terrace Country, Mirror Lake.
 
+## Failure and retry (T5)
+`RunFlow`: crash → FailureHold 0.9 s with a calm line and "Tap to ride again" (tap skips after 0.3 s) → Retrying
+0.6 s mist wipe; the rider moves to the last checkpoint halfway through, ducklings restored, camera snapped → Riding.
+Fastest retry 0.9 s. Crash causes: obstacle contact, landing > 35° off the slope, gap/pit, landslide.
+Free assists switch on automatically after 3 consecutive failures (setting can require a prompt): cruise speed × 0.85
+(gives ≥ 0.5 s extra reveal), landing tolerance +15°. They switch off after 2 clean checkpoints.
+Lines live in `MessageSettings`; validation bans words like hurt, fall, lost, drown, crash, fail, bad.
+
 ## Duckling safety (absolute)
 - Never shown injured, drowning or falling.
 - Nest cover closes on crash.

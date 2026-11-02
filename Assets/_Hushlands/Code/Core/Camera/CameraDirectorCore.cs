@@ -6,7 +6,7 @@ namespace Hushlands.Core
     /// Engine-free camera director: signals -> rules -> state machine (priority + dwell) -> rig (blended pose).
     /// Audio mix snapshots follow camera state and biome (canon). The Cinemachine adapter only applies the pose.
     /// </summary>
-    public sealed class CameraDirectorCore : ICameraDirector
+    public sealed class CameraDirectorCore : ICameraDirector, IFlowCamera
     {
         private readonly CameraSettings _s;
         private readonly CameraStateMachine _sm;

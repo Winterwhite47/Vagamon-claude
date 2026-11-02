@@ -104,3 +104,15 @@ Format: ID · date · question · default used · status.
 ## D-025 · 2026-11-02 · Pitch ignored in framing math
 - Pitch is limited to ≤ 10° (profiles use 3–6°); framing math treats the view as side-on.
 - Status: decided.
+
+## D-026 · 2026-11-02 · Assist "extra reveal" via speed, not camera
+- Extra look-ahead would push the rider outside the safe frame (T4 contract). Default: assist speedScale 0.85 gives 40 m / 15.3 m/s = 2.6 s reveal (≥ 1.5 + 0.5 s), checked in `HushConfigSet`.
+- Status: decided.
+
+## D-027 · 2026-11-02 · Assists auto-accept
+- "Free assists after 3 failures": default turns them on automatically with a gentle line; `autoAcceptAssists` can switch to a prompt (UI in T13). Never gated by progression.
+- Status: open.
+
+## D-028 · 2026-11-02 · Retry timing
+- Hold 0.9 s (skippable by tap after 0.3 s) + 0.6 s mist wipe; rider moved at the wipe midpoint so no teleport is visible. Retry speed = minimum speed; run time keeps counting, so the ramp resumes.
+- Status: open (playtest).
