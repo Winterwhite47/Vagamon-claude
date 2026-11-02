@@ -50,6 +50,7 @@ namespace Hushlands.Core
 
         public IReadOnlyList<NestSite> Sites => _sites;
         public int RescuedDucklings => _nests.Count(DucklingGroupStatus.Rescued) * _s.ducklingsPerGroup;
+        public int WaitingGroups => _nests.Count(DucklingGroupStatus.Waiting);
         public string LastRescueLine { get; private set; }
         public event Action<NestSite> Rescued;
         public event Action<NestSite> Missed;

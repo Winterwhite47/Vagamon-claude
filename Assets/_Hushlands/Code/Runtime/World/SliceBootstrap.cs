@@ -28,6 +28,7 @@ namespace Hushlands
         public HazardPresenter Hazards { get; private set; }
         public ISaveService Save { get; private set; }
         public Garage Garage { get; private set; }
+        public ProgressionService Progression { get; private set; }
 
         public void Assign(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge)
         {
@@ -47,7 +48,9 @@ namespace Hushlands
             }
 
             Save = SaveProvider.Open(c);
-            Garage = new Garage(c.vehicles.Settings, Save);
+            Progression = new ProgressionService(Save, c.vehicles.Settings, c.goals.Settings);
+            Garage = Progression.Garage;
+            if (GetComponent<SaveFlusher>() == null) gameObject.AddComponent<SaveFlusher>();
             SliceRefs r = SliceBuilder.Build(c, assets, biome, seed, transform, Garage.Selected);
             Refs = r;
             Autopilot = ForceAutopilot || AutopilotInput.Requested();
@@ -79,6 +82,7 @@ namespace Hushlands
 
             r.Run = gameObject.AddComponent<RunDirector>();
             r.Run.Initialize(c, r.Rider, input, r.Stretch, r.Slope, cameraDirector, r.Signals, seed);
+            r.Run.AttachProgression(Progression);
 
             var overlayGo = new GameObject("RetryOverlay");
             overlayGo.transform.SetParent(transform, false);

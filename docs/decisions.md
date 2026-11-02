@@ -192,3 +192,19 @@ Format: ID · date · question · default used · status.
 ## D-047 · 2026-11-02 · Fairness for every vehicle
 - The toboggan jumps 5% lower than the sled, so default-vehicle fairness could make stretches impossible on it. Content now uses the weakest jumpScale; the bot validates all six vehicles. Content 200/200 for each; goldens repinned.
 - Status: decided.
+
+## D-048 · 2026-11-02 · Save format
+- Engine-free text save (no JsonUtility in Core) with CRC32, atomic swap and one backup. Version 1; future versions migrate forward, older builds never overwrite a newer save.
+- Status: decided.
+
+## D-049 · 2026-11-02 · Goals and homecoming
+- Bible names goals and progression without content. Default: 10 calm goals that rotate three at a time, coin rewards feeding vehicle unlocks; waiting duckling groups carry across runs and come home with later rescues.
+- Status: open (design review).
+
+## D-050 · 2026-11-02 · Run end in the slice
+- The slice stretch is finite: a run ends at its end (or on quit). The endless run that chains biomes is T14/T15.
+- Status: decided.
+
+## D-051 · 2026-11-02 · Fix: MonoBehaviours sharing files
+- `MistLowPass`, `AudioMixBridge`, `ScarfLine` shared files with other classes, so scenes could not serialize them. Split into same-named files; validator now enforces the rule.
+- Status: decided.

@@ -114,6 +114,16 @@ Content is generated and checked for the weakest jumper (`JumpModel.ForAllVehicl
 every vehicle (1200/1200 in the reference model), so no vehicle is required or a handicap. Vehicles unlock as lifetime
 coins grow; nothing is bought or spent (no shop). Selection persists.
 
+## Goals, progression, save (T12)
+Save: `hushlands.save` in persistentDataPath; versioned text with CRC32, written to a temp file then swapped, previous
+kept as `.bak`; a damaged file falls back to the backup, a newer-version file is never overwritten.
+Profile: runs, best score and distance, lifetime distance, flips, coins, groups rescued, groups waiting, homecomings.
+Missed groups become waiting; every later rescue first brings a waiting group home (the count only falls by rescues).
+Goals: three active, calm, no timers or failure (run distance, rescues, flips, coins, clean distance; lifetime
+distance, rescues, coins). Completing one grants spice coins (toward vehicle unlocks) and the next goal fills the slot;
+after the list, goals repeat at 1.5× per cycle. A run ends at the end of the stretch or on quit; it is then frozen,
+summarised and saved.
+
 ## Duckling safety (absolute)
 - Never shown injured, drowning or falling.
 - Nest cover closes on crash.

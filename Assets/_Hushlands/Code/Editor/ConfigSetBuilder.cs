@@ -30,6 +30,7 @@ namespace Hushlands.Editor
             set.pickups = Make<PickupConfig>("Meta");
             set.score = Make<ScoreConfig>("Meta");
             set.vehicles = Make<VehicleConfig>("Meta");
+            set.goals = Make<GoalConfig>("Meta");
             set.cloth = Make<ClothConfig>("Characters");
             EditorUtility.SetDirty(set);
 

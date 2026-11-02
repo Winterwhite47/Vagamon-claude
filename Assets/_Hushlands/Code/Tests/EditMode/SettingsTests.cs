@@ -28,6 +28,7 @@ namespace Hushlands.Tests
             yield return new ClothSettings();
             yield return new LookSettings();
             yield return new HazardSettings();
+            yield return new GoalSettings();
         }
 
         [TestCaseSource(nameof(AllDefaults))]

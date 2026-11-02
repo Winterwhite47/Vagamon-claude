@@ -94,7 +94,7 @@ for doc in ["docs/game-bible.md", "docs/playbook.md", "docs/decisions.md"]:
 # 10. T1: every settings block has a config asset wrapper, is linked in HushConfigSet and built by bootstrap.
 settings_src = "".join(f.read_text() for f in (CODE / "Core/Config").glob("*.cs"))
 settings = sorted(set(re.findall(r"class (\w+)Settings\s*:\s*ISettings", settings_src)))
-check(len(settings) == 20, f"expected 20 settings blocks, found {len(settings)}")
+check(len(settings) == 21, f"expected 21 settings blocks, found {len(settings)}")
 config_set = (CODE / "Runtime/Config/HushConfigSet.cs").read_text()
 builder = (CODE / "Editor/ConfigSetBuilder.cs").read_text()
 for name in settings:
@@ -162,7 +162,7 @@ check("UnityEngine" not in re.sub(r"//.*", "", (CODE / "Core/Cloth/VerletScarfSo
 # 17. T7: slice pieces present; Meadow Sea look uses canon palette; mist visibility rule wired.
 for f in ["Core/Config/LookSettings.cs", "Core/World/TerrainSampler.cs", "Runtime/World/SliceBuilder.cs",
           "Runtime/World/SliceBootstrap.cs", "Runtime/World/TerrainMeshBuilder.cs", "Runtime/World/RetryOverlay.cs",
-          "Runtime/World/MistAudio.cs", "Editor/World/SliceMenu.cs"]:
+          "Runtime/World/MistLowPass.cs", "Runtime/World/AudioMixBridge.cs", "Editor/World/SliceMenu.cs"]:
     check((CODE / f).is_file(), f"missing {f}")
 look_src = (CODE / "Core/Config/LookSettings.cs").read_text()
 meadow = look_src[look_src.index("biome = BiomeId.MeadowSea"):]
@@ -210,6 +210,20 @@ veh_src = (CODE / "Core/Meta/Vehicles.cs").read_text()
 for bad in ["Buy", "Purchase", "Spend", "Price"]:
     check(bad not in veh_src, f"garage must not have a shop ({bad})")
 check("--all-vehicles" in (ROOT / "tools/qa/content_sim.py").read_text(), "content mirror must ride every vehicle")
+
+# 22. Unity serialization: each MonoBehaviour / ScriptableObject lives in a file with its own name.
+for cs in CODE.rglob("*.cs"):
+    src = re.sub(r"//.*", "", cs.read_text())
+    for m in re.finditer(r"public (?:sealed |abstract )?class (\w+)(?:<[^>]*>)?\s*:\s*(MonoBehaviour|ScriptableObject|SettingsAsset<)", src):
+        check(m.group(1) == cs.stem, f"{cs.relative_to(ROOT)}: {m.group(1)} must be in {m.group(1)}.cs")
+
+# 23. T12: save is versioned + checksummed + atomic; progression wired; goals clean; tests never touch the player save.
+fs = (CODE / "Core/Meta/FileSaveService.cs").read_text()
+for token in ["public const int Version", "Crc32", ".bak", ".tmp", "ReadOnlyNewerVersion"]:
+    check(token in fs, f"save missing {token}")
+for t in ["Tests/PlayMode/SliceTests.cs", "Tests/PlayMode/DucklingSafetyTests.cs"]:
+    check("SaveProvider.UseMemory = true" in (CODE / t).read_text(), f"{t} must isolate the player save")
+check("AttachProgression" in (CODE / "Runtime/World/SliceBootstrap.cs").read_text(), "slice must report runs to progression")
 
 for e in errors:
     print("FAIL:", e)

@@ -15,6 +15,8 @@ namespace Hushlands.Tests
         public IEnumerator Slice_Crash_HidesDucklings_AuditClean()
         {
             SliceBootstrap.ForceAutopilot = true;
+            SaveProvider.UseMemory = true;
+            SaveProvider.Reset();
             try
             {
                 yield return SceneManager.LoadSceneAsync("Slice_MeadowSea", LoadSceneMode.Single);
@@ -38,6 +40,8 @@ namespace Hushlands.Tests
             finally
             {
                 SliceBootstrap.ForceAutopilot = false;
+                SaveProvider.UseMemory = false;
+                SaveProvider.Reset();
             }
         }
     }

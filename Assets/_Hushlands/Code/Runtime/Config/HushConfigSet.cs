@@ -30,6 +30,7 @@ namespace Hushlands
         public PickupConfig pickups;
         public ScoreConfig score;
         public VehicleConfig vehicles;
+        public GoalConfig goals;
         public ClothConfig cloth;
 
         /// <summary>Settings bundle for a RunSession.</summary>
@@ -79,6 +80,7 @@ namespace Hushlands
             Collect(errors, nameof(pickups), pickups == null ? null : pickups.Validate());
             Collect(errors, nameof(score), score == null ? null : score.Validate());
             Collect(errors, nameof(cloth), cloth == null ? null : cloth.Validate());
+            Collect(errors, nameof(goals), goals == null ? null : goals.Validate());
             Collect(errors, nameof(vehicles), vehicles == null ? null : vehicles.Validate());
             if (targets != null && rider != null && !Mathf.Approximately(targets.fixedTimestep, rider.Settings.physicsStep))
                 errors.Add("rider.physicsStep must equal targets.fixedTimestep");

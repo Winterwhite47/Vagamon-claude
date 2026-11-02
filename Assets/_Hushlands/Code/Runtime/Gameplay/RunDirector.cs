@@ -14,8 +14,14 @@ namespace Hushlands
         private PhysxRider _rider;
         private IInputSource _input;
         private RunSession _session;
+        private ProgressionService _progression;
+        private double _endX;
 
         public RunSession Session => _session;
+        public ProgressionService Progression => _progression;
+        public bool Finished { get; private set; }
+        public RunSummary Summary { get; private set; }
+        public event System.Action<RunSummary> RunEnded;
         public RunFlow Flow => _session?.Flow;
         public DucklingNestService Ducklings { get; private set; }
 
@@ -29,12 +35,35 @@ namespace Hushlands
             float bodyOffset = config.rider.Settings.colliderRadius + t.riderBodyHeight * 0.5f;
             _session = RunSession.Create(config.RunBundle(), t.pickupHover, bodyOffset, seed, rider, stretch, slope,
                 Ducklings, camera != null ? camera.Core : null, signals);
+            _endX = slope.Length;
+        }
+
+        /// <summary>Progression to report to when the run ends (reaching the end of the stretch, or quitting).</summary>
+        public void AttachProgression(ProgressionService progression)
+        {
+            _progression = progression;
+        }
+
+        public void FinishRun()
+        {
+            if (Finished || _session == null) return;
+            Finished = true;
+            Summary = _session.End();
+            _progression?.Complete(Summary, _session.Stats);
+            RunEnded?.Invoke(Summary);
+        }
+
+        private void OnApplicationQuit()
+        {
+            FinishRun();
         }
 
         private void FixedUpdate()
         {
-            if (_session == null) return;
+            if (_session == null || Finished) return;
             _session.Tick(_input, Time.fixedDeltaTime);
+            if (_session.Flow.Phase == FlowPhase.Riding && _rider.Position.Distance >= _endX) FinishRun();
+            else if (_progression != null) _progression.Goals.Evaluate(_session.Stats);
         }
     }
 }

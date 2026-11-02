@@ -56,13 +56,22 @@ namespace Hushlands.Core
             Collapse = new CollapseController(b.Fairness, b.Hazards, stretch);
             Squall = new SquallDirector(b.Hazards, Rng.Mix(seed, 77));
 
-            _rider.Crashed += _ => Pickups.OnCrash();
+            double start = rider.Position.Distance;
+            Stats = new RunStats { StartX = start, FurthestX = start, CleanFromX = start };
+            _rider.Crashed += _ =>
+            {
+                Pickups.OnCrash();
+                Stats.Crashes++;
+                Stats.LongestClean = Math.Max(Stats.LongestClean, Stats.CurrentClean);
+                Stats.CurrentClean = 0d;
+            };
             Flow.Retried += p =>
             {
                 Landslide.Reset(p.Distance, b.Hazards.landslideRetryGap);
                 Collapse.ResetAhead(p.Distance);
+                Stats.CleanFromX = p.Distance;
             };
-            Score.TrackDistance(rider.Position.Distance);
+            Score.TrackDistance(start);
         }
 
         public RunFlow Flow { get; }
@@ -72,13 +81,27 @@ namespace Hushlands.Core
         public LandslideChaser Landslide { get; }
         public CollapseController Collapse { get; }
         public SquallDirector Squall { get; }
+        public RunStats Stats { get; }
+        public bool Ended { get; private set; }
+
+        /// <summary>Freezes the run and returns its summary (missed groups = nests left waiting).</summary>
+        public RunSummary End()
+        {
+            Ended = true;
+            Stats.LongestClean = Math.Max(Stats.LongestClean, Stats.CurrentClean);
+            return new RunSummary(Score.Score, Stats.Distance, Score.SpiceCoins, Score.Flips, Score.Rescues,
+                Ducklings.WaitingGroups, Stats.Crashes, Stats.LongestClean);
+        }
 
         public void Tick(IInputSource input, float dt)
         {
+            if (Ended) return;
             Flow.Tick(input, dt);
             if (Flow.Phase != FlowPhase.Riding || _rider.State == RiderState.Crashed) return;
             _run += dt;
             SlopePoint p = _rider.Position;
+            if (p.Distance > Stats.FurthestX) Stats.FurthestX = p.Distance;
+            Stats.CurrentClean = Math.Max(Stats.CurrentClean, p.Distance - Stats.CleanFromX);
 
             Pickups.Step(p.Distance, p.Height + _bodyOffset, dt);
             bool grounded = _rider.State == RiderState.Grounded || _rider.State == RiderState.Tucking;
@@ -98,6 +121,9 @@ namespace Hushlands.Core
             Collapse.Step(p.Distance, dt);
 
             bool caught = Landslide.Step(p.Distance, _targetModel.TargetSpeed(_run), dt, _b.Fairness.riderFootprintMeters);
+            Stats.Flips = Score.Flips;
+            Stats.Coins = Score.SpiceCoins;
+            Stats.Rescues = Score.Rescues;
             if (_signals != null)
             {
                 _signals.BoostActive = Pickups.WindActive;
