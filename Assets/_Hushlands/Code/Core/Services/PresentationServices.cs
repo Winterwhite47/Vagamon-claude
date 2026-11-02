@@ -2,7 +2,11 @@ using System;
 
 namespace Hushlands.Core
 {
-    /// <summary>Camera state logic, engine-free. A Cinemachine adapter (T4) listens to StateChanged.</summary>
+    /// <summary>
+    /// Camera state logic, engine-free. Per step: Request() any number of states, then Commit(dt).
+    /// The highest priority request wins; a higher-priority state takes over at once, a lower one only after
+    /// minDwellSeconds in the current state (no flicker). A Cinemachine adapter listens to StateChanged.
+    /// </summary>
     public sealed class CameraStateMachine : ICameraDirector
     {
         private readonly CameraSettings _s;
@@ -15,23 +19,34 @@ namespace Hushlands.Core
 
         public CameraState Current { get; private set; } = CameraState.Cruise;
         public BiomeId Biome { get; private set; } = BiomeId.WindmouthRidge;
+        public float TimeInState { get; private set; }
+        public bool ReducedMotion { get; set; }
         public event Action<CameraState, CameraState> StateChanged;
         public event Action<BiomeId> BiomeChanged;
 
-        /// <summary>Within one step the highest-priority request wins; call Commit once per step.</summary>
         public void Request(CameraState state)
         {
             if (_pending == null || _s.Get(state).priority > _s.Get(_pending.Value).priority) _pending = state;
         }
 
+        /// <summary>Commit ignoring dwell (tests, scripted moments).</summary>
         public void Commit()
         {
+            Commit(float.PositiveInfinity);
+        }
+
+        public void Commit(float dt)
+        {
+            TimeInState += dt;
             if (_pending == null) return;
             CameraState next = _pending.Value;
             _pending = null;
             if (next == Current) return;
+            bool escalate = _s.Get(next).priority > _s.Get(Current).priority;
+            if (!escalate && TimeInState < _s.minDwellSeconds) return;
             CameraState prev = Current;
             Current = next;
+            TimeInState = 0f;
             StateChanged?.Invoke(prev, next);
         }
 
@@ -44,12 +59,7 @@ namespace Hushlands.Core
 
         public CameraStateProfile ResolvedProfile()
         {
-            CameraStateProfile p = _s.Get(Current);
-            BiomeCameraModifier m = _s.Get(Biome);
-            p.fieldOfView += m.fovOffset;
-            p.distance *= m.distanceScale;
-            p.height += m.heightOffset;
-            return p;
+            return FramingMath.Resolve(_s, Current, Biome, ReducedMotion);
         }
     }
 

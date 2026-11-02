@@ -14,8 +14,13 @@ namespace Hushlands.Core
         public float blendInSeconds;
         /// <summary>Higher wins when several states are requested in one step.</summary>
         public int priority;
+        /// <summary>Downward pitch in degrees (small; framing math treats the view as side-on).</summary>
+        public float pitchDegrees;
+        /// <summary>Exempt from the reveal framing contract (only states with no required jumps ahead).</summary>
+        public bool revealExempt;
 
-        public CameraStateProfile(CameraState state, float fov, float distance, float height, float lookAhead, float blendIn, int priority)
+        public CameraStateProfile(CameraState state, float fov, float distance, float height, float lookAhead, float blendIn,
+            int priority, float pitch, bool revealExempt)
         {
             this.state = state;
             fieldOfView = fov;
@@ -24,6 +29,8 @@ namespace Hushlands.Core
             this.lookAhead = lookAhead;
             blendInSeconds = blendIn;
             this.priority = priority;
+            pitchDegrees = pitch;
+            this.revealExempt = revealExempt;
         }
     }
 
@@ -47,25 +54,48 @@ namespace Hushlands.Core
     [Serializable]
     public sealed class CameraSettings : ISettings
     {
+        // Side-on 2.5D framing tuned to the reveal contract: >= FairnessSettings.visibleAheadMeters ahead (D-021).
         public CameraStateProfile[] states =
         {
-            new CameraStateProfile(CameraState.Cruise, 42f, 12f, 3.5f, 4f, 0.8f, 0),
-            new CameraStateProfile(CameraState.Air, 46f, 14f, 4.5f, 5f, 0.5f, 2),
-            new CameraStateProfile(CameraState.Boost, 50f, 11f, 3f, 7f, 0.4f, 3),
-            new CameraStateProfile(CameraState.Vista, 38f, 22f, 8f, 10f, 1.6f, 1),
-            new CameraStateProfile(CameraState.Danger, 44f, 10f, 3f, 9f, 0.3f, 4),
-            new CameraStateProfile(CameraState.Shelter, 40f, 9f, 2.5f, 3f, 1.0f, 1),
-            new CameraStateProfile(CameraState.FailureHold, 36f, 8f, 3f, 0f, 0.6f, 5),
+            new CameraStateProfile(CameraState.Cruise, 40f, 44f, 3f, 15f, 0.8f, 0, 4f, false),
+            new CameraStateProfile(CameraState.Air, 44f, 42f, 4f, 15f, 0.5f, 2, 4f, false),
+            new CameraStateProfile(CameraState.Boost, 48f, 38f, 3f, 18f, 0.4f, 3, 3f, false),
+            new CameraStateProfile(CameraState.Vista, 36f, 60f, 8f, 20f, 1.6f, 1, 6f, false),
+            new CameraStateProfile(CameraState.Danger, 46f, 38f, 3f, 16f, 0.3f, 4, 3f, false),
+            new CameraStateProfile(CameraState.Shelter, 38f, 46f, 2.5f, 15f, 1.0f, 1, 3f, false),
+            new CameraStateProfile(CameraState.FailureHold, 34f, 25f, 3f, 0f, 0.6f, 5, 6f, true),
         };
 
         public BiomeCameraModifier[] biomes =
         {
             new BiomeCameraModifier(BiomeId.WindmouthRidge, 2f, 1.1f, 1f),
             new BiomeCameraModifier(BiomeId.MeadowSea, 0f, 1f, 0f),
-            new BiomeCameraModifier(BiomeId.PineHollow, -2f, 0.9f, -0.5f),
+            new BiomeCameraModifier(BiomeId.PineHollow, 2f, 0.95f, -0.5f),
             new BiomeCameraModifier(BiomeId.TerraceCountry, 0f, 1.05f, 0.5f),
             new BiomeCameraModifier(BiomeId.MirrorLake, 1f, 1.1f, 0.5f),
         };
+
+        // --- Director (T4) ---
+        /// <summary>A lower-priority state must wait this long before replacing the current one.</summary>
+        public float minDwellSeconds = 0.6f;
+        /// <summary>Airborne this long before the Air framing kicks in (ignores small hops).</summary>
+        public float airDelaySeconds = 0.25f;
+        public float boostSpeedThreshold = 15f;
+        /// <summary>Landslide closer than this (seconds at current speed) = Danger.</summary>
+        public float dangerLandslideSeconds = 2.5f;
+        public float biomeBlendSeconds = 3f;
+        /// <summary>Vertical follow smoothing time constant.</summary>
+        public float verticalSmoothSeconds = 0.35f;
+        public float reducedMotionSmoothScale = 1.5f;
+
+        // --- Framing contract ---
+        /// <summary>Narrowest supported aspect (width / height).</summary>
+        public float minAspect = 1.6f;
+        public float maxSlopeForFramingDegrees = 14f;
+        /// <summary>Rider and ground-ahead must stay inside this normalised screen half-extent.</summary>
+        public float safeScreenExtent = 0.9f;
+        public float maxRiderBehindCenter = 0.8f;
+        public float maxPitchDegrees = 10f;
 
         public CameraStateProfile Get(CameraState s)
         {
@@ -95,6 +125,8 @@ namespace Hushlands.Core
                 SettingsCheck.Range(e, o, p.state + ".fieldOfView", p.fieldOfView, 10f, 90f);
                 SettingsCheck.Positive(e, o, p.state + ".distance", p.distance);
                 SettingsCheck.NonNegative(e, o, p.state + ".blendInSeconds", p.blendInSeconds);
+                SettingsCheck.NonNegative(e, o, p.state + ".lookAhead", p.lookAhead);
+                SettingsCheck.Range(e, o, p.state + ".pitchDegrees", p.pitchDegrees, 0f, maxPitchDegrees);
             }
             SettingsCheck.CoversEnum(e, o, keys);
             var bkeys = new List<BiomeId>();
@@ -104,6 +136,18 @@ namespace Hushlands.Core
                 SettingsCheck.Positive(e, o, m.biome + ".distanceScale", m.distanceScale);
             }
             SettingsCheck.CoversEnum(e, o, bkeys);
+            SettingsCheck.NonNegative(e, o, nameof(minDwellSeconds), minDwellSeconds);
+            SettingsCheck.NonNegative(e, o, nameof(airDelaySeconds), airDelaySeconds);
+            SettingsCheck.Positive(e, o, nameof(boostSpeedThreshold), boostSpeedThreshold);
+            SettingsCheck.Positive(e, o, nameof(dangerLandslideSeconds), dangerLandslideSeconds);
+            SettingsCheck.Positive(e, o, nameof(biomeBlendSeconds), biomeBlendSeconds);
+            SettingsCheck.Positive(e, o, nameof(verticalSmoothSeconds), verticalSmoothSeconds);
+            if (reducedMotionSmoothScale < 1f) e.Add(o + ".reducedMotionSmoothScale must be >= 1");
+            SettingsCheck.Range(e, o, nameof(minAspect), minAspect, 1f, 4f);
+            SettingsCheck.Range(e, o, nameof(maxSlopeForFramingDegrees), maxSlopeForFramingDegrees, 0f, 45f);
+            SettingsCheck.Range(e, o, nameof(safeScreenExtent), safeScreenExtent, 0.1f, 1f);
+            SettingsCheck.Range(e, o, nameof(maxRiderBehindCenter), maxRiderBehindCenter, 0f, 1f);
+            SettingsCheck.Range(e, o, nameof(maxPitchDegrees), maxPitchDegrees, 0f, 30f);
         }
     }
 

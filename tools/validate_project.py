@@ -130,6 +130,17 @@ for rule in rules:
     check(f'"{rule}"' in sim, f"content_sim.py does not mirror rule {rule}")
 check(len(rules) >= 15, "fairness checker lost rules")
 
+# 14. T4: camera director core present, seven profiles, contract wired into config validation.
+for name in ["FramingMath", "CameraRules", "CameraRig", "CameraDirectorCore"]:
+    check((CODE / f"Core/Camera/{name}.cs").is_file(), f"missing Core/Camera/{name}.cs")
+pres = (CODE / "Core/Config/PresentationSettings.cs").read_text()
+check(len(re.findall(r"new CameraStateProfile\(CameraState\.", pres)) == 7, "need seven camera profiles")
+check("FramingMath.CheckContract" in (CODE / "Runtime/Config/HushConfigSet.cs").read_text(), "framing contract not validated")
+check((ROOT / "tools/qa/camera_sim.py").is_file(), "missing camera reference model")
+for cs in (CODE / "Core/Camera").glob("*.cs"):
+    src = re.sub(r"//.*", "", cs.read_text())
+    check("UnityEngine" not in src, f"{cs.name}: Core camera must be engine-free")
+
 for e in errors:
     print("FAIL:", e)
 print(f"validate_project: {checks - len(errors)}/{checks} checks passed, {len(errors)} failed")

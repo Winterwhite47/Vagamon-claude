@@ -60,6 +60,11 @@ namespace Hushlands
             if (rider != null && fairness != null &&
                 rider.Settings.colliderLength * 0.5f > fairness.Settings.riderFootprintMeters + 1e-4f)
                 errors.Add("fairness.riderFootprintMeters must cover half the rider collider length");
+            if (camera != null && fairness != null)
+                errors.AddRange(Hushlands.Core.FramingMath.CheckContract(camera.Settings, fairness.Settings.visibleAheadMeters));
+            if (camera != null && content != null &&
+                camera.Settings.maxSlopeForFramingDegrees < content.Settings.maxSlopeDegrees)
+                errors.Add("camera.maxSlopeForFramingDegrees must cover content.maxSlopeDegrees");
             return errors;
         }
 

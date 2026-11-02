@@ -13,6 +13,10 @@ namespace Hushlands.Core
         Pickup = 5,
         Checkpoint = 6,
         Ramp = 7,
+        /// <summary>Camera zone: wide scenic framing (T4).</summary>
+        Vista = 8,
+        /// <summary>Camera zone: covered, intimate framing (T4).</summary>
+        Shelter = 9,
     }
 
     /// <summary>One authored or generated feature. Positions are metres from chunk start.</summary>

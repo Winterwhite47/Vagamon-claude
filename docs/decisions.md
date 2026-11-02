@@ -84,3 +84,23 @@ Format: ID · date · question · default used · status.
 ## D-020 · 2026-11-02 · Collapse zones built open in T3
 - Track builder builds collapse zones as open pits. Timed collapse with its 1 s warning is T10.
 - Status: decided.
+
+## D-021 · 2026-11-02 · Camera profiles retuned for the reveal contract
+- T1 profiles framed ~12 m ahead; the 1.5 s reveal at 18 m/s needs 27 m and T2 fixed 40 m. Side-on camera now sits 38–60 m off the plane (Cruise 44 m, 40° FOV). Rider reads smaller on screen; hero framing for T7 must work within this.
+- Status: open (T7 visual review).
+
+## D-022 · 2026-11-02 · Reduced motion = framing locked to Cruise
+- Locking only FOV broke the contract for wide states. Default: reduced motion uses Cruise framing for all states (except FailureHold) and 1.5× slower vertical follow; states still drive audio.
+- Status: open.
+
+## D-023 · 2026-11-02 · Only FailureHold is exempt from the contract
+- Shelter and Vista can contain jumps, so they must still show 40 m ahead.
+- Status: decided.
+
+## D-024 · 2026-11-02 · One procedural CinemachineCamera
+- Default: core computes the pose; a single CinemachineCamera applies it (Brain renders, noise/impulse/cutscenes available later). Seven priority-blended vcams would make blends and the contract unverifiable outside Unity.
+- Status: decided.
+
+## D-025 · 2026-11-02 · Pitch ignored in framing math
+- Pitch is limited to ≤ 10° (profiles use 3–6°); framing math treats the view as side-on.
+- Status: decided.

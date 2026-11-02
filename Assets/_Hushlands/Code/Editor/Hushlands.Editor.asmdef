@@ -6,9 +6,12 @@
         "Hushlands.Runtime",
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.HighDefinition.Runtime",
-        "Unity.RenderPipelines.HighDefinition.Editor"
+        "Unity.RenderPipelines.HighDefinition.Editor",
+        "Unity.Cinemachine"
     ],
-    "includePlatforms": ["Editor"],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

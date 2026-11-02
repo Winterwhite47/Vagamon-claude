@@ -32,6 +32,13 @@ in the air (a tuck carried off a lip never flips; taps never flip). Landing with
 Cinemachine, seven states: Cruise, Air, Boost, Vista, Danger, Shelter, FailureHold.
 Per-biome profiles. Audio mix snapshots follow camera state and biome; mist low-passes audio.
 
+Director (T4): signals → `CameraStateRules` → `CameraStateMachine` (priority FailureHold > Danger > Boost > Air >
+Vista = Shelter > Cruise; higher priority takes over at once, lower waits 0.6 s dwell) → `CameraRig` (smoothstep blends,
+retargets from current values, never cuts; X locked to rider, Y smoothed). One procedural `CinemachineCamera` applies
+the pose. Framing contract: every state except FailureHold shows ≥ 40 m ahead at 16:10 on a 14° slope, rider ≥ −0.8 from
+centre. Air needs 0.25 s airtime; Boost at ≥ 15 m/s or boost pickup; Danger when landslide < 2.5 s or collapse warning.
+Reduced motion locks framing to Cruise (no zooms). Mix snapshots follow every camera state and biome change.
+
 ## Look
 Hyper-real but calm. Volumetric mist, soft light.
 Palette: emerald `#0B3B17`, terracotta `#8D3F2D`, mist blue `#4A6B82`, gold `#D4AF37`.

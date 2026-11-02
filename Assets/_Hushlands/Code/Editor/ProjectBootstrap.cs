@@ -1,5 +1,6 @@
 using System.IO;
 using Hushlands;
+using Unity.Cinemachine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -124,6 +125,13 @@ namespace Hushlands.Editor
             cameraGo.transform.SetPositionAndRotation(look.cameraPosition, Quaternion.Euler(look.cameraEuler));
             cameraGo.AddComponent<HDAdditionalCameraData>();
             cameraGo.AddComponent<FrameTimeCapture>().Configure(targets, false);
+            cameraGo.AddComponent<CinemachineBrain>();
+
+            var vcamGo = new GameObject("Gameplay Camera");
+            vcamGo.transform.SetPositionAndRotation(look.cameraPosition, Quaternion.Euler(look.cameraEuler));
+            var vcam = vcamGo.AddComponent<CinemachineCamera>();
+            vcam.Lens.FieldOfView = look.fieldOfView;
+            vcamGo.AddComponent<CameraDirector>().AssignCamera(vcam);
 
             var sunGo = new GameObject("Sun");
             var sun = sunGo.AddComponent<Light>();
