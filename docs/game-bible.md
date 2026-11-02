@@ -53,6 +53,14 @@ fairness threshold keeps ≥ 60% transmittance at the farthest camera (Meadow: 6
 Audio: mist low-pass on the listener from `MixDirector`; snapshot bridge for an authored AudioMixer.
 All art is original procedural placeholder in the canon palette; final hero assets are an approval item.
 
+## Windmouth Ridge (T14, biome 1 of 4 remaining)
+Run order starts here. Quiet dawn on a frosted, exposed ridge: sun 14° from +28°, 5200 K, 45 klx, EV 13.2;
+volumetric fog in mist blue (240 m, height to 80 m); frost-pale ground, grey-brown rock, gold accents; tall backdrop
+ridges (30 m hills, 180 m wavelength). Content profile: slopes 8–14°, more rock outcrops (obstacle weight 0.6), fewer
+crevasses (0.25), mist banks in 75% of chunks, second surfaces stone / ice / grass on a snow base. Backdrop scatter:
+boulders and small cairns only behind the track, outside the corridor. Ridge wind adds to the scarf wind.
+Mist rule holds even in a squall (transmittance 0.62 ≥ 0.60). Own slice scene `Slice_WindmouthRidge`.
+
 ## UI
 Motion graphics, smooth video-like transitions over the live 3D world. Near-zero HUD.
 Continuous camera and mist transitions; no loading cuts. Reduced-motion option.

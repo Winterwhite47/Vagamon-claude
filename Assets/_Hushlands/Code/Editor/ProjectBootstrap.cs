@@ -40,12 +40,12 @@ namespace Hushlands.Editor
             EnsureBootScene(targets, look, profile);
 
             SliceMenu.BuildAll(set: null);
-            // Slice first so the player (and -hushCapture) opens the vertical slice; Boot stays for setup checks.
-            EditorBuildSettings.scenes = new[]
-            {
-                new EditorBuildSettingsScene(HushPaths.SliceScene, true),
-                new EditorBuildSettingsScene(HushPaths.BootScene, true),
-            };
+            // Meadow Sea slice first so the player (and -hushCapture) opens it; other tuned biomes follow; Boot last.
+            var scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>();
+            foreach (string path in SliceMenu.SliceScenes(AssetDatabase.LoadAssetAtPath<HushConfigSet>(HushPaths.ConfigSetAsset)))
+                scenes.Add(new EditorBuildSettingsScene(path, true));
+            scenes.Add(new EditorBuildSettingsScene(HushPaths.BootScene, true));
+            EditorBuildSettings.scenes = scenes.ToArray();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Hushlands] Bootstrap complete.");

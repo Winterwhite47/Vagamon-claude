@@ -60,6 +60,41 @@ namespace Hushlands.Core
         }
     }
 
+    /// <summary>Per-biome content flavour (T14). Biomes without a profile use the global values.</summary>
+    [Serializable]
+    public struct BiomeContentProfile
+    {
+        public BiomeId biome;
+        public float minSlopeDegrees;
+        public float maxSlopeDegrees;
+        public float obstacleWeight;
+        public float gapWeight;
+        public float mistBankChance;
+        /// <summary>Surfaces a chunk's second span may use; empty = any surface.</summary>
+        public SurfaceId[] secondarySurfaces;
+    }
+
+    /// <summary>Resolved generation knobs for one biome.</summary>
+    public readonly struct ContentKnobs
+    {
+        public readonly float MinSlope;
+        public readonly float MaxSlope;
+        public readonly float ObstacleWeight;
+        public readonly float GapWeight;
+        public readonly float MistBankChance;
+        public readonly SurfaceId[] Secondary;
+
+        public ContentKnobs(float minSlope, float maxSlope, float obstacle, float gap, float mist, SurfaceId[] secondary)
+        {
+            MinSlope = minSlope;
+            MaxSlope = maxSlope;
+            ObstacleWeight = obstacle;
+            GapWeight = gap;
+            MistBankChance = mist;
+            Secondary = secondary;
+        }
+    }
+
     [Serializable]
     public sealed class ContentSettings : ISettings
     {
@@ -110,6 +145,34 @@ namespace Hushlands.Core
         public float nestChance = 0.5f;
         public int placementTries = 12;
 
+        // --- Biome profiles (T14) ---
+        public BiomeContentProfile[] biomeProfiles =
+        {
+            // Windmouth Ridge: steep exposed ridge, more rock outcrops, fewer crevasses, frequent mist banks.
+            new BiomeContentProfile
+            {
+                biome = BiomeId.WindmouthRidge, minSlopeDegrees = 8f, maxSlopeDegrees = 14f,
+                obstacleWeight = 0.6f, gapWeight = 0.25f, mistBankChance = 0.75f,
+                secondarySurfaces = new[] { SurfaceId.Stone, SurfaceId.Ice, SurfaceId.Grass },
+            },
+        };
+
+        private static readonly SurfaceId[] AnySurface = (SurfaceId[])Enum.GetValues(typeof(SurfaceId));
+
+        public ContentKnobs KnobsFor(BiomeId biome)
+        {
+            if (biomeProfiles != null)
+            {
+                foreach (BiomeContentProfile p in biomeProfiles)
+                {
+                    if (p.biome != biome) continue;
+                    SurfaceId[] sec = p.secondarySurfaces != null && p.secondarySurfaces.Length > 0 ? p.secondarySurfaces : AnySurface;
+                    return new ContentKnobs(p.minSlopeDegrees, p.maxSlopeDegrees, p.obstacleWeight, p.gapWeight, p.mistBankChance, sec);
+                }
+            }
+            return new ContentKnobs(minSlopeDegrees, maxSlopeDegrees, obstacleWeight, gapWeight, mistBankChance, AnySurface);
+        }
+
         public void Validate(List<string> e)
         {
             const string o = nameof(ContentSettings);
@@ -152,6 +215,17 @@ namespace Hushlands.Core
             SettingsCheck.Range(e, o, nameof(rarePickupChance), rarePickupChance, 0f, 1f);
             SettingsCheck.Range(e, o, nameof(nestChance), nestChance, 0f, 1f);
             SettingsCheck.Positive(e, o, nameof(placementTries), placementTries);
+            var seen = new HashSet<BiomeId>();
+            foreach (BiomeContentProfile p in biomeProfiles ?? new BiomeContentProfile[0])
+            {
+                string t = o + ".profile." + p.biome;
+                if (!seen.Add(p.biome)) e.Add(t + ": duplicate profile");
+                SettingsCheck.Range(e, t, nameof(p.minSlopeDegrees), p.minSlopeDegrees, 1f, maxSlopeDegrees);
+                SettingsCheck.Range(e, t, nameof(p.maxSlopeDegrees), p.maxSlopeDegrees, p.minSlopeDegrees, maxSlopeDegrees);
+                SettingsCheck.Range(e, t, nameof(p.obstacleWeight), p.obstacleWeight, 0f, 1f);
+                SettingsCheck.Range(e, t, nameof(p.gapWeight), p.gapWeight, 0f, 1f - p.obstacleWeight);
+                SettingsCheck.Range(e, t, nameof(p.mistBankChance), p.mistBankChance, 0f, 1f);
+            }
         }
     }
 

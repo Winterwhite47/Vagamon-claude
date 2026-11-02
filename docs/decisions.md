@@ -224,3 +224,11 @@ Format: ID · date · question · default used · status.
 ## D-055 · 2026-11-02 · Gentle timing applies at the next ride
 - The tap window in the input sampler updates at once; the rider's own rules take it at scene start (next ride).
 - Status: decided.
+
+## D-056 · 2026-11-02 · Biome content profiles leave approved biomes untouched
+- Per-biome knobs (slopes, hazard mix, mist chance, second surfaces) apply only to biomes with a profile. Meadow Sea keeps the global values, so its T7 content and golden values are unchanged.
+- Status: decided.
+
+## D-057 · 2026-11-02 · Windmouth Ridge art direction (default)
+- No reference given. Default: calm dawn on a frosted ridge, cooler than Meadow's golden hour, still the canon palette for mist (mist blue) and accents (gold); frost-pale ground and grey-brown rock as neutrals. Procedural placeholder props (boulders, cairns) with shape constants in code until authored art.
+- Status: open (approval gate).

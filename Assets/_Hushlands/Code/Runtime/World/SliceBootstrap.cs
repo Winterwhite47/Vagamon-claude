@@ -36,8 +36,11 @@ namespace Hushlands
         private HushConfigSet _config;
         private HushInputSource _playerInput;
 
-        public void Assign(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge)
+        public BiomeId Biome => biome;
+
+        public void Assign(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge, BiomeId sliceBiome)
         {
+            biome = sliceBiome;
             cameraDirector = director;
             mistLowPass = lowPass;
             mixBridge = bridge;

@@ -27,6 +27,8 @@ namespace Hushlands
         public Light Sun;
         public Volume Volume;
         public int TerrainTiles;
+        public int Props;
+        public BiomeLook Look;
         public int MistVolumes;
         public int Obstacles;
         public int Nests;
@@ -62,6 +64,8 @@ namespace Hushlands
             TerrainMeshBuilder.BuildTrackStrip(r.Terrain, ls, length, assets.Get("Track"), world, c.track.Settings.stripLift);
 
             AddObstacleVisuals(r, assets);
+            r.Look = look;
+            r.Props = AddScatter(r, ls, biome, length, seed, assets, world);
             r.Mist = new MistField(r.Stretch, c.biomes.Settings.Get(biome).baseMistDensity);
             r.MistVolumes = AddMistVolumes(r, ls, look, world);
             AddLighting(r, look, world);
@@ -81,6 +85,30 @@ namespace Hushlands
                 v.transform.localScale = box.size;
                 r.Obstacles++;
             }
+        }
+
+        private static int AddScatter(SliceRefs r, LookSettings ls, BiomeId biome, double length, int seed, SliceAssets assets,
+            Transform world)
+        {
+            var root = new GameObject("Scatter").transform;
+            root.SetParent(world, false);
+            int n = 0;
+            foreach (PropPlacement p in PropScatterer.Place(ls, biome, r.Terrain, length, seed))
+            {
+                Material mat = assets.Get(p.Material);
+                float y = (float)p.Y;
+                for (int k = 0; k < p.Stack; k++)
+                {
+                    // Single rocks are flattened boulders; stacks shrink upward into a cairn.
+                    float size = p.Stack > 1 ? p.Scale * (1f - 0.18f * k) : p.Scale;
+                    GameObject g = Primitive(PrimitiveType.Sphere, p.Name, root, mat);
+                    g.transform.localScale = new Vector3(size, size * 0.6f, size * 0.8f);
+                    g.transform.position = new Vector3((float)p.X, y + size * 0.25f, (float)p.Z);
+                    y += size * 0.5f;
+                }
+                n++;
+            }
+            return n;
         }
 
         private static int AddMistVolumes(SliceRefs r, LookSettings ls, BiomeLook look, Transform world)

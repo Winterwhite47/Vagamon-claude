@@ -14,12 +14,24 @@ namespace Hushlands.Tests
         [Timeout(180000)]
         public IEnumerator MeadowSlice_Builds_AndAutopilotRides()
         {
+            yield return SliceBuildsAndRides("Slice_MeadowSea");
+        }
+
+        [UnityTest]
+        [Timeout(180000)]
+        public IEnumerator WindmouthSlice_Builds_AndAutopilotRides()
+        {
+            yield return SliceBuildsAndRides("Slice_WindmouthRidge");
+        }
+
+        private static IEnumerator SliceBuildsAndRides(string scene)
+        {
             SliceBootstrap.ForceAutopilot = true;
             SaveProvider.UseMemory = true;
             SaveProvider.Reset();
             try
             {
-                yield return SceneManager.LoadSceneAsync("Slice_MeadowSea", LoadSceneMode.Single);
+                yield return SceneManager.LoadSceneAsync(scene, LoadSceneMode.Single);
                 yield return null;
                 SliceBootstrap boot = Object.FindAnyObjectByType<SliceBootstrap>();
                 Assert.IsNotNull(boot);

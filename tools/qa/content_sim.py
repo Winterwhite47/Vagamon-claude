@@ -62,6 +62,14 @@ def load():
     veh = re.findall(r"new VehicleEntry\(VehicleId\.(\w+), ([\d.]+)f, ([\d.]+)f, ([\d.]+)f", src)
     s["defaultVehicle"] = re.search(r"defaultVehicle = VehicleId\.(\w+)", src).group(1)
     s["vehicles"] = {v[0]: {"friction": float(v[1]), "drag": float(v[2]), "jump": float(v[3])} for v in veh}
+    # Biome content profiles (ContentSettings.biomeProfiles).
+    s["profiles"] = {}
+    for m in re.finditer(r"new BiomeContentProfile\s*\{(.*?)\},\s*\n", src, re.S):
+        body = m.group(1)
+        b = re.search(r"biome = BiomeId\.(\w+)", body).group(1)
+        num = {k: float(v) for k, v in re.findall(r"(\w+) = ([\d.]+)f", body)}
+        sec = re.findall(r"SurfaceId\.(\w+)", body[body.index("secondarySurfaces"):]) if "secondarySurfaces" in body else []
+        s["profiles"][b] = dict(num, secondary=sec or list(SURFACES))
     # Content is generated and checked for the weakest jumper (JumpModel.ForAllVehicles).
     s["jumpScale"] = min(v["jump"] for v in s["vehicles"].values())
     return s
@@ -210,13 +218,16 @@ def build_chunk(s, rng, biome, seed, idx, nest, jump):
     C, F = s["ContentSettings"], s["FairnessSettings"]
     length = rng.range(C["minChunkLength"], C["maxChunkLength"])
     diff = rng.range_incl(C["minDifficulty"], C["maxDifficulty"])
-    slope_deg = rng.range(C["minSlopeDegrees"], C["maxSlopeDegrees"])
+    K = s["profiles"].get(biome, {"minSlopeDegrees": C["minSlopeDegrees"], "maxSlopeDegrees": C["maxSlopeDegrees"],
+                                  "obstacleWeight": C["obstacleWeight"], "gapWeight": C["gapWeight"],
+                                  "mistBankChance": C["mistBankChance"], "secondary": list(SURFACES)})
+    slope_deg = rng.range(K["minSlopeDegrees"], K["maxSlopeDegrees"])
     c = Chunk(f"{biome}_{seed}_{idx}", biome, diff, length, f32(slope_deg * math.pi / 180.0))
     tan = math.tan(c.slope)
     primary = s["biomes"][biome]
     if rng.next_double() < C["secondarySurfaceChance"] and length - C["tailOutMeters"] > C["leadInMeters"]:
         split = rng.range(C["leadInMeters"], length - C["tailOutMeters"])
-        sec = SURFACES[rng.range_incl(0, len(SURFACES) - 1)]
+        sec = K["secondary"][rng.range_incl(0, len(K["secondary"]) - 1)]
         c.surfaces = [(0.0, split, primary), (split, length - split, sec)]
     else:
         c.surfaces = [(0.0, length, primary)]
@@ -232,9 +243,9 @@ def build_chunk(s, rng, biome, seed, idx, nest, jump):
     lerp = lambda a, b, t: a + (b - a) * t
     for _ in range(int(max_h)):
         roll, size_t, jitter = rng.next_double(), dn * rng.next_double(), rng.range(0.0, C["hazardSpacingJitterMeters"])
-        if roll < C["obstacleWeight"]:
+        if roll < K["obstacleWeight"]:
             kind = "Obstacle"
-        elif roll < C["obstacleWeight"] + C["gapWeight"] or diff < C["collapseMinDifficulty"]:
+        elif roll < K["obstacleWeight"] + K["gapWeight"] or diff < C["collapseMinDifficulty"]:
             kind = "Gap"
         else:
             kind = "CollapseZone"
@@ -265,7 +276,7 @@ def build_chunk(s, rng, biome, seed, idx, nest, jump):
         blocked.append((f.start - lead, zone_end))
         cursor = zone_end + jitter
 
-    if rng.next_double() < C["mistBankChance"]:
+    if rng.next_double() < K["mistBankChance"]:
         ml = min(rng.range(C["mistMinLength"], C["mistMaxLength"]), length)
         ms = rng.range(0.0, length - ml)
         m = Feature("MistBank", ms, ml)
@@ -492,6 +503,7 @@ def main():
     ap.add_argument("--log", default="Logs/content_validation_py.txt")
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--all-vehicles", action="store_true")
+    ap.add_argument("--biome", help="validate only this biome (otherwise biomes cycle)")
     a = ap.parse_args()
     s = load()
     if a.selftest:
@@ -506,7 +518,7 @@ def main():
     count = a.count or s["ContentSettings"]["validationStretchCount"]
     lines, passed, hazards, kinds, vehicle_runs = [], 0, 0, {}, {}
     for i in range(count):
-        seed, biome = a.first_seed + i, BIOMES[i % len(BIOMES)]
+        seed, biome = a.first_seed + i, (a.biome or BIOMES[i % len(BIOMES)])
         chunks = generate(s, seed, biome, s["ContentSettings"]["chunksPerStretch"])
         for c in chunks:
             for f in c.features:

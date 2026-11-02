@@ -14,7 +14,6 @@ namespace Hushlands.Core
         private readonly FairnessSettings _f;
         private readonly BiomeSettings _biomes;
         private readonly JumpModel _jump;
-        private static readonly SurfaceId[] AllSurfaces = (SurfaceId[])Enum.GetValues(typeof(SurfaceId));
 
         public ChunkGenerator(ContentSettings content, FairnessSettings fairness, BiomeSettings biomes, JumpModel jump)
         {
@@ -48,7 +47,8 @@ namespace Hushlands.Core
         {
             double length = rng.Range(_c.minChunkLength, _c.maxChunkLength);
             int difficulty = rng.RangeInclusive(_c.minDifficulty, _c.maxDifficulty);
-            double slopeDeg = rng.Range(_c.minSlopeDegrees, _c.maxSlopeDegrees);
+            ContentKnobs k = _c.KnobsFor(biome);
+            double slopeDeg = rng.Range(k.MinSlope, k.MaxSlope);
             var chunk = new Chunk(biome + "_" + seed + "_" + index, biome, difficulty, length,
                 (float)(slopeDeg * Math.PI / 180.0));
             double tan = JumpModel.Tan(chunk.SlopeRadians);
@@ -58,7 +58,7 @@ namespace Hushlands.Core
             if (rng.NextDouble() < _c.secondarySurfaceChance && length - _c.tailOutMeters > _c.leadInMeters)
             {
                 double split = rng.Range(_c.leadInMeters, length - _c.tailOutMeters);
-                SurfaceId secondary = AllSurfaces[rng.RangeInclusive(0, AllSurfaces.Length - 1)];
+                SurfaceId secondary = k.Secondary[rng.RangeInclusive(0, k.Secondary.Length - 1)];
                 chunk.AddSurface(new SurfaceSpan(0d, split, primary));
                 chunk.AddSurface(new SurfaceSpan(split, length - split, secondary));
             }
@@ -86,8 +86,8 @@ namespace Hushlands.Core
                 double jitter = rng.Range(0d, _c.hazardSpacingJitterMeters);
 
                 FeatureKind kind;
-                if (kindRoll < _c.obstacleWeight) kind = FeatureKind.Obstacle;
-                else if (kindRoll < _c.obstacleWeight + _c.gapWeight || difficulty < _c.collapseMinDifficulty) kind = FeatureKind.Gap;
+                if (kindRoll < k.ObstacleWeight) kind = FeatureKind.Obstacle;
+                else if (kindRoll < k.ObstacleWeight + k.GapWeight || difficulty < _c.collapseMinDifficulty) kind = FeatureKind.Gap;
                 else kind = FeatureKind.CollapseZone;
 
                 ChunkFeature f;
@@ -130,7 +130,7 @@ namespace Hushlands.Core
             }
 
             // Mist bank (clamped later where it would hide a required jump).
-            if (rng.NextDouble() < _c.mistBankChance)
+            if (rng.NextDouble() < k.MistBankChance)
             {
                 double ml = Math.Min(rng.Range(_c.mistMinLength, _c.mistMaxLength), length);
                 double ms = rng.Range(0d, length - ml);

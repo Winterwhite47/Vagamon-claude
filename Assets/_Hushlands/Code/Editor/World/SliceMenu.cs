@@ -24,7 +24,22 @@ namespace Hushlands.Editor
             if (set == null) set = AssetDatabase.LoadAssetAtPath<HushConfigSet>(HushPaths.ConfigSetAsset);
             if (set == null || set.look == null) throw new System.InvalidOperationException("Config set missing; run bootstrap.");
             BuildMaterials(set.look.Settings);
-            BuildScene();
+            // One slice per tuned biome (T7 Meadow Sea, T14 one biome at a time).
+            foreach (BiomeLook look in set.look.Settings.biomes)
+            {
+                if (look.tuned) BuildScene(look.biome);
+            }
+        }
+
+        public static System.Collections.Generic.List<string> SliceScenes(HushConfigSet set)
+        {
+            var scenes = new System.Collections.Generic.List<string> { HushPaths.SliceSceneFor(BiomeId.MeadowSea) };
+            foreach (BiomeLook look in set.look.Settings.biomes)
+            {
+                string path = HushPaths.SliceSceneFor(look.biome);
+                if (look.tuned && !scenes.Contains(path)) scenes.Add(path);
+            }
+            return scenes;
         }
 
         public static SliceAssets BuildMaterials(LookSettings look)
@@ -56,7 +71,14 @@ namespace Hushlands.Editor
             return assets;
         }
 
-        public static void BuildScene()
+        [MenuItem("Hushlands/Slice/Build Windmouth Ridge Slice")]
+        public static void BuildWindmouthFromMenu()
+        {
+            BuildAll(null);
+            EditorSceneManager.OpenScene(HushPaths.SliceSceneFor(BiomeId.WindmouthRidge));
+        }
+
+        public static void BuildScene(BiomeId biome)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -76,9 +98,9 @@ namespace Hushlands.Editor
             director.AssignCamera(vcam);
 
             var slice = new GameObject("Slice");
-            slice.AddComponent<SliceBootstrap>().Assign(director, lowPass, bridge);
+            slice.AddComponent<SliceBootstrap>().Assign(director, lowPass, bridge, biome);
 
-            EditorSceneManager.SaveScene(scene, HushPaths.SliceScene);
+            EditorSceneManager.SaveScene(scene, HushPaths.SliceSceneFor(biome));
         }
     }
 }

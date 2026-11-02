@@ -19,6 +19,11 @@ namespace Hushlands.Editor
         public const string BootVolumeProfile = RenderingFolder + "/BootVolumeProfile.asset";
         public const string BootScene = Root + "/Scenes/Boot.unity";
         public const string SliceScene = Root + "/Scenes/Slice_MeadowSea.unity";
+
+        public static string SliceSceneFor(Hushlands.Core.BiomeId biome)
+        {
+            return Root + "/Scenes/Slice_" + biome + ".unity";
+        }
         public const string MaterialsFolder = Root + "/Art/Materials";
         public const string SliceAssetsAsset = ConfigResources + "/SliceAssets.asset";
         public const string WindowsBuild = "Builds/Windows/Hushlands.exe";

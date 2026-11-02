@@ -81,10 +81,12 @@ namespace Hushlands
             if (_refs.Scarf != null && _refs.Scarf.Solver != null)
             {
                 float k = squall.Intensity;
+                float bx = _cloth.windX + _refs.Look.windExtraX;
+                float bz = _cloth.windZ + _refs.Look.windExtraZ;
                 _refs.Scarf.Solver.SetWind(
-                    Mathf.Lerp(_cloth.windX, _h.squallWindX, k),
+                    Mathf.Lerp(bx, _h.squallWindX, k),
                     Mathf.Lerp(_cloth.windY, _h.squallWindY, k),
-                    Mathf.Lerp(_cloth.windZ, _h.squallWindZ, k));
+                    Mathf.Lerp(bz, _h.squallWindZ, k));
             }
         }
     }

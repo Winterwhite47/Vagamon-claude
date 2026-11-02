@@ -195,3 +195,53 @@ namespace Hushlands.Core
         }
     }
 }
+
+namespace Hushlands.Core
+{
+    public readonly struct PropPlacement
+    {
+        public readonly string Name;
+        public readonly string Material;
+        public readonly double X;
+        public readonly double Z;
+        public readonly double Y;
+        public readonly float Scale;
+        public readonly int Stack;
+
+        public PropPlacement(string name, string material, double x, double z, double y, float scale, int stack)
+        {
+            Name = name;
+            Material = material;
+            X = x;
+            Z = z;
+            Y = y;
+            Scale = scale;
+            Stack = stack;
+        }
+    }
+
+    /// <summary>Deterministic backdrop scatter: only behind the track (z > 0) and outside the corridor and its blend.</summary>
+    public static class PropScatterer
+    {
+        public static System.Collections.Generic.List<PropPlacement> Place(LookSettings s, BiomeId biome, TerrainSampler terrain,
+            double length, int seed)
+        {
+            var list = new System.Collections.Generic.List<PropPlacement>();
+            var rng = new Rng(Rng.Mix(seed, 991 + (int)biome));
+            foreach (PropScatter p in s.scatters)
+            {
+                if (p.biome != biome) continue;
+                int count = (int)System.Math.Floor(length * p.density);
+                for (int i = 0; i < count; i++)
+                {
+                    double x = rng.Range(0d, length);
+                    double z = rng.Range(p.minDepth, p.maxDepth);
+                    float scale = (float)rng.Range(p.minScale, p.maxScale);
+                    int stack = rng.RangeInclusive(p.minStack, p.maxStack);
+                    list.Add(new PropPlacement(p.name, p.material, x, z, terrain.Height(x, z), scale, stack));
+                }
+            }
+            return list;
+        }
+    }
+}

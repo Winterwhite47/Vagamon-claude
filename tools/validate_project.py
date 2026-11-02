@@ -235,6 +235,14 @@ literals = [m for m in re.findall(r'"([^"]*)"', ui_src) if re.search(r"[a-z]{3,}
 check(not literals, f"UI prose must come from UiSettings, found {literals[:3]}")
 check("Contrast.Ratio" in (CODE / "Core/Config/UiSettings.cs").read_text(), "UI contrast must be validated")
 
+# 25. T14: tuned biomes each have a slice scene path, a fair content log, and scatter that respects the corridor.
+look_src = (CODE / "Core/Config/LookSettings.cs").read_text()
+tuned = re.findall(r"biome = BiomeId\.(\w+), tuned = true", look_src)
+check("MeadowSea" in tuned and "WindmouthRidge" in tuned, f"tuned biomes: {tuned}")
+check("SliceSceneFor" in (CODE / "Editor/World/SliceMenu.cs").read_text(), "slice scenes must be per biome")
+check((ROOT / "docs/logs/T14_windmouth_content.txt").is_file(), "missing Windmouth content log")
+check("--biome" in (ROOT / "tools/qa/content_sim.py").read_text(), "content mirror needs per-biome mode")
+
 for e in errors:
     print("FAIL:", e)
 print(f"validate_project: {checks - len(errors)}/{checks} checks passed, {len(errors)} failed")

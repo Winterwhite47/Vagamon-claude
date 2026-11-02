@@ -27,6 +27,27 @@ namespace Hushlands.Core
         public float hillWavelength;
         public float detailAmplitude;
         public float detailWavelength;
+        /// <summary>Added to the ClothSettings wind (exposed ridges blow harder).</summary>
+        public float windExtraX;
+        public float windExtraZ;
+    }
+
+    /// <summary>Backdrop props scattered behind the track (never in the corridor, never in front of the rider).</summary>
+    [Serializable]
+    public struct PropScatter
+    {
+        public BiomeId biome;
+        public string name;
+        public string material;
+        /// <summary>Props per metre of run.</summary>
+        public float density;
+        public float minDepth;
+        public float maxDepth;
+        public float minScale;
+        public float maxScale;
+        /// <summary>Stacked stones per prop (1 = single rock, more = cairn).</summary>
+        public int minStack;
+        public int maxStack;
     }
 
     [Serializable]
@@ -56,7 +77,17 @@ namespace Hushlands.Core
 
         public BiomeLook[] biomes =
         {
-            Placeholder(BiomeId.WindmouthRidge, 18f, "#DDE6EA", "#6E5A4E"),
+            new BiomeLook
+            {
+                // Windmouth Ridge (T14): high, quiet dawn on a frosted ridge; cool low light, long mist, ridge wind.
+                biome = BiomeId.WindmouthRidge, tuned = true,
+                sunElevationDegrees = 14f, sunAzimuthDegrees = 28f, sunLux = 45000f, sunKelvin = 5200f,
+                exposureEV = 13.2f,
+                fogMeanFreePath = 240f, fogBaseHeight = -40f, fogMaximumHeight = 80f, fogAnisotropy = 0.65f,
+                fogAlbedo = MistBlue, grass = "#DDE6EA", soil = "#6E5A4E", accent = Gold,
+                hillAmplitude = 30f, hillWavelength = 180f, detailAmplitude = 2.2f, detailWavelength = 14f,
+                windExtraX = -1.5f, windExtraZ = 0.6f,
+            },
             new BiomeLook
             {
                 // Golden hour: low warm sun from behind-left, long soft light through mist (T7 vertical slice).
@@ -88,6 +119,20 @@ namespace Hushlands.Core
             new MaterialSpec("Tea", Terracotta, 0.7f, 0f),
             new MaterialSpec("Bell", "#B8B2A3", 0.85f, 1f),
             new MaterialSpec("Duckling", "#E9C46A", 0.35f, 0f),
+        };
+
+        public PropScatter[] scatters =
+        {
+            new PropScatter
+            {
+                biome = BiomeId.WindmouthRidge, name = "Rock", material = "Stone", density = 0.06f,
+                minDepth = 14f, maxDepth = 200f, minScale = 0.8f, maxScale = 3.2f, minStack = 1, maxStack = 1,
+            },
+            new PropScatter
+            {
+                biome = BiomeId.WindmouthRidge, name = "Cairn", material = "Stone", density = 0.008f,
+                minDepth = 12f, maxDepth = 30f, minScale = 0.35f, maxScale = 0.6f, minStack = 3, maxStack = 5,
+            },
         };
 
         // --- Terrain mesh ---
@@ -175,6 +220,18 @@ namespace Hushlands.Core
                 if (!Palette.TryParse(m.color, out _, out _, out _)) e.Add(o + ": bad colour for " + m.name);
                 SettingsCheck.Range(e, o, m.name + ".smoothness", m.smoothness, 0f, 1f);
                 SettingsCheck.Range(e, o, m.name + ".metallic", m.metallic, 0f, 1f);
+            }
+            foreach (PropScatter p in scatters ?? new PropScatter[0])
+            {
+                string t = o + ".scatter." + p.biome + "." + p.name;
+                if (Array.FindIndex(materials, m => m.name == p.material) < 0) e.Add(t + ": unknown material " + p.material);
+                SettingsCheck.NonNegative(e, t, nameof(p.density), p.density);
+                if (p.minDepth < corridorHalfWidth + corridorBlend) e.Add(t + ": props must stay outside the track corridor");
+                SettingsCheck.Ordered(e, t, nameof(p.minDepth), p.minDepth, nameof(p.maxDepth), p.maxDepth);
+                if (p.maxDepth > terrainBackDepth) e.Add(t + ": props beyond the terrain");
+                SettingsCheck.Positive(e, t, nameof(p.minScale), p.minScale);
+                SettingsCheck.Ordered(e, t, nameof(p.minScale), p.minScale, nameof(p.maxScale), p.maxScale);
+                if (p.minStack < 1 || p.maxStack < p.minStack) e.Add(t + ": bad stack range");
             }
             SettingsCheck.Positive(e, o, nameof(terrainCellMeters), terrainCellMeters);
             SettingsCheck.Positive(e, o, nameof(terrainFrontDepth), terrainFrontDepth);
