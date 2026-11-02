@@ -56,6 +56,20 @@ namespace Hushlands.Core
         public float jumpBufferSeconds = 0.1f;
         public float airGravityScale = 1f;
 
+        // --- PhysX body (T3) ---
+        /// <summary>Capsule lies along the slope (X): total length and radius.</summary>
+        public float colliderLength = 1.0f;
+        public float colliderRadius = 0.25f;
+        public float groundProbeDistance = 0.45f;
+        /// <summary>Keeps the sled on the slope over convex slope changes when not jumping.</summary>
+        public float groundSnapDistance = 0.3f;
+        /// <summary>Gap below the body that still counts as touching down when landing.</summary>
+        public float groundContactSkin = 0.05f;
+        /// <summary>Ground orientation follow rate (1/s).</summary>
+        public float groundAlignSharpness = 20f;
+        /// <summary>Ignore ground for this long after takeoff so the probe does not re-ground instantly.</summary>
+        public float takeoffGroundIgnoreSeconds = 0.1f;
+
         /// <summary>Copy with jump velocity scaled by a vehicle's jumpScale.</summary>
         public RiderSettings WithJumpScale(float scale)
         {
@@ -76,6 +90,15 @@ namespace Hushlands.Core
             SettingsCheck.NonNegative(e, o, nameof(coyoteSeconds), coyoteSeconds);
             SettingsCheck.NonNegative(e, o, nameof(jumpBufferSeconds), jumpBufferSeconds);
             SettingsCheck.Positive(e, o, nameof(airGravityScale), airGravityScale);
+            SettingsCheck.Positive(e, o, nameof(colliderLength), colliderLength);
+            SettingsCheck.Positive(e, o, nameof(colliderRadius), colliderRadius);
+            if (colliderRadius * 2f > colliderLength) e.Add(o + ": colliderLength must be >= 2 * colliderRadius");
+            SettingsCheck.Positive(e, o, nameof(groundProbeDistance), groundProbeDistance);
+            SettingsCheck.NonNegative(e, o, nameof(groundSnapDistance), groundSnapDistance);
+            SettingsCheck.Positive(e, o, nameof(groundContactSkin), groundContactSkin);
+            SettingsCheck.Ordered(e, o, nameof(groundSnapDistance), groundSnapDistance, nameof(groundProbeDistance), groundProbeDistance);
+            SettingsCheck.Positive(e, o, nameof(groundAlignSharpness), groundAlignSharpness);
+            SettingsCheck.NonNegative(e, o, nameof(takeoffGroundIgnoreSeconds), takeoffGroundIgnoreSeconds);
         }
     }
 
@@ -120,6 +143,28 @@ namespace Hushlands.Core
                 SettingsCheck.NonNegative(e, o, s.surface + ".drag", s.drag);
             }
             SettingsCheck.CoversEnum(e, o, keys);
+        }
+    }
+
+    /// <summary>Collider geometry built from chunks for the PhysX rider.</summary>
+    [Serializable]
+    public sealed class TrackSettings : ISettings
+    {
+        public float groundThickness = 1f;
+        public float trackWidth = 4f;
+        public float pitDepth = 4f;
+        public float obstacleWidth = 2f;
+        /// <summary>Extra ground length past the stretch end so the rider never runs off the mesh.</summary>
+        public float runOutMeters = 30f;
+
+        public void Validate(List<string> e)
+        {
+            const string o = nameof(TrackSettings);
+            SettingsCheck.Positive(e, o, nameof(groundThickness), groundThickness);
+            SettingsCheck.Positive(e, o, nameof(trackWidth), trackWidth);
+            SettingsCheck.Positive(e, o, nameof(pitDepth), pitDepth);
+            SettingsCheck.Positive(e, o, nameof(obstacleWidth), obstacleWidth);
+            SettingsCheck.NonNegative(e, o, nameof(runOutMeters), runOutMeters);
         }
     }
 

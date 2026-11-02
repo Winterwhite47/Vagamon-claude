@@ -18,6 +18,9 @@ namespace Hushlands
             Time.maximumDeltaTime = config.maximumAllowedTimestep;
             Application.targetFrameRate = config.targetFrameRate;
             QualitySettings.vSyncCount = 0;
+
+            HushConfigSet set = HushConfigSet.Load();
+            if (set != null && set.speed != null) Physics.gravity = new Vector3(0f, -set.speed.Settings.gravity, 0f);
         }
     }
 }

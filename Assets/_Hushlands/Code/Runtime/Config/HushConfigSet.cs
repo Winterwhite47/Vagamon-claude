@@ -14,6 +14,7 @@ namespace Hushlands
         public SpeedConfig speed;
         public RiderConfig rider;
         public SurfaceConfig surfaces;
+        public TrackConfig track;
         public FailureConfig failure;
         public AssistConfig assist;
         public DucklingConfig ducklings;
@@ -41,6 +42,7 @@ namespace Hushlands
             Collect(errors, nameof(speed), speed == null ? null : speed.Validate());
             Collect(errors, nameof(rider), rider == null ? null : rider.Validate());
             Collect(errors, nameof(surfaces), surfaces == null ? null : surfaces.Validate());
+            Collect(errors, nameof(track), track == null ? null : track.Validate());
             Collect(errors, nameof(failure), failure == null ? null : failure.Validate());
             Collect(errors, nameof(assist), assist == null ? null : assist.Validate());
             Collect(errors, nameof(ducklings), ducklings == null ? null : ducklings.Validate());
@@ -55,6 +57,9 @@ namespace Hushlands
             Collect(errors, nameof(vehicles), vehicles == null ? null : vehicles.Validate());
             if (targets != null && rider != null && !Mathf.Approximately(targets.fixedTimestep, rider.Settings.physicsStep))
                 errors.Add("rider.physicsStep must equal targets.fixedTimestep");
+            if (rider != null && fairness != null &&
+                rider.Settings.colliderLength * 0.5f > fairness.Settings.riderFootprintMeters + 1e-4f)
+                errors.Add("fairness.riderFootprintMeters must cover half the rider collider length");
             return errors;
         }
 

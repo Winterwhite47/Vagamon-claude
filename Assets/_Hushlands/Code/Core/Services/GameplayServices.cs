@@ -121,6 +121,7 @@ namespace Hushlands.Core
         private readonly ISpeedModel _speed;
         private readonly ISlopeSpline _slope;
         private readonly ISurfaceProvider _surfaces;
+        private readonly RiderBrain _brain;
         private double _distance;
         private float _height;
         private float _verticalVelocity;
@@ -133,6 +134,7 @@ namespace Hushlands.Core
             _slope = slope ?? throw new ArgumentNullException(nameof(slope));
             _surfaces = surfaces ?? throw new ArgumentNullException(nameof(surfaces));
             _speed = new SpeedModel(speed);
+            _brain = new RiderBrain(rider);
             Speed = speed.startSpeed;
             _height = slope.HeightAt(0d);
         }
@@ -153,21 +155,21 @@ namespace Hushlands.Core
             float angle = _slope.AngleAt(_distance);
             float friction = _surfaces.FrictionFor(_slope.SurfaceAt(_distance));
             bool grounded = State == RiderState.Grounded || State == RiderState.Tucking;
+            RiderIntent intent = _brain.Step(input, grounded, dt);
 
             if (grounded)
             {
-                bool tuck = input.IsHeld && input.HeldSeconds >= _rider.holdThresholdSeconds;
-                Speed = _speed.Step(Speed, angle, friction, tuck, _runSeconds, dt);
+                Speed = _speed.Step(Speed, angle, friction, intent.Tuck, _runSeconds, dt);
                 _distance += Speed * dt;
                 _height = _slope.HeightAt(_distance);
-                if (input.TapThisStep)
+                if (intent.Jump)
                 {
                     _verticalVelocity = _rider.jumpVelocity;
                     SetState(RiderState.Airborne);
                 }
                 else
                 {
-                    SetState(tuck ? RiderState.Tucking : RiderState.Grounded);
+                    SetState(intent.Tuck ? RiderState.Tucking : RiderState.Grounded);
                 }
                 return;
             }
@@ -176,7 +178,7 @@ namespace Hushlands.Core
             _verticalVelocity -= _speedSettings.gravity * _rider.airGravityScale * dt;
             _height += _verticalVelocity * dt;
 
-            if (input.IsHeld)
+            if (intent.Flip)
             {
                 FlipAngle += _rider.flipDegreesPerSecond * dt;
                 SetState(RiderState.Flipping);
@@ -197,6 +199,7 @@ namespace Hushlands.Core
             _verticalVelocity = 0f;
             Speed = speed;
             FlipAngle = 0f;
+            _brain.Reset();
             SetState(RiderState.Grounded);
         }
 

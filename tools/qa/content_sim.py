@@ -124,8 +124,8 @@ class Jump:
     def sample(self, i, n):
         return self.vmin if n < 2 else self.vmin + (self.vmax - self.vmin) * i / (n - 1)
 
-    def clears(self, f, v, tan, lead, clear, margin):
-        t1, t2 = lead, lead + f.length / v
+    def clears(self, f, v, tan, lead, clear, margin, foot):
+        t1, t2 = max(0.0, lead - foot / v), lead + (f.length + foot) / v
         if t2 + margin > self.air(v, tan):
             return False
         if f.kind != "Obstacle":
@@ -133,10 +133,13 @@ class Jump:
         need = f.height + clear
         return self.h(t1, v, tan) >= need and self.h(t2, v, tan) >= need
 
-    def clears_window(self, f, tan, lo, hi, clear, margin, n):
+    def clears_window(self, f, tan, F):
+        lo, hi, clear, margin, n, foot = (F["takeoffWindowMinSeconds"], F["takeoffWindowMaxSeconds"],
+                                          F["obstacleClearanceMeters"], F["landingMarginSeconds"],
+                                          F["speedSamples"], F["riderFootprintMeters"])
         for i in range(n):
             v = self.sample(i, n)
-            if not self.clears(f, v, tan, lo, clear, margin) or not self.clears(f, v, tan, hi, clear, margin):
+            if not self.clears(f, v, tan, lo, clear, margin, foot) or not self.clears(f, v, tan, hi, clear, margin, foot):
                 return False
         return True
 
@@ -157,7 +160,7 @@ class Zone:
         self.body = (s, s + f.length)
         self.takeoff = (s - jump.takeoff_len(F["takeoffWindowMaxSeconds"]), s)
         far = max(s + jump.farthest(tan, F["takeoffWindowMinSeconds"]), self.body[1])
-        self.landing = (self.body[1], far + F["minSafeLandingLength"])
+        self.landing = (self.body[1], far + F["minSafeLandingLength"] + F["riderFootprintMeters"])
         self.whole = (self.takeoff[0], self.landing[1])
         self.reveal = (s - F["obstacleRevealSeconds"] * jump.vmax, self.body[1])
 
@@ -237,8 +240,7 @@ def build_chunk(s, rng, biome, seed, idx, nest, jump):
             lead = max(takeoff, f.warning)
         ok = False
         for _t in range(C["sizeShrinkTries"] + 1):
-            if jump.clears_window(f, tan, F["takeoffWindowMinSeconds"], F["takeoffWindowMaxSeconds"],
-                                  F["obstacleClearanceMeters"], F["landingMarginSeconds"], F["speedSamples"]):
+            if jump.clears_window(f, tan, F):
                 ok = True
                 break
             f.length *= C["sizeShrinkFactor"]
@@ -246,7 +248,7 @@ def build_chunk(s, rng, biome, seed, idx, nest, jump):
         if not ok:
             continue
         f.start = cursor + lead
-        zone_end = f.start + max(f.length, far) + F["minSafeLandingLength"]
+        zone_end = f.start + max(f.length, far) + F["minSafeLandingLength"] + F["riderFootprintMeters"]
         if zone_end > length - C["tailOutMeters"]:
             break
         c.features.append(f)
@@ -315,8 +317,7 @@ def check(s, chunks):
     mist = [((c.start + f.start, c.start + f.end), f.density) for c in chunks for f in c.features if f.kind == "MistBank"]
     for i, z in enumerate(zs):
         tan = math.tan(z.c.slope)
-        if not jump.clears_window(z.f, tan, F["takeoffWindowMinSeconds"], F["takeoffWindowMaxSeconds"],
-                                  F["obstacleClearanceMeters"], F["landingMarginSeconds"], F["speedSamples"]):
+        if not jump.clears_window(z.f, tan, F):
             v.append("jump.clearable")
         if z.whole[0] < z.c.start - eps or z.whole[1] > z.c.start + z.c.length + eps:
             v.append("zone.within.chunk")
@@ -411,15 +412,14 @@ def bot(s, chunks):
                 height, vvert, air = g, 0.0, False
         steps += 1
         vmin_seen, vmax_seen = min(vmin_seen, speed), max(vmax_seen, speed)
-        for st, en, f in hz[nxt:]:
-            if st > d:
+        foot = F["riderFootprintMeters"]
+        for st, en, f in hz[max(0, nxt - 1):]:
+            if st - foot > d:
                 break
-            if not (st <= d <= en):
-                continue
             if f.kind == "Obstacle":
-                if height - ground(d) < f.height:
+                if st - foot <= d <= en + foot and height - ground(d) < f.height:
                     fail = f"hit obstacle at {d:.1f}"
-            elif not air:
+            elif not air and st <= d <= en:
                 fail = f"grounded over {f.kind} at {d:.1f}"
     if fail is None and d < total:
         fail = "timeout"
@@ -431,7 +431,7 @@ def selftest(s):
     """Mutations that must be caught. Returns list of (name, caught_by_checker, caught_by_bot)."""
     import copy
     results = []
-    base = generate(s, 1, "MeadowSea", s["ContentSettings"]["chunksPerStretch"])
+    base = generate(s, 2, "MeadowSea", s["ContentSettings"]["chunksPerStretch"])
     assert not check(s, base) and bot(s, base)[0], "base stretch must pass"
 
     def first(chunks, kind):

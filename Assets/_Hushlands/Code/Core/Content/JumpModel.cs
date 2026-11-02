@@ -57,13 +57,14 @@ namespace Hushlands.Core
 
         /// <summary>
         /// True if taking off <paramref name="lead"/> seconds before the hazard at <paramref name="speed"/>
-        /// clears it: over the whole span, height above slope exceeds the obstacle (zero for gaps),
-        /// and touchdown comes at least landingMargin after the span ends.
+        /// clears it: while any part of the rider body (half-length <paramref name="footprint"/>) is over the span,
+        /// height above slope exceeds the obstacle (zero for gaps), and touchdown comes landingMargin after it.
         /// </summary>
-        public bool Clears(ChunkFeature hazard, double speed, double tanSlope, double lead, double clearance, double landingMargin)
+        public bool Clears(ChunkFeature hazard, double speed, double tanSlope, double lead, double clearance,
+            double landingMargin, double footprint)
         {
-            double tEnter = lead;
-            double tExit = lead + hazard.length / speed;
+            double tEnter = Math.Max(0d, lead - footprint / speed);
+            double tExit = lead + (hazard.length + footprint) / speed;
             if (tExit + landingMargin > AirTime(speed, tanSlope)) return false;
             if (hazard.kind != FeatureKind.Obstacle) return true;
             double need = hazard.height + clearance;
@@ -71,14 +72,15 @@ namespace Hushlands.Core
             return HeightAt(tEnter, speed, tanSlope) >= need && HeightAt(tExit, speed, tanSlope) >= need;
         }
 
-        public bool ClearsAcrossWindow(ChunkFeature hazard, double tanSlope, double leadMin, double leadMax,
-            double clearance, double landingMargin, int speedSamples)
+        public bool ClearsAcrossWindow(ChunkFeature hazard, double tanSlope, FairnessSettings f)
         {
-            for (int i = 0; i < speedSamples; i++)
+            for (int i = 0; i < f.speedSamples; i++)
             {
-                double v = SpeedSample(i, speedSamples);
-                if (!Clears(hazard, v, tanSlope, leadMin, clearance, landingMargin)) return false;
-                if (!Clears(hazard, v, tanSlope, leadMax, clearance, landingMargin)) return false;
+                double v = SpeedSample(i, f.speedSamples);
+                if (!Clears(hazard, v, tanSlope, f.takeoffWindowMinSeconds, f.obstacleClearanceMeters,
+                        f.landingMarginSeconds, f.riderFootprintMeters)) return false;
+                if (!Clears(hazard, v, tanSlope, f.takeoffWindowMaxSeconds, f.obstacleClearanceMeters,
+                        f.landingMarginSeconds, f.riderFootprintMeters)) return false;
             }
             return true;
         }

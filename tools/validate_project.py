@@ -94,7 +94,7 @@ for doc in ["docs/game-bible.md", "docs/playbook.md", "docs/decisions.md"]:
 # 10. T1: every settings block has a config asset wrapper, is linked in HushConfigSet and built by bootstrap.
 settings_src = "".join(f.read_text() for f in (CODE / "Core/Config").glob("*.cs"))
 settings = sorted(set(re.findall(r"class (\w+)Settings\s*:\s*ISettings", settings_src)))
-check(len(settings) == 15, f"expected 15 settings blocks, found {len(settings)}")
+check(len(settings) == 16, f"expected 16 settings blocks, found {len(settings)}")
 config_set = (CODE / "Runtime/Config/HushConfigSet.cs").read_text()
 builder = (CODE / "Editor/ConfigSetBuilder.cs").read_text()
 for name in settings:
@@ -107,7 +107,7 @@ for name in settings:
     check(f"new {name}Settings()" in (CODE / "Tests/EditMode/SettingsTests.cs").read_text(), f"SettingsTests missing {name}")
 
 # 11. Service stubs carry no tuning literals (only 0, 1, 360-degree constants).
-for cs in [*(CODE / "Core/Services").glob("*.cs"), *(CODE / "Core/Content").glob("*.cs")]:
+for cs in [*(CODE / "Core/Services").glob("*.cs"), *(CODE / "Core/Content").glob("*.cs"), *(CODE / "Core/Gameplay").glob("*.cs")]:
     src = re.sub(r'"(?:\\.|[^"\\])*"', '""', re.sub(r"//.*", "", cs.read_text()))
     for lit in re.findall(r"(?<![\w.])(\d+\.\d+|\d+)f\b", src):
         check(lit in ("0", "1", "360"), f"{cs.name}: tuning literal {lit}f outside config")

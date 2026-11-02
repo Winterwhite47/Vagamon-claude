@@ -16,10 +16,17 @@ rescuing ducklings while a landslide chases. Calm, hyper-real, 3D world with a 2
 | Tap | Jump | — |
 | Hold | Tuck (less drag) | Flip |
 
+Rules (`RiderBrain`, T3): a tap is a press released within 0.18 s and jumps on release; coyote 0.08 s and jump
+buffer 0.1 s apply. Hold past 0.18 s on ground = tuck. Hold past 0.18 s in air = flip, only on a press that began
+in the air (a tuck carried off a lip never flips; taps never flip). Landing within 35° of the slope normal is safe.
+
 ## Physics
 - PhysX, fixed step 0.01 s. Rider is a rigid body constrained to a spline slope plane.
 - Per-surface friction and drag (`ISurfaceProvider`).
 - Speed 6–18 m/s. Ramp +0.45 m/s per 10 s via config slope assist (`ISpeedModel.TargetSpeed`).
+- Plane (T3): physics runs in the world XY plane (x = distance, y = height, z frozen). Speed is horizontal speed,
+  identical in `KinematicRider`, `PhysxRider` and the content `JumpModel`. Visual world bending onto a spline is a
+  presentation mapping (T7).
 
 ## Camera
 Cinemachine, seven states: Cruise, Air, Boost, Vista, Danger, Shelter, FailureHold.

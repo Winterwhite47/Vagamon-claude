@@ -44,7 +44,7 @@ namespace Hushlands.Core
             Takeoff = new Span(start - jump.TakeoffZoneLength(fair.takeoffWindowMaxSeconds), start);
             double far = start + jump.FarthestLanding(tan, fair.takeoffWindowMinSeconds);
             if (far < Body.End) far = Body.End;
-            Landing = new Span(Body.End, far + fair.minSafeLandingLength);
+            Landing = new Span(Body.End, far + fair.minSafeLandingLength + fair.riderFootprintMeters);
             Whole = new Span(Takeoff.Start, Landing.End);
             Reveal = new Span(start - fair.obstacleRevealSeconds * jump.MaxSpeed, Body.End);
         }

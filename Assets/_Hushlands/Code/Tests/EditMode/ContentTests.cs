@@ -7,6 +7,8 @@ namespace Hushlands.Tests
 {
     public sealed class ContentTests
     {
+        /// <summary>Seed whose MeadowSea stretch holds every feature kind (from tools/qa/content_sim.py).</summary>
+        private const int GoldenSeed = 2;
         private ContentSettings _content;
         private FairnessSettings _fair;
         private JumpModel _jump;
@@ -30,7 +32,7 @@ namespace Hushlands.Tests
 
         private List<Chunk> Base()
         {
-            return _gen.Generate(1, BiomeId.MeadowSea, _content.chunksPerStretch);
+            return _gen.Generate(GoldenSeed, BiomeId.MeadowSea, _content.chunksPerStretch);
         }
 
         private static int FirstIndex(List<Chunk> chunks, FeatureKind kind, out Chunk chunk)
@@ -85,12 +87,12 @@ namespace Hushlands.Tests
                     if (f.IsHazard) hazards++;
                 }
             }
-            Assert.AreEqual(63.27933749458315, s[0].Length, 1e-9);
-            Assert.AreEqual(0, s[0].Difficulty);
-            Assert.AreEqual(0.20111975073814392, s[0].SlopeRadians, 1e-7);
-            Assert.AreEqual(960.8549435189659, total, 1e-6);
-            Assert.AreEqual(9, hazards);
-            Assert.AreEqual(63, features);
+            Assert.AreEqual(68.72984330132456, s[0].Length, 1e-9);
+            Assert.AreEqual(3, s[0].Difficulty);
+            Assert.AreEqual(0.13672475516796112, s[0].SlopeRadians, 1e-7);
+            Assert.AreEqual(1103.1335235570673, total, 1e-6);
+            Assert.AreEqual(12, hazards);
+            Assert.AreEqual(69, features);
         }
 
         [Test]
@@ -142,7 +144,7 @@ namespace Hushlands.Tests
             f.height = 3f;
             c.SetFeature(i, f);
             Assert.IsTrue(HasRule(_checker.Check(s), FairnessChecker.RuleJumpClearable));
-            Assert.IsFalse(_bot.Validate(s, 1, out string _));
+            Assert.IsFalse(_bot.Validate(s, GoldenSeed, out string _));
         }
 
         [Test]
@@ -154,7 +156,7 @@ namespace Hushlands.Tests
             f.length = 14d;
             c.SetFeature(i, f);
             Assert.IsTrue(HasRule(_checker.Check(s), FairnessChecker.RuleJumpClearable));
-            Assert.IsFalse(_bot.Validate(s, 1, out string _));
+            Assert.IsFalse(_bot.Validate(s, GoldenSeed, out string _));
         }
 
         [Test]

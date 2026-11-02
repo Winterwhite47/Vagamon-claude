@@ -64,3 +64,23 @@ Format: ID · date · question · default used · status.
 ## D-015 · 2026-11-02 · Hazards and landings stay inside one chunk
 - Keeps slope constant through each jump, so physics are exact. Chunks with no room are rest chunks (still have checkpoints, pickups, nests).
 - Status: decided.
+
+## D-016 · 2026-11-02 · Tap fires on release
+- Tap and hold share one button, so ground jump fires on release (< 0.18 s), not press; holding becomes tuck. Adds up to 0.18 s latency; the fairness takeoff window (0.15–0.35 s) and bot timing absorb it. Coyote and jump buffer soften it.
+- Status: open (playtest; alternative is jump-on-press with tuck on a second gesture).
+
+## D-017 · 2026-11-02 · Physics plane
+- Default: PhysX runs in flat world XY (x = distance, y = height). The visible world is mapped onto a curving spline in presentation (T7). Keeps physics exact and identical to the content model.
+- Status: decided.
+
+## D-018 · 2026-11-02 · Speed means horizontal speed
+- Canon 6–18 m/s applied to horizontal plane speed (along-slope is at most 3% higher at 14°). Matches the content jump model exactly.
+- Status: decided.
+
+## D-019 · 2026-11-02 · Rider footprint in fairness
+- Real collider has length; hazards are widened by `riderFootprintMeters` (0.5 m, ≥ half collider length, cross-checked in `HushConfigSet`). Shrinks generated obstacles; still 200/200.
+- Status: decided.
+
+## D-020 · 2026-11-02 · Collapse zones built open in T3
+- Track builder builds collapse zones as open pits. Timed collapse with its 1 s warning is T10.
+- Status: decided.

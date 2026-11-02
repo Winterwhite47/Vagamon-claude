@@ -111,8 +111,7 @@ namespace Hushlands.Core
                 bool clear = false;
                 for (int t = 0; t <= _c.sizeShrinkTries; t++)
                 {
-                    if (_jump.ClearsAcrossWindow(f, tan, _f.takeoffWindowMinSeconds, _f.takeoffWindowMaxSeconds,
-                            _f.obstacleClearanceMeters, _f.landingMarginSeconds, _f.speedSamples))
+                    if (_jump.ClearsAcrossWindow(f, tan, _f))
                     {
                         clear = true;
                         break;
@@ -123,7 +122,7 @@ namespace Hushlands.Core
                 if (!clear) continue;
 
                 f.start = cursor + lead;
-                double zoneEnd = f.start + Math.Max(f.length, far) + _f.minSafeLandingLength;
+                double zoneEnd = f.start + Math.Max(f.length, far) + _f.minSafeLandingLength + _f.riderFootprintMeters;
                 if (zoneEnd > length - _c.tailOutMeters) break;
                 chunk.AddFeature(f);
                 blocked.Add(new Span(f.start - lead, zoneEnd));

@@ -11,6 +11,7 @@ namespace Hushlands.Tests
             yield return new SpeedSettings();
             yield return new RiderSettings();
             yield return new SurfaceSettings();
+            yield return new TrackSettings();
             yield return new FailureSettings();
             yield return new AssistSettings();
             yield return new DucklingSettings();

@@ -14,6 +14,7 @@ namespace Hushlands.Editor
             set.speed = Make<SpeedConfig>("Gameplay");
             set.rider = Make<RiderConfig>("Gameplay");
             set.surfaces = Make<SurfaceConfig>("Gameplay");
+            set.track = Make<TrackConfig>("Gameplay");
             set.failure = Make<FailureConfig>("Gameplay");
             set.assist = Make<AssistConfig>("Gameplay");
             set.ducklings = Make<DucklingConfig>("Gameplay");

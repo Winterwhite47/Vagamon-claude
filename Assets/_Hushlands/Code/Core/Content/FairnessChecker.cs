@@ -99,8 +99,7 @@ namespace Hushlands.Core
                 string id = z.Chunk.Id;
                 double tan = JumpModel.Tan(z.Chunk.SlopeRadians);
 
-                if (!_jump.ClearsAcrossWindow(z.Feature, tan, _f.takeoffWindowMinSeconds, _f.takeoffWindowMaxSeconds,
-                        _f.obstacleClearanceMeters, _f.landingMarginSeconds, _f.speedSamples))
+                if (!_jump.ClearsAcrossWindow(z.Feature, tan, _f))
                     v.Add(new FairnessViolation(id, z.Body.Start, RuleJumpClearable));
 
                 if (z.Whole.Start < z.Chunk.StartDistance - Epsilon ||

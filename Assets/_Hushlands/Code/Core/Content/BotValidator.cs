@@ -41,45 +41,23 @@ namespace Hushlands.Core
             var slope = new StretchSlope(stretch);
             var rider = new KinematicRider(_rider, _speed, slope, new SurfaceTable(_surfaces));
             var input = new ScriptedInput();
-            List<Span> hazards = new List<Span>();
-            List<ChunkFeature> kinds = new List<ChunkFeature>();
-            foreach (IChunk c in stretch)
-            {
-                foreach (ChunkFeature f in c.Features)
-                {
-                    if (!f.IsRequiredJump) continue;
-                    hazards.Add(new Span(c.StartDistance + f.start, c.StartDistance + f.End));
-                    kinds.Add(f);
-                }
-            }
-            SortTogether(hazards, kinds);
+            var pilot = new BotPilot(stretch, _fair.botTakeoffSeconds);
+            IReadOnlyList<Span> hazards = pilot.Hazards;
+            List<ChunkFeature> kinds = pilot.Kinds;
+            double foot = _fair.riderFootprintMeters;
 
             string failure = null;
             rider.Crashed += cause => failure = "rider crash " + cause;
 
             double maxSteps = Math.Ceiling(slope.Length / _speed.minSpeed / _rider.physicsStep) * 2d;
-            int next = 0;
             int steps = 0;
-            int jumpedFor = -1;
             MinSpeedSeen = float.MaxValue;
             MaxSpeedSeen = 0f;
-            JumpsTaken = 0;
 
             while (failure == null && rider.Position.Distance < slope.Length && steps < maxSteps)
             {
-                double d = rider.Position.Distance;
-                while (next < hazards.Count && d > hazards[next].End) next++;
-
                 bool grounded = rider.State == RiderState.Grounded || rider.State == RiderState.Tucking;
-                input.TapThisStep = false;
-                if (grounded && next < hazards.Count && jumpedFor != next &&
-                    hazards[next].Start - d <= rider.Speed * _fair.botTakeoffSeconds)
-                {
-                    input.TapThisStep = true;
-                    jumpedFor = next;
-                    JumpsTaken++;
-                }
-
+                pilot.Drive(input, rider.Position.Distance, rider.Speed, grounded);
                 rider.FixedStep(input, _rider.physicsStep);
                 steps++;
                 if (rider.Speed < MinSpeedSeen) MinSpeedSeen = rider.Speed;
@@ -87,20 +65,21 @@ namespace Hushlands.Core
 
                 double nd = rider.Position.Distance;
                 bool nowGrounded = rider.State == RiderState.Grounded || rider.State == RiderState.Tucking;
-                for (int i = next; i < hazards.Count && hazards[i].Start <= nd; i++)
+                for (int i = Math.Max(0, pilot.NextIndex - 1); i < hazards.Count && hazards[i].Start - foot <= nd; i++)
                 {
-                    if (!hazards[i].Contains(nd)) continue;
                     if (kinds[i].kind == FeatureKind.Obstacle)
                     {
+                        if (!hazards[i].Expand(foot).Contains(nd)) continue;
                         double above = rider.Position.Height - slope.HeightAt(nd);
                         if (above < kinds[i].height) failure = "hit obstacle at " + Fmt(nd);
                     }
-                    else if (nowGrounded)
+                    else if (nowGrounded && hazards[i].Contains(nd))
                     {
                         failure = "grounded over " + kinds[i].kind + " at " + Fmt(nd);
                     }
                 }
             }
+            JumpsTaken = pilot.JumpsTaken;
 
             if (failure == null && rider.Position.Distance < slope.Length) failure = "timeout";
             bool ok = failure == null;
@@ -108,24 +87,6 @@ namespace Hushlands.Core
                      " jumps=" + JumpsTaken + "/" + hazards.Count + " steps=" + steps +
                      " speed=" + Fmt(MinSpeedSeen) + ".." + Fmt(MaxSpeedSeen) + (ok ? " ok" : " FAIL " + failure);
             return ok;
-        }
-
-        private static void SortTogether(List<Span> spans, List<ChunkFeature> features)
-        {
-            var idx = new List<int>();
-            for (int i = 0; i < spans.Count; i++) idx.Add(i);
-            idx.Sort((a, b) => spans[a].Start.CompareTo(spans[b].Start));
-            var s2 = new List<Span>();
-            var f2 = new List<ChunkFeature>();
-            foreach (int i in idx)
-            {
-                s2.Add(spans[i]);
-                f2.Add(features[i]);
-            }
-            spans.Clear();
-            spans.AddRange(s2);
-            features.Clear();
-            features.AddRange(f2);
         }
 
         private static string Fmt(double x)

@@ -67,8 +67,13 @@ namespace Hushlands.Tests
             r.FixedStep(input, 0.01f);
             input.TapThisStep = false;
             input.IsHeld = true;
-            float holdSeconds = 180f / settings.flipDegreesPerSecond;
-            for (float t = 0; t < holdSeconds; t += 0.01f) r.FixedStep(input, 0.01f);
+            input.HeldSeconds = 0f;
+            float holdSeconds = settings.holdThresholdSeconds + 180f / settings.flipDegreesPerSecond;
+            for (float t = 0; t < holdSeconds; t += 0.01f)
+            {
+                input.HeldSeconds += 0.01f;
+                r.FixedStep(input, 0.01f);
+            }
             input.IsHeld = false;
             for (int i = 0; i < 500 && r.State != RiderState.Crashed && r.State != RiderState.Grounded; i++) r.FixedStep(input, 0.01f);
             Assert.AreEqual(RiderState.Crashed, r.State);

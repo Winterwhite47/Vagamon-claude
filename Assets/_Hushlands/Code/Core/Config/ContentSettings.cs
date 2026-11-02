@@ -18,6 +18,8 @@ namespace Hushlands.Core
         public float takeoffWindowMinSeconds = 0.15f;
         public float takeoffWindowMaxSeconds = 0.35f;
         public float obstacleClearanceMeters = 0.2f;
+        /// <summary>Half-length of the rider body; hazards are widened by this on both sides.</summary>
+        public float riderFootprintMeters = 0.5f;
         /// <summary>Rider must touch down at least this long after passing a gap.</summary>
         public float landingMarginSeconds = 0.12f;
         /// <summary>Camera framing contract: ground visible ahead of the rider (T4 must honour).</summary>
@@ -41,6 +43,7 @@ namespace Hushlands.Core
             SettingsCheck.Ordered(e, o, nameof(takeoffWindowMinSeconds), takeoffWindowMinSeconds,
                 nameof(takeoffWindowMaxSeconds), takeoffWindowMaxSeconds);
             SettingsCheck.NonNegative(e, o, nameof(obstacleClearanceMeters), obstacleClearanceMeters);
+            SettingsCheck.NonNegative(e, o, nameof(riderFootprintMeters), riderFootprintMeters);
             SettingsCheck.NonNegative(e, o, nameof(landingMarginSeconds), landingMarginSeconds);
             SettingsCheck.Positive(e, o, nameof(visibleAheadMeters), visibleAheadMeters);
             SettingsCheck.Positive(e, o, nameof(checkpointLeadSeconds), checkpointLeadSeconds);
