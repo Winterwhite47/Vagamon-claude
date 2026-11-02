@@ -232,3 +232,15 @@ Format: ID · date · question · default used · status.
 ## D-057 · 2026-11-02 · Windmouth Ridge art direction (default)
 - No reference given. Default: calm dawn on a frosted ridge, cooler than Meadow's golden hour, still the canon palette for mist (mist blue) and accents (gold); frost-pale ground and grey-brown rock as neutrals. Procedural placeholder props (boulders, cairns) with shape constants in code until authored art.
 - Status: open (approval gate).
+
+## D-058 · 2026-11-02 · Windmouth gate: provisional approval
+- Owner said "continue" at the Windmouth gate; treated as provisional approval on placeholder art. Render, capture and sign-off remain owed.
+- Status: open.
+
+## D-059 · 2026-11-02 · Pine Hollow art direction and shelters (default)
+- Default: cool late-afternoon pine valley in the canon palette (emerald ground, mist blue fog, gold accents). New content option: canopy Shelter zones that drive the camera's Shelter state. Shelters only draw random numbers in biomes that use them, so earlier biomes' content is unchanged; shelters clamp to the room in each chunk.
+- Status: open (approval gate).
+
+## D-060 · 2026-11-02 · Fix: mirror parser read nested braces
+- The Python mirror stopped a profile at the first "}," inside an array initializer and missed Pine Hollow's shelter settings, so its runs did not match the C#. Parser now closes on the profile's own brace. Found because the shelter count was 0.
+- Status: decided.

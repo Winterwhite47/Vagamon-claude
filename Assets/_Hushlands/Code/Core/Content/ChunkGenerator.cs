@@ -139,6 +139,17 @@ namespace Hushlands.Core
                 chunk.AddFeature(mist);
             }
 
+            // Canopy shelter (camera Shelter framing). No random draw unless the biome uses shelters,
+            // so biomes without them keep identical content.
+            if (k.ShelterChance > 0f && rng.NextDouble() < k.ShelterChance)
+            {
+                double room = length - _c.leadInMeters - _c.tailOutMeters;
+                double sl = Math.Min(rng.Range(k.ShelterMin, k.ShelterMax), room);
+                double ss = rng.Range(_c.leadInMeters, _c.leadInMeters + Math.Max(0d, room - sl));
+                // Same random draws either way; a chunk too short for a shelter simply has none.
+                if (sl > 0d) chunk.AddFeature(ChunkFeature.Make(FeatureKind.Shelter, ss, sl));
+            }
+
             // Pickups on clear ground.
             for (int k = 0; k < _c.pickupsPerChunk; k++)
             {

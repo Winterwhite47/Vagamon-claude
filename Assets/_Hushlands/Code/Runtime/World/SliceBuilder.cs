@@ -97,6 +97,22 @@ namespace Hushlands
             {
                 Material mat = assets.Get(p.Material);
                 float y = (float)p.Y;
+                if (p.Shape == "Pine")
+                {
+                    // Placeholder pine: a wood trunk and three narrowing tiers of needles.
+                    GameObject trunk = Primitive(PrimitiveType.Cylinder, "Trunk", root, assets.Get("Wood"));
+                    trunk.transform.localScale = new Vector3(p.Scale * 0.06f, p.Scale * 0.25f, p.Scale * 0.06f);
+                    trunk.transform.position = new Vector3((float)p.X, y + p.Scale * 0.25f, (float)p.Z);
+                    for (int tier = 0; tier < 3; tier++)
+                    {
+                        float w = p.Scale * (0.42f - 0.11f * tier);
+                        GameObject needles = Primitive(PrimitiveType.Sphere, p.Name, root, mat);
+                        needles.transform.localScale = new Vector3(w, p.Scale * 0.28f, w);
+                        needles.transform.position = new Vector3((float)p.X, y + p.Scale * (0.4f + 0.22f * tier), (float)p.Z);
+                    }
+                    n++;
+                    continue;
+                }
                 for (int k = 0; k < p.Stack; k++)
                 {
                     // Single rocks are flattened boulders; stacks shrink upward into a cairn.

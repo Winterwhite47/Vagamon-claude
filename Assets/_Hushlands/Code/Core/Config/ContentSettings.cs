@@ -72,6 +72,10 @@ namespace Hushlands.Core
         public float mistBankChance;
         /// <summary>Surfaces a chunk's second span may use; empty = any surface.</summary>
         public SurfaceId[] secondarySurfaces;
+        /// <summary>Chance per chunk of a Shelter camera zone (canopy); 0 draws no random numbers.</summary>
+        public float shelterChance;
+        public float shelterMinLength;
+        public float shelterMaxLength;
     }
 
     /// <summary>Resolved generation knobs for one biome.</summary>
@@ -83,9 +87,16 @@ namespace Hushlands.Core
         public readonly float GapWeight;
         public readonly float MistBankChance;
         public readonly SurfaceId[] Secondary;
+        public readonly float ShelterChance;
+        public readonly float ShelterMin;
+        public readonly float ShelterMax;
 
-        public ContentKnobs(float minSlope, float maxSlope, float obstacle, float gap, float mist, SurfaceId[] secondary)
+        public ContentKnobs(float minSlope, float maxSlope, float obstacle, float gap, float mist, SurfaceId[] secondary,
+            float shelterChance = 0f, float shelterMin = 0f, float shelterMax = 0f)
         {
+            ShelterChance = shelterChance;
+            ShelterMin = shelterMin;
+            ShelterMax = shelterMax;
             MinSlope = minSlope;
             MaxSlope = maxSlope;
             ObstacleWeight = obstacle;
@@ -155,6 +166,14 @@ namespace Hushlands.Core
                 obstacleWeight = 0.6f, gapWeight = 0.25f, mistBankChance = 0.75f,
                 secondarySurfaces = new[] { SurfaceId.Stone, SurfaceId.Ice, SurfaceId.Grass },
             },
+            // Pine Hollow: gentler forest valley, fallen logs, a few more gaps, canopy shelters.
+            new BiomeContentProfile
+            {
+                biome = BiomeId.PineHollow, minSlopeDegrees = 6f, maxSlopeDegrees = 12f,
+                obstacleWeight = 0.5f, gapWeight = 0.35f, mistBankChance = 0.6f,
+                secondarySurfaces = new[] { SurfaceId.Grass, SurfaceId.Mud, SurfaceId.Stone },
+                shelterChance = 0.5f, shelterMinLength = 20f, shelterMaxLength = 50f,
+            },
         };
 
         private static readonly SurfaceId[] AnySurface = (SurfaceId[])Enum.GetValues(typeof(SurfaceId));
@@ -167,7 +186,8 @@ namespace Hushlands.Core
                 {
                     if (p.biome != biome) continue;
                     SurfaceId[] sec = p.secondarySurfaces != null && p.secondarySurfaces.Length > 0 ? p.secondarySurfaces : AnySurface;
-                    return new ContentKnobs(p.minSlopeDegrees, p.maxSlopeDegrees, p.obstacleWeight, p.gapWeight, p.mistBankChance, sec);
+                    return new ContentKnobs(p.minSlopeDegrees, p.maxSlopeDegrees, p.obstacleWeight, p.gapWeight, p.mistBankChance, sec,
+                        p.shelterChance, p.shelterMinLength, p.shelterMaxLength);
                 }
             }
             return new ContentKnobs(minSlopeDegrees, maxSlopeDegrees, obstacleWeight, gapWeight, mistBankChance, AnySurface);
@@ -225,6 +245,12 @@ namespace Hushlands.Core
                 SettingsCheck.Range(e, t, nameof(p.obstacleWeight), p.obstacleWeight, 0f, 1f);
                 SettingsCheck.Range(e, t, nameof(p.gapWeight), p.gapWeight, 0f, 1f - p.obstacleWeight);
                 SettingsCheck.Range(e, t, nameof(p.mistBankChance), p.mistBankChance, 0f, 1f);
+                SettingsCheck.Range(e, t, nameof(p.shelterChance), p.shelterChance, 0f, 1f);
+                if (p.shelterChance > 0f)
+                {
+                    SettingsCheck.Positive(e, t, nameof(p.shelterMinLength), p.shelterMinLength);
+                    SettingsCheck.Ordered(e, t, nameof(p.shelterMinLength), p.shelterMinLength, nameof(p.shelterMaxLength), p.shelterMaxLength);
+                }
             }
         }
     }

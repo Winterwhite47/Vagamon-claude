@@ -207,9 +207,11 @@ namespace Hushlands.Core
         public readonly double Y;
         public readonly float Scale;
         public readonly int Stack;
+        public readonly string Shape;
 
-        public PropPlacement(string name, string material, double x, double z, double y, float scale, int stack)
+        public PropPlacement(string name, string material, double x, double z, double y, float scale, int stack, string shape)
         {
+            Shape = shape;
             Name = name;
             Material = material;
             X = x;
@@ -238,7 +240,7 @@ namespace Hushlands.Core
                     double z = rng.Range(p.minDepth, p.maxDepth);
                     float scale = (float)rng.Range(p.minScale, p.maxScale);
                     int stack = rng.RangeInclusive(p.minStack, p.maxStack);
-                    list.Add(new PropPlacement(p.name, p.material, x, z, terrain.Height(x, z), scale, stack));
+                    list.Add(new PropPlacement(p.name, p.material, x, z, terrain.Height(x, z), scale, stack, p.shape));
                 }
             }
             return list;

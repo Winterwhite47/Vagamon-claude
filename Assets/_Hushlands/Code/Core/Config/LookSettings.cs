@@ -48,6 +48,8 @@ namespace Hushlands.Core
         /// <summary>Stacked stones per prop (1 = single rock, more = cairn).</summary>
         public int minStack;
         public int maxStack;
+        /// <summary>Placeholder shape: "Rock" (boulder / cairn stack) or "Pine" (trunk and three tiers).</summary>
+        public string shape;
     }
 
     [Serializable]
@@ -98,7 +100,17 @@ namespace Hushlands.Core
                 fogAlbedo = MistBlue, grass = Emerald, soil = Terracotta, accent = Gold,
                 hillAmplitude = 14f, hillWavelength = 140f, detailAmplitude = 1.6f, detailWavelength = 18f,
             },
-            Placeholder(BiomeId.PineHollow, 30f, "#1F3A24", "#5B4636"),
+            new BiomeLook
+            {
+                // Pine Hollow (T14): late-afternoon light falling through a pine valley; cool green shade, soft mist.
+                biome = BiomeId.PineHollow, tuned = true,
+                sunElevationDegrees = 22f, sunAzimuthDegrees = -15f, sunLux = 28000f, sunKelvin = 4300f,
+                exposureEV = 12.4f,
+                fogMeanFreePath = 200f, fogBaseHeight = -40f, fogMaximumHeight = 50f, fogAnisotropy = 0.8f,
+                fogAlbedo = MistBlue, grass = Emerald, soil = "#5B4636", accent = Gold,
+                hillAmplitude = 22f, hillWavelength = 110f, detailAmplitude = 1.4f, detailWavelength = 12f,
+                windExtraX = 0.4f, windExtraZ = -0.2f,
+            },
             Placeholder(BiomeId.TerraceCountry, 35f, "#3E6B2A", Terracotta),
             Placeholder(BiomeId.MirrorLake, 22f, "#2F5A3A", "#6B5B4B"),
         };
@@ -119,6 +131,7 @@ namespace Hushlands.Core
             new MaterialSpec("Tea", Terracotta, 0.7f, 0f),
             new MaterialSpec("Bell", "#B8B2A3", 0.85f, 1f),
             new MaterialSpec("Duckling", "#E9C46A", 0.35f, 0f),
+            new MaterialSpec("Pine", "#14331C", 0.2f, 0f),
         };
 
         public PropScatter[] scatters =
@@ -126,12 +139,22 @@ namespace Hushlands.Core
             new PropScatter
             {
                 biome = BiomeId.WindmouthRidge, name = "Rock", material = "Stone", density = 0.06f,
-                minDepth = 14f, maxDepth = 200f, minScale = 0.8f, maxScale = 3.2f, minStack = 1, maxStack = 1,
+                minDepth = 14f, maxDepth = 200f, minScale = 0.8f, maxScale = 3.2f, minStack = 1, maxStack = 1, shape = "Rock",
             },
             new PropScatter
             {
                 biome = BiomeId.WindmouthRidge, name = "Cairn", material = "Stone", density = 0.008f,
-                minDepth = 12f, maxDepth = 30f, minScale = 0.35f, maxScale = 0.6f, minStack = 3, maxStack = 5,
+                minDepth = 12f, maxDepth = 30f, minScale = 0.35f, maxScale = 0.6f, minStack = 3, maxStack = 5, shape = "Rock",
+            },
+            new PropScatter
+            {
+                biome = BiomeId.PineHollow, name = "Pine", material = "Pine", density = 0.25f,
+                minDepth = 12f, maxDepth = 200f, minScale = 6f, maxScale = 14f, minStack = 1, maxStack = 1, shape = "Pine",
+            },
+            new PropScatter
+            {
+                biome = BiomeId.PineHollow, name = "Log", material = "Wood", density = 0.02f,
+                minDepth = 12f, maxDepth = 40f, minScale = 0.4f, maxScale = 0.8f, minStack = 1, maxStack = 1, shape = "Rock",
             },
         };
 
@@ -232,6 +255,7 @@ namespace Hushlands.Core
                 SettingsCheck.Positive(e, t, nameof(p.minScale), p.minScale);
                 SettingsCheck.Ordered(e, t, nameof(p.minScale), p.minScale, nameof(p.maxScale), p.maxScale);
                 if (p.minStack < 1 || p.maxStack < p.minStack) e.Add(t + ": bad stack range");
+                if (p.shape != "Rock" && p.shape != "Pine") e.Add(t + ": unknown shape '" + p.shape + "'");
             }
             SettingsCheck.Positive(e, o, nameof(terrainCellMeters), terrainCellMeters);
             SettingsCheck.Positive(e, o, nameof(terrainFrontDepth), terrainFrontDepth);

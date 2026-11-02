@@ -61,6 +61,13 @@ crevasses (0.25), mist banks in 75% of chunks, second surfaces stone / ice / gra
 boulders and small cairns only behind the track, outside the corridor. Ridge wind adds to the scarf wind.
 Mist rule holds even in a squall (transmittance 0.62 ≥ 0.60). Own slice scene `Slice_WindmouthRidge`.
 
+## Pine Hollow (T14, biome 2)
+Late-afternoon light through a pine valley: sun 22° from −15°, 4300 K, 28 klx, EV 12.4; soft forward-scattering mist
+(200 m, to 50 m height, anisotropy 0.8); emerald ground, brown earth, gold accents; rolling 22 m hills. Content: slopes
+6–12°, fallen-log obstacles (0.5), a few more gaps (0.35), mist in 60% of chunks, grass / mud / stone patches on needles,
+canopy Shelter zones in half the chunks (camera Shelter framing, still ≥ 40 m reveal). Backdrop: pines (trunk and three
+tiers) and logs, behind the track only. Mist rule 0.61 in a squall. Slice `Slice_PineHollow`.
+
 ## UI
 Motion graphics, smooth video-like transitions over the live 3D world. Near-zero HUD.
 Continuous camera and mist transitions; no loading cuts. Reduced-motion option.

@@ -64,11 +64,13 @@ def load():
     s["vehicles"] = {v[0]: {"friction": float(v[1]), "drag": float(v[2]), "jump": float(v[3])} for v in veh}
     # Biome content profiles (ContentSettings.biomeProfiles).
     s["profiles"] = {}
-    for m in re.finditer(r"new BiomeContentProfile\s*\{(.*?)\},\s*\n", src, re.S):
+    for m in re.finditer(r"new BiomeContentProfile\s*\{(.*?)\n\s{12}\},", src, re.S):
         body = m.group(1)
         b = re.search(r"biome = BiomeId\.(\w+)", body).group(1)
         num = {k: float(v) for k, v in re.findall(r"(\w+) = ([\d.]+)f", body)}
-        sec = re.findall(r"SurfaceId\.(\w+)", body[body.index("secondarySurfaces"):]) if "secondarySurfaces" in body else []
+        num.setdefault("shelterChance", 0.0)
+        sec_m = re.search(r"secondarySurfaces = new\[\] \{([^}]*)\}", body)
+        sec = re.findall(r"SurfaceId\.(\w+)", sec_m.group(1)) if sec_m else []
         s["profiles"][b] = dict(num, secondary=sec or list(SURFACES))
     # Content is generated and checked for the weakest jumper (JumpModel.ForAllVehicles).
     s["jumpScale"] = min(v["jump"] for v in s["vehicles"].values())
@@ -220,7 +222,8 @@ def build_chunk(s, rng, biome, seed, idx, nest, jump):
     diff = rng.range_incl(C["minDifficulty"], C["maxDifficulty"])
     K = s["profiles"].get(biome, {"minSlopeDegrees": C["minSlopeDegrees"], "maxSlopeDegrees": C["maxSlopeDegrees"],
                                   "obstacleWeight": C["obstacleWeight"], "gapWeight": C["gapWeight"],
-                                  "mistBankChance": C["mistBankChance"], "secondary": list(SURFACES)})
+                                  "mistBankChance": C["mistBankChance"], "secondary": list(SURFACES),
+                                  "shelterChance": 0.0})
     slope_deg = rng.range(K["minSlopeDegrees"], K["maxSlopeDegrees"])
     c = Chunk(f"{biome}_{seed}_{idx}", biome, diff, length, f32(slope_deg * math.pi / 180.0))
     tan = math.tan(c.slope)
@@ -282,6 +285,13 @@ def build_chunk(s, rng, biome, seed, idx, nest, jump):
         m = Feature("MistBank", ms, ml)
         m.density = f32(rng.range(0.0, C["mistMaxDensity"]))
         c.features.append(m)
+
+    if K["shelterChance"] > 0 and rng.next_double() < K["shelterChance"]:
+        room = length - C["leadInMeters"] - C["tailOutMeters"]
+        sl = min(rng.range(K["shelterMinLength"], K["shelterMaxLength"]), room)
+        ss = rng.range(C["leadInMeters"], C["leadInMeters"] + max(0.0, room - sl))
+        if sl > 0:
+            c.features.append(Feature("Shelter", ss, sl))
 
     def place(spacing):
         for _ in range(C["placementTries"]):
