@@ -3,9 +3,15 @@ using System.Collections.Generic;
 
 namespace Hushlands.Core
 {
+    /// <summary>
+    /// Score: distance (new ground only, so retries cannot farm it), flips, coins, rescues, all scaled by the active
+    /// multiplier (tea flask). Fractional distance points carry over between steps.
+    /// </summary>
     public sealed class ScoreService : IScoreService
     {
         private readonly ScoreSettings _s;
+        private double _carry;
+        private double _best = double.NegativeInfinity;
 
         public ScoreService(ScoreSettings settings)
         {
@@ -14,33 +20,63 @@ namespace Hushlands.Core
 
         public long Score { get; private set; }
         public int SpiceCoins { get; private set; }
+        public float Multiplier { get; set; } = 1f;
+        public int Flips { get; private set; }
+        public int Rescues { get; private set; }
+        public event Action<long> Changed;
 
         public void Add(long points)
         {
             if (points < 0) throw new ArgumentOutOfRangeException(nameof(points));
-            Score += points;
+            Grant(points * (double)Multiplier);
         }
 
         public void AddCoins(int coins)
         {
             if (coins < 0) throw new ArgumentOutOfRangeException(nameof(coins));
             SpiceCoins += coins;
-            Score += (long)coins * _s.pointsPerCoin;
+            Grant((double)coins * _s.pointsPerCoin * Multiplier);
         }
 
         public void AddDistance(double meters)
         {
-            if (meters > 0d) Score += (long)Math.Floor(meters * _s.pointsPerMeter);
+            if (meters > 0d) Grant(meters * _s.pointsPerMeter * Multiplier);
+        }
+
+        /// <summary>Scores only ground beyond the furthest point reached this run.</summary>
+        public void TrackDistance(double x)
+        {
+            if (double.IsNegativeInfinity(_best))
+            {
+                _best = x;
+                return;
+            }
+            if (x <= _best) return;
+            AddDistance(x - _best);
+            _best = x;
         }
 
         public void AddFlips(int flips)
         {
-            if (flips > 0) Score += (long)flips * _s.pointsPerFlip;
+            if (flips <= 0) return;
+            Flips += flips;
+            Grant((double)flips * _s.pointsPerFlip * Multiplier);
         }
 
         public void AddRescue()
         {
-            Score += _s.pointsPerDucklingGroup;
+            Rescues++;
+            Grant(_s.pointsPerDucklingGroup * (double)Multiplier);
+        }
+
+        private void Grant(double points)
+        {
+            _carry += points;
+            long whole = (long)Math.Floor(_carry);
+            if (whole <= 0) return;
+            _carry -= whole;
+            Score += whole;
+            Changed?.Invoke(Score);
         }
     }
 

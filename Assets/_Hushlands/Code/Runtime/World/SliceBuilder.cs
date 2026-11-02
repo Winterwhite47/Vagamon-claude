@@ -92,13 +92,6 @@ namespace Hushlands
                         nest.transform.localScale = new Vector3(t.nestDiameter, t.nestHeight, t.nestDiameter);
                         r.Nests++;
                     }
-                    else if (f.kind == FeatureKind.Pickup)
-                    {
-                        GameObject p = Primitive(PrimitiveType.Sphere, "Pickup", world, assets.Get("Pickup"));
-                        p.transform.position = new Vector3((float)x, y + t.pickupHover, 0f);
-                        p.transform.localScale = Vector3.one * t.pickupDiameter;
-                        r.Pickups++;
-                    }
                 }
             }
         }
@@ -203,7 +196,7 @@ namespace Hushlands
             go.AddComponent<SledFlexDriver>().Initialize(cloth, r.Rider, sled);
         }
 
-        private static GameObject Primitive(PrimitiveType type, string name, Transform parent, Material mat)
+        internal static GameObject Primitive(PrimitiveType type, string name, Transform parent, Material mat)
         {
             GameObject g = GameObject.CreatePrimitive(type);
             g.name = name;

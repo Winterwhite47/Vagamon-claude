@@ -22,6 +22,8 @@ namespace Hushlands
         public SliceRefs Refs { get; private set; }
         public bool Autopilot { get; private set; }
         public RetryOverlay Overlay { get; private set; }
+        public PickupPresenter Pickups { get; private set; }
+        public ScoreHud Hud { get; private set; }
 
         public void Assign(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge)
         {
@@ -77,7 +79,18 @@ namespace Hushlands
             Overlay = overlayGo.AddComponent<RetryOverlay>();
             Overlay.Initialize(r.Run.Flow, c.uiMotion.Settings, c.failure.Settings, c.look.Settings.Get(biome).fogAlbedo, reducedMotion);
 
-            if (mistLowPass != null) mistLowPass.Initialize(r.Mix, r.Mist, r.Rider.transform);
+            var pickupsGo = new GameObject("Pickups");
+            pickupsGo.transform.SetParent(transform, false);
+            Pickups = pickupsGo.AddComponent<PickupPresenter>();
+            Pickups.Initialize(r.Run.Session.Pickups, c.pickups.Settings, assets, c.track.Settings.pickupDiameter);
+            r.Pickups = Pickups.ViewCount;
+
+            var hudGo = new GameObject("ScoreHud");
+            hudGo.transform.SetParent(transform, false);
+            Hud = hudGo.AddComponent<ScoreHud>();
+            Hud.Initialize(r.Run.Session.Score, c.uiMotion.Settings, reducedMotion);
+
+            if (mistLowPass != null) mistLowPass.Initialize(r.Mix, r.Mist, r.Rider.transform, r.Run.Session.Pickups);
             if (mixBridge != null) mixBridge.Initialize(r.Mix, null);
         }
     }

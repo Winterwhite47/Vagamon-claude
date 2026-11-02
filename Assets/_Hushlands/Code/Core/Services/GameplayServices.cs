@@ -16,10 +16,13 @@ namespace Hushlands.Core
         public float MaxSpeed => _s.maxSpeed;
         /// <summary>Assist scale on the cruise target (1 = none). Never pushes the target below minSpeed.</summary>
         public float TargetScale { get; set; } = 1f;
+        /// <summary>Pickup boost added after the scale (wind feather). Target stays within [minSpeed, maxSpeed].</summary>
+        public float TargetBonus { get; set; }
 
         public float TargetSpeed(double runSeconds)
         {
-            float t = _s.TargetAt(runSeconds) * TargetScale;
+            float t = _s.TargetAt(runSeconds) * TargetScale + TargetBonus;
+            if (t > _s.maxSpeed) t = _s.maxSpeed;
             return t < _s.minSpeed ? _s.minSpeed : t;
         }
 
@@ -117,7 +120,7 @@ namespace Hushlands.Core
     /// Kinematic reference rider on the 2.5D plane. Stub for T1; the PhysX rider (T3) replaces it in play,
     /// and the bot validator (T2) keeps using it as a deterministic model.
     /// </summary>
-    public sealed class KinematicRider : IRider, IAssistable
+    public sealed class KinematicRider : IRider, IAssistable, IBoostable
     {
         private readonly RiderSettings _rider;
         private readonly SpeedSettings _speedSettings;
@@ -160,6 +163,11 @@ namespace Hushlands.Core
         public void SetSpeedScale(float scale)
         {
             _speed.TargetScale = scale;
+        }
+
+        public void SetBoost(float metersPerSecond)
+        {
+            _speed.TargetBonus = metersPerSecond;
         }
 
         /// <summary>External crash (obstacle contact or landslide), used by collision checks and tests.</summary>

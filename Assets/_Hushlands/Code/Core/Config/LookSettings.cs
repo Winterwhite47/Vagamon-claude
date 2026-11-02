@@ -83,6 +83,10 @@ namespace Hushlands.Core
             new MaterialSpec("Nest", "#A08250", 0.2f, 0f),
             new MaterialSpec("Pickup", Gold, 0.8f, 1f),
             new MaterialSpec("Skin", "#C99A7A", 0.45f, 0f),
+            new MaterialSpec("Lantern", "#F2C46D", 0.6f, 0f),
+            new MaterialSpec("Feather", "#E8EEF2", 0.3f, 0f),
+            new MaterialSpec("Tea", Terracotta, 0.7f, 0f),
+            new MaterialSpec("Bell", "#B8B2A3", 0.85f, 1f),
         };
 
         // --- Terrain mesh ---

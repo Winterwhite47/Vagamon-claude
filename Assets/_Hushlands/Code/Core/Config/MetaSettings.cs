@@ -31,6 +31,22 @@ namespace Hushlands.Core
             new PickupEntry(PickupId.GoldenMistbell, 0f, 50),
         };
         public float magnetRadius = 6f;
+        public float magnetPullSpeed = 14f;
+        /// <summary>Rider touches a pickup within this distance of its centre.</summary>
+        public float collectRadius = 0.9f;
+        /// <summary>Wind feather: added to the cruise target speed (still capped at maxSpeed, so fairness holds).</summary>
+        public float windSpeedBonus = 2.5f;
+        /// <summary>Tea flask: score multiplier while active.</summary>
+        public float teaScoreMultiplier = 2f;
+        /// <summary>Mist lantern: mist density scale around the rider while active.</summary>
+        public float lanternMistScale = 0.3f;
+        /// <summary>Golden mistbell: score bonus on top of its coin value.</summary>
+        public int mistbellScoreBonus = 500;
+        /// <summary>Collected pickups shrink away over this long.</summary>
+        public float collectAnimSeconds = 0.25f;
+        /// <summary>Placeholder visual size multipliers (timed pickups, golden mistbell) relative to a coin.</summary>
+        public float timedVisualScale = 1.3f;
+        public float mistbellVisualScale = 1.8f;
 
         public PickupEntry Get(PickupId id)
         {
@@ -53,6 +69,21 @@ namespace Hushlands.Core
             }
             SettingsCheck.CoversEnum(e, o, keys);
             SettingsCheck.Positive(e, o, nameof(magnetRadius), magnetRadius);
+            SettingsCheck.Positive(e, o, nameof(magnetPullSpeed), magnetPullSpeed);
+            SettingsCheck.Positive(e, o, nameof(collectRadius), collectRadius);
+            SettingsCheck.Ordered(e, o, nameof(collectRadius), collectRadius, nameof(magnetRadius), magnetRadius);
+            SettingsCheck.NonNegative(e, o, nameof(windSpeedBonus), windSpeedBonus);
+            if (teaScoreMultiplier < 1f) e.Add(o + ".teaScoreMultiplier must be >= 1");
+            SettingsCheck.Range(e, o, nameof(lanternMistScale), lanternMistScale, 0f, 1f);
+            SettingsCheck.NonNegative(e, o, nameof(mistbellScoreBonus), mistbellScoreBonus);
+            SettingsCheck.Positive(e, o, nameof(collectAnimSeconds), collectAnimSeconds);
+            SettingsCheck.Positive(e, o, nameof(timedVisualScale), timedVisualScale);
+            SettingsCheck.Positive(e, o, nameof(mistbellVisualScale), mistbellVisualScale);
+            foreach (PickupEntry p in entries)
+            {
+                bool timed = p.pickup != PickupId.SpiceCoin && p.pickup != PickupId.GoldenMistbell;
+                if (timed && !(p.durationSeconds > 0f)) e.Add(o + ": " + p.pickup + " needs a duration");
+            }
         }
     }
 

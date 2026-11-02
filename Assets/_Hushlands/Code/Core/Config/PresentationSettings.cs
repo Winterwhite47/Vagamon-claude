@@ -224,6 +224,8 @@ namespace Hushlands.Core
         public float reducedMotionTransitionSeconds = 0.25f;
         public float mistCrossfadeSeconds = 1.4f;
         public bool reducedMotionDefault = false;
+        /// <summary>Near-zero HUD: score shows on change, then fades out after this long.</summary>
+        public float hudIdleSeconds = 2.5f;
 
         public float TransitionSeconds(bool reducedMotion)
         {
@@ -238,6 +240,7 @@ namespace Hushlands.Core
             SettingsCheck.Ordered(e, o, nameof(reducedMotionTransitionSeconds), reducedMotionTransitionSeconds,
                 nameof(screenTransitionSeconds), screenTransitionSeconds);
             SettingsCheck.Positive(e, o, nameof(mistCrossfadeSeconds), mistCrossfadeSeconds);
+            SettingsCheck.Positive(e, o, nameof(hudIdleSeconds), hudIdleSeconds);
         }
     }
 }

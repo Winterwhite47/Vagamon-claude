@@ -148,3 +148,15 @@ Format: ID · date · question · default used · status.
 ## D-036 · 2026-11-02 · Mist visual mapping
 - Local mist mean free path = 45 m / density, so a bank at the fairness threshold (0.35 x 0.85) stays see-through; checked by `MistVisibility` in config validation.
 - Status: decided.
+
+## D-037 · 2026-11-02 · T7 gate: provisional approval
+- Owner said "continue to next task" after the T7 gate report. Treated as provisional approval of the procedural placeholder slice. The 4K capture, Unity run and visual sign-off remain owed and are required before T14.
+- Status: open.
+
+## D-038 · 2026-11-02 · Pickup effects (bible lists names only)
+- Defaults: lantern thins mist, feather boosts cruise speed (capped at 18 m/s), tea doubles score, magnet pulls coins, golden mistbell is a big coin bonus. All values in `PickupSettings`.
+- Status: open (design review).
+
+## D-039 · 2026-11-02 · No pickup respawn on retry
+- Collected pickups stay collected and distance scores only new ground, so crashing cannot farm score. Timed effects end on a crash.
+- Status: decided.

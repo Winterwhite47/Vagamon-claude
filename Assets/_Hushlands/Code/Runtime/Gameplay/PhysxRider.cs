@@ -13,7 +13,7 @@ namespace Hushlands
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     [DisallowMultipleComponent]
-    public sealed class PhysxRider : MonoBehaviour, IRider, IAssistable
+    public sealed class PhysxRider : MonoBehaviour, IRider, IAssistable, IBoostable
     {
         [SerializeField] private bool autoStep = true;
 
@@ -95,6 +95,11 @@ namespace Hushlands
         public void SetSpeedScale(float scale)
         {
             if (_speed != null) _speed.TargetScale = scale;
+        }
+
+        public void SetBoost(float metersPerSecond)
+        {
+            if (_speed != null) _speed.TargetBonus = metersPerSecond;
         }
 
         /// <summary>Extra landing tolerance granted by assists (T5).</summary>

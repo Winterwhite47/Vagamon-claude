@@ -12,19 +12,25 @@ namespace Hushlands
         private MixDirector _mix;
         private MistField _mist;
         private Transform _rider;
+        private PickupSystem _pickups;
 
-        public void Initialize(MixDirector mix, MistField mist, Transform rider)
+        /// <summary>Density the rider is in right now (lantern thins it).</summary>
+        public float CurrentDensity { get; private set; }
+
+        public void Initialize(MixDirector mix, MistField mist, Transform rider, PickupSystem pickups)
         {
             _filter = GetComponent<AudioLowPassFilter>();
             _mix = mix;
             _mist = mist;
             _rider = rider;
+            _pickups = pickups;
         }
 
         private void LateUpdate()
         {
             if (_mix == null || _mist == null || _rider == null) return;
-            _mix.SetMistDensity(_mist.DensityAt(_rider.position.x));
+            CurrentDensity = _mist.DensityAt(_rider.position.x) * (_pickups != null ? _pickups.MistScale : 1f);
+            _mix.SetMistDensity(CurrentDensity);
             _filter.cutoffFrequency = _mix.LowPassCutoffHz;
         }
     }

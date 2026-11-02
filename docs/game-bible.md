@@ -78,6 +78,19 @@ Alternative: Unity Cloth strip (same length, root pinned). `ScarfBenchmark` meas
 the cheaper per-scarf cost, ties (within 10%) to Verlet, flags rework if both exceed 0.05 ms.
 Sled flex: damped spring kicked by landing speed (≤ 6°), settles in about 0.5 s.
 
+## Pickups and scoring (T8)
+| Pickup | Effect (config `PickupSettings`) |
+|---|---|
+| Spice coin | +1 coin (10 pts) |
+| Mist lantern | 8 s: mist around the rider × 0.3 (visual audio low-pass follows) |
+| Wind feather | 5 s: cruise target +2.5 m/s (never above 18 m/s, so fairness holds); camera Boost |
+| Tea flask | 6 s: score × 2 |
+| Magnet bell | 10 s: coins within 6 m fly to the rider |
+| Golden mistbell | rare: +50 coins and +500 pts |
+Touch radius 0.9 m around the rider's body. Same pickup again refreshes its timer. A crash ends timed effects;
+collected pickups stay collected after retry. Score: 1 pt per metre of new ground (retries can't farm it),
+100 per flip, 10 per coin, 250 per duckling group; all × the tea multiplier. HUD shows score on change, fades after 2.5 s.
+
 ## Duckling safety (absolute)
 - Never shown injured, drowning or falling.
 - Nest cover closes on crash.

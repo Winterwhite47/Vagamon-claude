@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Hushlands
 {
     /// <summary>
-    /// Scene glue for a run: rider physics step, then flow (checkpoints, failure hold, retry, assists).
+    /// Scene glue for a run: flow (checkpoints, failure hold, retry, assists), pickups and score.
     /// The camera ticks itself in LateUpdate. UI listens to Flow.MessageShown / PhaseChanged (T13).
     /// </summary>
     [DefaultExecutionOrder(-50)]
@@ -13,9 +13,10 @@ namespace Hushlands
     {
         private PhysxRider _rider;
         private IInputSource _input;
-        private RunFlow _flow;
+        private RunSession _session;
 
-        public RunFlow Flow => _flow;
+        public RunSession Session => _session;
+        public RunFlow Flow => _session?.Flow;
         public DucklingNestService Ducklings { get; private set; }
 
         public void Initialize(HushConfigSet config, PhysxRider rider, IInputSource input, IReadOnlyList<IChunk> stretch,
@@ -24,15 +25,17 @@ namespace Hushlands
             _rider = rider;
             _input = input;
             Ducklings = new DucklingNestService();
-            _flow = new RunFlow(config.failure.Settings, config.assist.Settings, config.messages.Settings, seed,
-                rider, rider, new SpeedModel(config.speed.Settings), stretch, slope, Ducklings,
-                camera != null ? camera.Core : null, signals);
+            TrackSettings t = config.track.Settings;
+            float bodyOffset = config.rider.Settings.colliderRadius + t.riderBodyHeight * 0.5f;
+            _session = RunSession.Create(config.failure.Settings, config.assist.Settings, config.messages.Settings,
+                config.pickups.Settings, config.score.Settings, t.pickupHover, bodyOffset, seed, rider, rider, rider,
+                new SpeedModel(config.speed.Settings), stretch, slope, Ducklings, camera != null ? camera.Core : null, signals);
         }
 
         private void FixedUpdate()
         {
-            if (_flow == null) return;
-            _flow.Tick(_input, Time.fixedDeltaTime);
+            if (_session == null) return;
+            _session.Tick(_input, Time.fixedDeltaTime);
         }
     }
 }

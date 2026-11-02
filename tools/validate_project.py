@@ -171,6 +171,14 @@ for token in ["fogAlbedo = MistBlue", "grass = Emerald", "soil = Terracotta", "a
     check(token in meadow, f"Meadow Sea look missing {token}")
 check("MistVisibility.Check" in (CODE / "Runtime/Config/HushConfigSet.cs").read_text(), "mist visibility not validated")
 
+# 18. T8: pickup system, session, presenter; every PickupId has an effect path; boost capped by speed model.
+for f in ["Core/Meta/PickupSystem.cs", "Core/Meta/RunSession.cs", "Runtime/World/PickupPresenter.cs", "Runtime/World/ScoreHud.cs"]:
+    check((CODE / f).is_file(), f"missing {f}")
+ps_src = (CODE / "Core/Meta/PickupSystem.cs").read_text()
+for name in ["SpiceCoin", "GoldenMistbell", "WindFeather", "MagnetBell", "MistLantern", "TeaFlask"]:
+    check(f"PickupId.{name}" in ps_src, f"PickupSystem does not handle {name}")
+check("if (t > _s.maxSpeed) t = _s.maxSpeed;" in (CODE / "Core/Services/GameplayServices.cs").read_text(), "boost must be capped at maxSpeed")
+
 for e in errors:
     print("FAIL:", e)
 print(f"validate_project: {checks - len(errors)}/{checks} checks passed, {len(errors)} failed")
