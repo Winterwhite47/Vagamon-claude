@@ -193,6 +193,14 @@ namespace Hushlands.Core
                 secondarySurfaces = new[] { SurfaceId.Grass, SurfaceId.Mud, SurfaceId.Boardwalk },
                 vistaChance = 0.4f, vistaMinLength = 25f, vistaMaxLength = 60f,
             },
+            // Mirror Lake: gentle lakeshore, boardwalk stretches, lake mist, wide lake vistas.
+            new BiomeContentProfile
+            {
+                biome = BiomeId.MirrorLake, minSlopeDegrees = 4f, maxSlopeDegrees = 9f,
+                obstacleWeight = 0.45f, gapWeight = 0.35f, mistBankChance = 0.7f,
+                secondarySurfaces = new[] { SurfaceId.Grass, SurfaceId.Stone, SurfaceId.Boardwalk },
+                vistaChance = 0.5f, vistaMinLength = 30f, vistaMaxLength = 70f,
+            },
         };
 
         private static readonly SurfaceId[] AnySurface = (SurfaceId[])Enum.GetValues(typeof(SurfaceId));

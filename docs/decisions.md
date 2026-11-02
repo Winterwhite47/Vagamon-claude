@@ -252,3 +252,11 @@ Format: ID · date · question · default used · status.
 ## D-062 · 2026-11-02 · Terrace Country art direction, vistas and terraces (default)
 - Default: soft morning over tea terraces, canon terracotta earth and mist blue. Vista zones use the same zero-draw rule as shelters; terraces quantise only the backdrop hills (never the track corridor) and only for biomes with a terrace step, so other biomes' terrain is unchanged. Tea and terraces are generic agricultural forms, not any specific place or game.
 - Status: open (approval gate).
+
+## D-063 · 2026-11-02 · Terrace Country gate: provisional approval
+- Owner said "continue" at the Terrace Country gate; treated as provisional approval on placeholder art. Render, capture and sign-off remain owed.
+- Status: open.
+
+## D-064 · 2026-11-02 · Mirror Lake water and duckling safety (default)
+- Water is backdrop only (stepped still pools per chunk, below the track), so the rider never meets water and ducklings are never near it: nests ≥ 10 m from the lake band by config check. A real reflective water shader (planar/SSR) is an authored-art item; the placeholder is a smooth mist-blue HDRP Lit plane.
+- Status: open (approval gate).

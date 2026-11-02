@@ -76,6 +76,16 @@ chunks, grass / mud / boardwalk patches on terrace soil, open Vista zones in 40%
 reveal). Backdrop: tea-bush rows and wooden posts, behind the track only. Mist rule 0.62 in a squall.
 Slice `Slice_TerraceCountry`.
 
+## Mirror Lake (T14, biome 4)
+Still evening by a lake that mirrors the last warm light: sun 6° from +40°, 3300 K, 18 klx, EV 11.8; lake mist low over
+the water (260 m, to 40 m); dark green shore, grey-brown earth, gold accents. Content: gentle 4–9° shore slopes,
+boardwalk / stone / grass patches, mist in 70% of chunks, wide lake Vista zones in half the chunks. Water: a still
+backdrop lake band 20–140 m behind the track, one plane per chunk 2.5 m below that chunk's lowest track point, lake bed
+under the surface; never in the corridor, never in front. Duckling safety near water (absolute): nests sit beside the
+track ≥ 10 m from the lake band (validated in config), ducklings live only in nests and the covered basket, no
+physics, so none is ever near or in the water. Reeds and shore stones between track and lake. Mist rule 0.64 in a
+squall. Slice `Slice_MirrorLake`. All five v1 biomes are now tuned.
+
 ## UI
 Motion graphics, smooth video-like transitions over the live 3D world. Near-zero HUD.
 Continuous camera and mist transitions; no loading cuts. Reduced-motion option.

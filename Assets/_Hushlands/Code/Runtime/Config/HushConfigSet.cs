@@ -98,6 +98,15 @@ namespace Hushlands
                 if (revealSeconds < fairness.Settings.obstacleRevealSeconds + assist.Settings.extraRevealSeconds)
                     errors.Add("assist.speedScale too high to give extraRevealSeconds within visibleAheadMeters");
             }
+            // Duckling safety near water: every nest stays well clear of any lake band.
+            if (look != null && track != null)
+            {
+                foreach (Hushlands.Core.BiomeLook b in look.Settings.biomes)
+                {
+                    if (b.waterMaxDepth > 0f && b.waterMinDepth - track.Settings.propSideOffset < look.Settings.nestWaterSpacing)
+                        errors.Add("look." + b.biome + ": water too close to duckling nests");
+                }
+            }
             if (look != null && camera != null && fairness != null)
                 errors.AddRange(Hushlands.Core.MistVisibility.Check(look.Settings, camera.Settings, fairness.Settings,
                     hazards != null ? hazards.Settings.squallFogScale : 1f));

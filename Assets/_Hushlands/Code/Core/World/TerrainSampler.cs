@@ -16,6 +16,7 @@ namespace Hushlands.Core
         private readonly BiomeLook _look;
         private readonly List<Span> _gaps = new List<Span>();
         private readonly int _seed;
+        private readonly IReadOnlyList<IChunk> _stretch;
 
         public TerrainSampler(ISlopeSpline slope, IReadOnlyList<IChunk> stretch, LookSettings settings, BiomeLook look, int seed)
         {
@@ -23,6 +24,7 @@ namespace Hushlands.Core
             _s = settings ?? throw new ArgumentNullException(nameof(settings));
             _look = look;
             _seed = seed;
+            _stretch = stretch;
             if (stretch == null) return;
             foreach (IChunk c in stretch)
             {
@@ -48,7 +50,38 @@ namespace Hushlands.Core
             return false;
         }
 
+        public bool HasWater => _look.waterMaxDepth > 0f;
+
+        /// <summary>Water surface for the chunk containing x: below that chunk's lowest track point by waterDrop.</summary>
+        public double WaterLevel(double x)
+        {
+            if (_stretch == null || _stretch.Count == 0) return Track(x) - _look.waterDrop;
+            IChunk c = _stretch[_stretch.Count - 1];
+            foreach (IChunk ch in _stretch)
+            {
+                if (x < ch.StartDistance + ch.Length)
+                {
+                    c = ch;
+                    break;
+                }
+            }
+            return _slope.HeightAt(c.StartDistance + c.Length) - _look.waterDrop;
+        }
+
+        public bool InWater(double z)
+        {
+            return HasWater && z >= _look.waterMinDepth && z <= _look.waterMaxDepth;
+        }
+
         public double Height(double x, double z)
+        {
+            double h = DryHeight(x, z);
+            // Lake band behind the track: ground drops below the water surface (never in the corridor or in front).
+            if (InWater(z)) h = Math.Min(h, WaterLevel(x) - _look.waterBed);
+            return h;
+        }
+
+        private double DryHeight(double x, double z)
         {
             double track = Track(x);
             double az = Math.Abs(z);

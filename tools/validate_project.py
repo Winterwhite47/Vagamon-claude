@@ -238,7 +238,8 @@ check("Contrast.Ratio" in (CODE / "Core/Config/UiSettings.cs").read_text(), "UI 
 # 25. T14: tuned biomes each have a slice scene path, a fair content log, and scatter that respects the corridor.
 look_src = (CODE / "Core/Config/LookSettings.cs").read_text()
 tuned = re.findall(r"biome = BiomeId\.(\w+), tuned = true", look_src)
-check({"MeadowSea", "WindmouthRidge", "PineHollow", "TerraceCountry"} <= set(tuned), f"tuned biomes: {tuned}")
+check({"MeadowSea", "WindmouthRidge", "PineHollow", "TerraceCountry", "MirrorLake"} <= set(tuned), f"tuned biomes: {tuned}")
+check("water too close to duckling nests" in (CODE / "Runtime/Config/HushConfigSet.cs").read_text(), "nest-water spacing must be validated")
 for b in tuned:
     if b != "MeadowSea":
         names = {"WindmouthRidge": "windmouth", "PineHollow": "pinehollow", "TerraceCountry": "terracecountry", "MirrorLake": "mirrorlake"}

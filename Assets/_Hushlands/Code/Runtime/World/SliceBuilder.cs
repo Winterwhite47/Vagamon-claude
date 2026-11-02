@@ -28,6 +28,7 @@ namespace Hushlands
         public Volume Volume;
         public int TerrainTiles;
         public int Props;
+        public int WaterPlanes;
         public BiomeLook Look;
         public int MistVolumes;
         public int Obstacles;
@@ -66,6 +67,7 @@ namespace Hushlands
             AddObstacleVisuals(r, assets);
             r.Look = look;
             r.Props = AddScatter(r, ls, biome, length, seed, assets, world);
+            r.WaterPlanes = AddWater(r, look, assets, world);
             r.Mist = new MistField(r.Stretch, c.biomes.Settings.Get(biome).baseMistDensity);
             r.MistVolumes = AddMistVolumes(r, ls, look, world);
             AddLighting(r, look, world);
@@ -85,6 +87,31 @@ namespace Hushlands
                 v.transform.localScale = box.size;
                 r.Obstacles++;
             }
+        }
+
+        /// <summary>One still water plane per chunk in the backdrop lake band, below that chunk's lowest track point.</summary>
+        private static int AddWater(SliceRefs r, BiomeLook look, SliceAssets assets, Transform world)
+        {
+            if (!r.Terrain.HasWater) return 0;
+            var root = new GameObject("Lake").transform;
+            root.SetParent(world, false);
+            int n = 0;
+            foreach (IChunk c in r.Stretch)
+            {
+                float level = (float)r.Terrain.WaterLevel(c.StartDistance);
+                GameObject water = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                water.name = "Water_" + c.Id;
+                water.transform.SetParent(root, false);
+                Object.DestroyImmediate(water.GetComponent<Collider>());
+                water.GetComponent<MeshRenderer>().sharedMaterial = assets.Get("Water");
+                float depth = look.waterMaxDepth - look.waterMinDepth;
+                water.transform.SetPositionAndRotation(
+                    new Vector3((float)(c.StartDistance + c.Length * 0.5), level, look.waterMinDepth + depth * 0.5f),
+                    Quaternion.Euler(90f, 0f, 0f));
+                water.transform.localScale = new Vector3((float)c.Length, depth, 1f);
+                n++;
+            }
+            return n;
         }
 
         private static int AddScatter(SliceRefs r, LookSettings ls, BiomeId biome, double length, int seed, SliceAssets assets,

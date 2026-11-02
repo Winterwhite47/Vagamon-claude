@@ -14,12 +14,24 @@ namespace Hushlands.Tests
         [Timeout(180000)]
         public IEnumerator Slice_Crash_HidesDucklings_AuditClean()
         {
+            yield return CrashHidesDucklings("Slice_MeadowSea");
+        }
+
+        [UnityTest]
+        [Timeout(180000)]
+        public IEnumerator LakeSlice_Crash_HidesDucklings_AuditClean()
+        {
+            yield return CrashHidesDucklings("Slice_MirrorLake");
+        }
+
+        private static IEnumerator CrashHidesDucklings(string scene)
+        {
             SliceBootstrap.ForceAutopilot = true;
             SaveProvider.UseMemory = true;
             SaveProvider.Reset();
             try
             {
-                yield return SceneManager.LoadSceneAsync("Slice_MeadowSea", LoadSceneMode.Single);
+                yield return SceneManager.LoadSceneAsync(scene, LoadSceneMode.Single);
                 yield return null;
                 SliceBootstrap boot = Object.FindAnyObjectByType<SliceBootstrap>();
                 Assert.IsNotNull(boot.Ducklings);

@@ -34,6 +34,13 @@ namespace Hushlands.Core
         public float terraceStep;
         /// <summary>Fraction of each step that is riser (the rest is flat tread).</summary>
         public float terraceRiser;
+        /// <summary>Backdrop lake band (depth from the track, z). waterMaxDepth 0 = no water.</summary>
+        public float waterMinDepth;
+        public float waterMaxDepth;
+        /// <summary>Water sits this far below the lowest track point of its chunk.</summary>
+        public float waterDrop;
+        /// <summary>Lake bed below the water surface.</summary>
+        public float waterBed;
     }
 
     /// <summary>Backdrop props scattered behind the track (never in the corridor, never in front of the rider).</summary>
@@ -126,7 +133,17 @@ namespace Hushlands.Core
                 hillAmplitude = 26f, hillWavelength = 150f, detailAmplitude = 1.0f, detailWavelength = 16f,
                 terraceStep = 3f, terraceRiser = 0.25f,
             },
-            Placeholder(BiomeId.MirrorLake, 22f, "#2F5A3A", "#6B5B4B"),
+            new BiomeLook
+            {
+                // Mirror Lake (T14): still evening by a lake that mirrors the last warm light; lake mist, low sun.
+                biome = BiomeId.MirrorLake, tuned = true,
+                sunElevationDegrees = 6f, sunAzimuthDegrees = 40f, sunLux = 18000f, sunKelvin = 3300f,
+                exposureEV = 11.8f,
+                fogMeanFreePath = 260f, fogBaseHeight = -40f, fogMaximumHeight = 40f, fogAnisotropy = 0.75f,
+                fogAlbedo = MistBlue, grass = "#2F5A3A", soil = "#6B5B4B", accent = Gold,
+                hillAmplitude = 18f, hillWavelength = 200f, detailAmplitude = 0.8f, detailWavelength = 20f,
+                waterMinDepth = 20f, waterMaxDepth = 140f, waterDrop = 2.5f, waterBed = 1.5f,
+            },
         };
 
         public MaterialSpec[] materials =
@@ -147,6 +164,8 @@ namespace Hushlands.Core
             new MaterialSpec("Duckling", "#E9C46A", 0.35f, 0f),
             new MaterialSpec("Pine", "#14331C", 0.2f, 0f),
             new MaterialSpec("TeaLeaf", "#2F5A22", 0.3f, 0f),
+            new MaterialSpec("Water", MistBlue, 0.97f, 0f),
+            new MaterialSpec("Reed", "#7C8A4A", 0.25f, 0f),
         };
 
         public PropScatter[] scatters =
@@ -181,7 +200,21 @@ namespace Hushlands.Core
                 biome = BiomeId.TerraceCountry, name = "Post", material = "Wood", density = 0.02f,
                 minDepth = 12f, maxDepth = 60f, minScale = 1.4f, maxScale = 2.2f, minStack = 1, maxStack = 1, shape = "Post",
             },
+            new PropScatter
+            {
+                biome = BiomeId.MirrorLake, name = "Reed", material = "Reed", density = 0.15f,
+                minDepth = 12f, maxDepth = 19f, minScale = 0.8f, maxScale = 1.6f, minStack = 1, maxStack = 1, shape = "Post",
+            },
+            new PropScatter
+            {
+                biome = BiomeId.MirrorLake, name = "ShoreStone", material = "Stone", density = 0.03f,
+                minDepth = 12f, maxDepth = 19f, minScale = 0.5f, maxScale = 1.4f, minStack = 1, maxStack = 1, shape = "Rock",
+            },
         };
+
+        // --- Duckling safety near water (T14) ---
+        /// <summary>Nests must sit at least this far (in depth) from any water band.</summary>
+        public float nestWaterSpacing = 10f;
 
         // --- Terrain mesh ---
         public float terrainCellMeters = 2f;
@@ -256,6 +289,14 @@ namespace Hushlands.Core
                 SettingsCheck.NonNegative(e, t, nameof(b.detailAmplitude), b.detailAmplitude);
                 SettingsCheck.Positive(e, t, nameof(b.detailWavelength), b.detailWavelength);
                 SettingsCheck.NonNegative(e, t, nameof(b.terraceStep), b.terraceStep);
+                if (b.waterMaxDepth > 0f)
+                {
+                    if (b.waterMinDepth < corridorHalfWidth + corridorBlend) e.Add(t + ": water must stay out of the track corridor");
+                    SettingsCheck.Ordered(e, t, nameof(b.waterMinDepth), b.waterMinDepth, nameof(b.waterMaxDepth), b.waterMaxDepth);
+                    if (b.waterMaxDepth > terrainBackDepth) e.Add(t + ": water beyond the terrain");
+                    SettingsCheck.Positive(e, t, nameof(b.waterDrop), b.waterDrop);
+                    SettingsCheck.Positive(e, t, nameof(b.waterBed), b.waterBed);
+                }
                 if (b.terraceStep > 0f) SettingsCheck.Range(e, t, nameof(b.terraceRiser), b.terraceRiser, 0.05f, 1f);
                 foreach (string hex in new[] { b.fogAlbedo, b.grass, b.soil, b.accent })
                 {

@@ -38,6 +38,13 @@ namespace Hushlands.Tests
             yield return SliceBuildsAndRides("Slice_TerraceCountry");
         }
 
+        [UnityTest]
+        [Timeout(180000)]
+        public IEnumerator LakeSlice_Builds_AndAutopilotRides()
+        {
+            yield return SliceBuildsAndRides("Slice_MirrorLake");
+        }
+
         private static IEnumerator SliceBuildsAndRides(string scene)
         {
             SliceBootstrap.ForceAutopilot = true;

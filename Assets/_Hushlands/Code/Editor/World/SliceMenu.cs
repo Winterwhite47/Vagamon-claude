@@ -92,6 +92,13 @@ namespace Hushlands.Editor
             EditorSceneManager.OpenScene(HushPaths.SliceSceneFor(BiomeId.TerraceCountry));
         }
 
+        [MenuItem("Hushlands/Slice/Build Mirror Lake Slice")]
+        public static void BuildLakeFromMenu()
+        {
+            BuildAll(null);
+            EditorSceneManager.OpenScene(HushPaths.SliceSceneFor(BiomeId.MirrorLake));
+        }
+
         public static void BuildScene(BiomeId biome)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
