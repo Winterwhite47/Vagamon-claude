@@ -7,6 +7,13 @@ namespace Hushlands.Editor
         public const string ConfigResources = Root + "/Config/Resources/Hushlands";
         public const string ProjectTargetsAsset = ConfigResources + "/ProjectTargetsConfig.asset";
         public const string BootLookAsset = ConfigResources + "/BootLookConfig.asset";
+        public const string ConfigSetAsset = ConfigResources + "/HushConfigSet.asset";
+        public const string ConfigRoot = Root + "/Config";
+
+        public static string ConfigAsset(string lane, string name)
+        {
+            return ConfigRoot + "/" + lane + "/" + name + ".asset";
+        }
         public const string RenderingFolder = Root + "/Config/Rendering";
         public const string HdrpAsset = RenderingFolder + "/HushlandsHDRP.asset";
         public const string BootVolumeProfile = RenderingFolder + "/BootVolumeProfile.asset";

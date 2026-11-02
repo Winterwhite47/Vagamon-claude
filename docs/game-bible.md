@@ -72,6 +72,12 @@ Defined in `Assets/_Hushlands/Code/Core/Interfaces.cs`, engine-free assembly `Hu
 | `ISaveService` | meta and data | persistence |
 | `IFrameTimeProbe` | QA | frame-time stats |
 
+## Config map (T1)
+All numbers: `Assets/_Hushlands/Config/<Lane>/<Name>Config.asset`, defaults in `Code/Core/Config/*Settings.cs`.
+Entry point: `HushConfigSet` (Resources). Gameplay: Speed, Rider, Surface, Failure, Assist, Duckling.
+Content: Fairness, Content, Biome. Camera. Audio: AudioMix. UI: UiMotion. Meta: Pickup, Score, Vehicle.
+Rendering: ProjectTargets, BootLook.
+
 ## Defaults (when a rule is unclear)
 - Numbers: ScriptableObject config under `Assets/_Hushlands/Config`. Never literals in behaviour code.
 - Out of scope (deferred): open world, hub town, multiplayer, mobile, consoles, accounts, shop, analytics SDKs, release / Steam.

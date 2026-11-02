@@ -24,6 +24,7 @@ namespace Hushlands.Editor
 
             ProjectTargetsConfig targets = EnsureAsset<ProjectTargetsConfig>(HushPaths.ProjectTargetsAsset);
             BootLookConfig look = EnsureAsset<BootLookConfig>(HushPaths.BootLookAsset);
+            ConfigSetBuilder.EnsureConfigSet(targets, look);
 
             ApplyProjectSettings(targets);
             HDRenderPipelineAsset hdrp = EnsureHdrpAsset(look);
@@ -143,7 +144,7 @@ namespace Hushlands.Editor
             EditorSceneManager.SaveScene(scene, HushPaths.BootScene);
         }
 
-        private static T EnsureAsset<T>(string path) where T : ScriptableObject
+        internal static T EnsureAsset<T>(string path) where T : ScriptableObject
         {
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
             if (asset != null) return asset;
@@ -152,7 +153,7 @@ namespace Hushlands.Editor
             return asset;
         }
 
-        private static void EnsureFolder(string path)
+        internal static void EnsureFolder(string path)
         {
             if (string.IsNullOrEmpty(path) || AssetDatabase.IsValidFolder(path)) return;
             string parent = Path.GetDirectoryName(path)?.Replace('\\', '/');

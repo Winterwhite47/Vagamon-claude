@@ -91,6 +91,33 @@ check(".meta" not in (ROOT / ".gitignore").read_text().split("Keep .meta")[0], "
 for doc in ["docs/game-bible.md", "docs/playbook.md", "docs/decisions.md"]:
     check((ROOT / doc).is_file(), f"missing {doc}")
 
+# 10. T1: every settings block has a config asset wrapper, is linked in HushConfigSet and built by bootstrap.
+settings_src = "".join(f.read_text() for f in (CODE / "Core/Config").glob("*.cs"))
+settings = sorted(set(re.findall(r"class (\w+)Settings\s*:\s*ISettings", settings_src)))
+check(len(settings) == 15, f"expected 15 settings blocks, found {len(settings)}")
+config_set = (CODE / "Runtime/Config/HushConfigSet.cs").read_text()
+builder = (CODE / "Editor/ConfigSetBuilder.cs").read_text()
+for name in settings:
+    f = CODE / f"Runtime/Config/{name}Config.cs"
+    check(f.is_file(), f"missing wrapper {f.name}")
+    if f.is_file():
+        check(f"class {name}Config : SettingsAsset<{name}Settings>" in f.read_text(), f"{f.name}: class/file mismatch")
+    check(f"public {name}Config " in config_set, f"HushConfigSet missing {name}Config")
+    check(f"Make<{name}Config>" in builder, f"ConfigSetBuilder missing {name}Config")
+    check(f"new {name}Settings()" in (CODE / "Tests/EditMode/SettingsTests.cs").read_text(), f"SettingsTests missing {name}")
+
+# 11. Service stubs carry no tuning literals (only 0, 1, 360-degree constants).
+for cs in (CODE / "Core/Services").glob("*.cs"):
+    src = re.sub(r'"(?:\\.|[^"\\])*"', '""', re.sub(r"//.*", "", cs.read_text()))
+    for lit in re.findall(r"(?<![\w.])(\d+\.\d+|\d+)f\b", src):
+        check(lit in ("0", "1", "360"), f"{cs.name}: tuning literal {lit}f outside config")
+
+# 12. Canon numbers in settings defaults.
+for token in ["minSpeed = 6f", "maxSpeed = 18f", "rampAmount = 0.45f", "rampIntervalSeconds = 10f",
+              "obstacleRevealSeconds = 1.5f", "collapseWarningSeconds = 1f", "assistAfterFailures = 3",
+              "physicsStep = 0.01f", "validationStretchCount = 200"]:
+    check(token in settings_src, f"settings missing canon default {token}")
+
 for e in errors:
     print("FAIL:", e)
 print(f"validate_project: {checks - len(errors)}/{checks} checks passed, {len(errors)} failed")

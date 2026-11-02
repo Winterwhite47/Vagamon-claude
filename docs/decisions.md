@@ -27,3 +27,20 @@ Format: ID · date · question · default used · status.
 ## D-006 · 2026-11-02 · Sub-agents
 - Default: lead runs T0 inline; lanes spawn from T2 on, when parallel text-only work exists. One Editor driver rule still applies.
 - Status: decided.
+
+## D-007 · 2026-11-02 · Config pattern (T1)
+- Default: engine-free `[Serializable]` settings classes in `Hushlands.Core` hold every number and self-validate; one `ScriptableObject` wrapper per block (`SettingsAsset<T>`), all linked from `Resources/Hushlands/HushConfigSet`. Lets pure-C# logic and tests use the same defaults as assets.
+- Status: decided.
+
+## D-008 · 2026-11-02 · Duckling restore on retry
+- Bible: "checkpoint groups restored". Unclear whether groups rescued after the last checkpoint are kept.
+- Default (kind): rescued groups are always kept; unrescued groups after the checkpoint go back to Ahead; groups passed before the checkpoint stay Waiting.
+- Status: open.
+
+## D-009 · 2026-11-02 · Placeholder tuning values
+- Non-canon numbers (drag, jump velocity, flip rate, camera profiles, vehicle scales, costs, pickup durations) are first guesses. T3, T4, T8, T11 tune them by measurement.
+- Status: open.
+
+## D-010 · 2026-11-02 · Camera arbitration
+- Default: highest `priority` request per step wins (FailureHold > Danger > Boost > Air > Vista = Shelter > Cruise).
+- Status: open until T4.
