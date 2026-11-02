@@ -1,0 +1,60 @@
+# Hushlands CI: static checks, Unity bootstrap + EditMode/PlayMode tests, Windows x64 build.
+# Requires repo secrets: UNITY_LICENSE (or UNITY_SERIAL), UNITY_EMAIL, UNITY_PASSWORD.
+name: unity-ci
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/validate_project.py
+
+  test:
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-linux-${{ hashFiles('Packages/**', 'ProjectSettings/**') }}
+      - uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          testMode: all
+          customParameters: -executeMethod Hushlands.Editor.ProjectBootstrap.Run
+          artifactsPath: test-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: test-results
+
+  build-windows:
+    needs: test
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: StandaloneWindows64
+          buildMethod: Hushlands.Editor.BuildScript.BuildWindows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Hushlands-Windows
+          path: Builds/Windows

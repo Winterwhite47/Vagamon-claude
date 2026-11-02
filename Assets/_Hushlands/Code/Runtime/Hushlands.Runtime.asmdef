@@ -1,0 +1,22 @@
+{
+    "name": "Hushlands.Runtime",
+    "rootNamespace": "Hushlands",
+    "references": [
+        "Hushlands.Core",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.HighDefinition.Runtime",
+        "Unity.Cinemachine",
+        "Unity.InputSystem",
+        "Unity.Splines",
+        "Unity.Mathematics"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
