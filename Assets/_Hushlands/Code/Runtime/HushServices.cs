@@ -23,10 +23,11 @@ namespace Hushlands
             Mix = new MixDirector(c.audioMix.Settings);
             Score = new ScoreService(c.score.Settings);
             Save = new MemorySaveService();
-            Generator = new StubChunkGenerator(c.content.Settings);
-            Fairness = new StructuralFairnessChecker(c.content.Settings);
-            Bot = new StubBotValidator(c.rider.Settings, c.speed.Settings, c.surfaces.Settings,
-                c.content.Settings.botTestSlopeDegrees * (float)(Math.PI / 180.0));
+            Jump = JumpModel.ForDefaultVehicle(c.rider.Settings, c.speed.Settings, c.vehicles.Settings);
+            Generator = new ChunkGenerator(c.content.Settings, c.fairness.Settings, c.biomes.Settings, Jump);
+            Fairness = new FairnessChecker(c.fairness.Settings, c.content.Settings, Jump);
+            Bot = new BotValidator(c.rider.Settings, c.speed.Settings, c.surfaces.Settings, c.fairness.Settings,
+                c.vehicles.Settings);
         }
 
         public ScriptedInput Input { get; }
@@ -41,7 +42,8 @@ namespace Hushlands
         public MixDirector Mix { get; }
         public ScoreService Score { get; }
         public ISaveService Save { get; }
-        public IChunkGenerator Generator { get; }
+        public JumpModel Jump { get; }
+        public ChunkGenerator Generator { get; }
         public IFairnessChecker Fairness { get; }
         public IBotValidator Bot { get; }
     }

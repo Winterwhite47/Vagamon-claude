@@ -72,6 +72,19 @@ Defined in `Assets/_Hushlands/Code/Core/Interfaces.cs`, engine-free assembly `Hu
 | `ISaveService` | meta and data | persistence |
 | `IFrameTimeProbe` | QA | frame-time stats |
 
+## Content format (T2)
+Chunk = constant downhill slope, surface spans, features (positions in metres from chunk start).
+Text format `.chunk` (`ChunkSerializer`): `chunk id biome difficulty length slopeDeg`, `surface start length surface`,
+`feature kind start length height density variant optional requiresUpgrade warningLead`, `end`.
+Feature kinds: Obstacle, Gap, CollapseZone (required jumps), MistBank, DucklingNest, Pickup, Checkpoint, Ramp.
+
+Fairness rules (`FairnessChecker`, checked at every speed 6–18 m/s, default sled, no upgrades):
+`jump.clearable` (whole takeoff window 0.15–0.35 s clears), `landing.safe` + `zone.within.chunk` (clear runway to the
+farthest touchdown + safe length), `hazard.spacing`, `mist.hides.jump` (no mist over the 1.5 s reveal window or the jump),
+`camera.reveal` (camera shows ≥ 1.5 s × 18 m/s ahead), `collapse.warning` (≥ 1 s at max speed), `upgrade.required`,
+`checkpoint.present` / `checkpoint.safe`, `nest.safe` (ducklings never near hazards), `pickup.on.hazard`,
+plus bounds, contiguity and surface cover. The bot (`BotValidator`) must also ride every stretch clean.
+
 ## Config map (T1)
 All numbers: `Assets/_Hushlands/Config/<Lane>/<Name>Config.asset`, defaults in `Code/Core/Config/*Settings.cs`.
 Entry point: `HushConfigSet` (Resources). Gameplay: Speed, Rider, Surface, Failure, Assist, Duckling.

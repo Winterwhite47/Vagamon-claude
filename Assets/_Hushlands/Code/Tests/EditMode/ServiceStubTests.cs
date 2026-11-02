@@ -153,21 +153,6 @@ namespace Hushlands.Tests
         }
 
         [Test]
-        public void Generator_Deterministic_AndPassesStructuralChecks()
-        {
-            var content = new ContentSettings();
-            var gen = new StubChunkGenerator(content);
-            var fair = new StructuralFairnessChecker(content);
-            var bot = new StubBotValidator(new RiderSettings(), new SpeedSettings(), new SurfaceSettings(),
-                Deg(content.botTestSlopeDegrees));
-            IReadOnlyList<IChunk> a = gen.GenerateStretch(42, BiomeId.MeadowSea, content.chunksPerStretch);
-            IReadOnlyList<IChunk> b = gen.GenerateStretch(42, BiomeId.MeadowSea, content.chunksPerStretch);
-            for (int i = 0; i < a.Count; i++) Assert.AreEqual(a[i].Length, b[i].Length);
-            CollectionAssert.IsEmpty(fair.Check(a));
-            Assert.IsTrue(bot.Validate(a, 42, out string report), report);
-        }
-
-        [Test]
         public void Score_And_Save_And_Pickups()
         {
             var score = new ScoreService(new ScoreSettings());

@@ -63,6 +63,13 @@ namespace Hushlands.Core
         BiomeId Biome { get; }
         double Length { get; }
         int Difficulty { get; }
+        /// <summary>Distance of chunk start along the stretch.</summary>
+        double StartDistance { get; }
+        /// <summary>Constant downhill slope of the chunk.</summary>
+        float SlopeRadians { get; }
+        /// <summary>Features, positions relative to chunk start.</summary>
+        IReadOnlyList<ChunkFeature> Features { get; }
+        IReadOnlyList<SurfaceSpan> Surfaces { get; }
     }
 
     public interface IChunkGenerator

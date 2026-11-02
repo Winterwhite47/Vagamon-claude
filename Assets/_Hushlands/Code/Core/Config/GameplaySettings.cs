@@ -56,6 +56,14 @@ namespace Hushlands.Core
         public float jumpBufferSeconds = 0.1f;
         public float airGravityScale = 1f;
 
+        /// <summary>Copy with jump velocity scaled by a vehicle's jumpScale.</summary>
+        public RiderSettings WithJumpScale(float scale)
+        {
+            var copy = (RiderSettings)MemberwiseClone();
+            copy.jumpVelocity *= scale;
+            return copy;
+        }
+
         public void Validate(List<string> e)
         {
             const string o = nameof(RiderSettings);

@@ -1,0 +1,8 @@
+CAUGHT obstacle too tall: checker=['jump.clearable'] bot=fail
+CAUGHT gap too long: checker=['jump.clearable'] bot=fail
+CAUGHT mist over jump: checker=['mist.hides.jump'] bot=pass
+CAUGHT missing checkpoint: checker=['checkpoint.present'] bot=pass
+CAUGHT hazard in landing zone: checker=['landing.safe', 'hazard.spacing'] bot=pass
+CAUGHT short collapse warning: checker=['collapse.warning'] bot=pass
+CAUGHT nest on hazard: checker=['nest.safe'] bot=pass
+selftest: 7/7 mutations caught

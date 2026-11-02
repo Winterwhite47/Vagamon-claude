@@ -10,7 +10,7 @@
 |---|---|
 | lead / orchestrator | `docs/`, `tools/`, `.github/`, `Packages/`, `ProjectSettings/`, `Assets/_Hushlands/Code/Core/` |
 | gameplay | `Code/Runtime/Gameplay/`, `Config/Gameplay/` |
-| content tool | `Code/Runtime/Content/`, `Code/Editor/Content/`, `Content/` |
+| content tool | `Code/Core/Content/`, `Code/Editor/Content/`, `Content/`, `tools/qa/content_sim.py` |
 | environment art | `Art/Environment/`, `Scenes/Biomes/` |
 | character and cloth | `Art/Characters/`, `Art/Vehicles/`, `Code/Runtime/Cloth/` |
 | tech art | `Config/Rendering/`, `Art/VFX/`, `Code/Runtime/Camera/` |
@@ -36,6 +36,9 @@ Unity -batchmode -projectPath . -runTests -testPlatform EditMode -testResults Lo
 Unity -batchmode -projectPath . -runTests -testPlatform PlayMode -testResults Logs/playmode.xml
 # Build
 Unity -batchmode -quit -projectPath . -executeMethod Hushlands.Editor.BuildScript.BuildWindows -logFile Logs/build.log
+# Content: 200 stretches (Unity) / reference model (no Unity)
+Unity -batchmode -projectPath . -executeMethod Hushlands.Editor.ContentToolMenu.ValidateBatch
+python3 tools/qa/content_sim.py && python3 tools/qa/content_sim.py --selftest
 # 4K capture (on Windows test GPU)
 Builds/Windows/Hushlands.exe -screen-width 3840 -screen-height 2160 -hushCapture
 # -> Captures/frametime_*.txt, Captures/frame_*.png

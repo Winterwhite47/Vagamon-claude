@@ -107,7 +107,7 @@ for name in settings:
     check(f"new {name}Settings()" in (CODE / "Tests/EditMode/SettingsTests.cs").read_text(), f"SettingsTests missing {name}")
 
 # 11. Service stubs carry no tuning literals (only 0, 1, 360-degree constants).
-for cs in (CODE / "Core/Services").glob("*.cs"):
+for cs in [*(CODE / "Core/Services").glob("*.cs"), *(CODE / "Core/Content").glob("*.cs")]:
     src = re.sub(r'"(?:\\.|[^"\\])*"', '""', re.sub(r"//.*", "", cs.read_text()))
     for lit in re.findall(r"(?<![\w.])(\d+\.\d+|\d+)f\b", src):
         check(lit in ("0", "1", "360"), f"{cs.name}: tuning literal {lit}f outside config")
@@ -117,6 +117,18 @@ for token in ["minSpeed = 6f", "maxSpeed = 18f", "rampAmount = 0.45f", "rampInte
               "obstacleRevealSeconds = 1.5f", "collapseWarningSeconds = 1f", "assistAfterFailures = 3",
               "physicsStep = 0.01f", "validationStretchCount = 200"]:
     check(token in settings_src, f"settings missing canon default {token}")
+
+# 13. T2: content pipeline present; Core content is engine-free; reference model in sync.
+for name in ["Rng", "ChunkFormat", "ChunkSerializer", "JumpModel", "StretchSlope", "HazardZones",
+             "ChunkGenerator", "FairnessChecker", "BotValidator", "StretchValidation"]:
+    check((CODE / f"Core/Content/{name}.cs").is_file(), f"missing Core/Content/{name}.cs")
+rules = re.findall(r'public const string Rule\w+ = "([\w.]+)"', (CODE / "Core/Content/FairnessChecker.cs").read_text())
+sim = (ROOT / "tools/qa/content_sim.py").read_text()
+for rule in rules:
+    if rule in ("upgrade.required",):
+        continue
+    check(f'"{rule}"' in sim, f"content_sim.py does not mirror rule {rule}")
+check(len(rules) >= 15, "fairness checker lost rules")
 
 for e in errors:
     print("FAIL:", e)

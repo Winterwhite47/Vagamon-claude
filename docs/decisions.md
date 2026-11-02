@@ -44,3 +44,23 @@ Format: ID · date · question · default used · status.
 ## D-010 · 2026-11-02 · Camera arbitration
 - Default: highest `priority` request per step wins (FailureHold > Danger > Boost > Air > Vista = Shelter > Cruise).
 - Status: open until T4.
+
+## D-011 · 2026-11-02 · Python reference model for content
+- No Unity here, so `tools/qa/content_sim.py` mirrors generator, checker and bot, reading all numbers from the C# settings. `ContentTests` pins golden values (RNG outputs, seed-1 stretch) so any drift fails in Unity.
+- Status: decided.
+
+## D-012 · 2026-11-02 · Fairness speed range
+- Rules are checked at all speeds 6–18 m/s (sampled 7 times), not just the speed the bot reaches (~6–12 m/s in 12-chunk stretches). Conservative; may limit hazard size later. The bot proves rideability, the checker proves fairness at any speed.
+- Status: open (revisit with T3 real physics).
+
+## D-013 · 2026-11-02 · Camera framing contract for T4
+- Default: camera must show ≥ 40 m of slope ahead (`visibleAheadMeters`), enough for the 1.5 s reveal at 18 m/s (27 m).
+- Status: open until T4.
+
+## D-014 · 2026-11-02 · Collapse zones are required jumps
+- Bible gives a 1 s collapse warning but not the mechanic. Default: a collapse zone is a gap that opens after its warning; warning starts ≥ 1 s × 18 m/s × 1.25 before it.
+- Status: open.
+
+## D-015 · 2026-11-02 · Hazards and landings stay inside one chunk
+- Keeps slope constant through each jump, so physics are exact. Chunks with no room are rest chunks (still have checkpoints, pickups, nests).
+- Status: decided.
