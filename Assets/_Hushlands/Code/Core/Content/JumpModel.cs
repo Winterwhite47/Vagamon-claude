@@ -21,10 +21,14 @@ namespace Hushlands.Core
             MaxSpeed = maxSpeed;
         }
 
-        /// <summary>Default-vehicle jump (canon: never require locked upgrades).</summary>
-        public static JumpModel ForDefaultVehicle(RiderSettings rider, SpeedSettings speed, VehicleSettings vehicles)
+        /// <summary>
+        /// Jump of the weakest vehicle (lowest jumpScale). Content is generated and checked against it, so every
+        /// vehicle clears every stretch (canon: never require locked upgrades; no vehicle is a handicap).
+        /// </summary>
+        public static JumpModel ForAllVehicles(RiderSettings rider, SpeedSettings speed, VehicleSettings vehicles)
         {
-            float scale = vehicles.Get(vehicles.defaultVehicle).jumpScale;
+            float scale = float.MaxValue;
+            foreach (VehicleEntry v in vehicles.entries) scale = Math.Min(scale, v.jumpScale);
             return new JumpModel(rider.jumpVelocity * scale, speed.gravity * rider.airGravityScale, speed.minSpeed, speed.maxSpeed);
         }
 

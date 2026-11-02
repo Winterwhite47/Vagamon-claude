@@ -151,7 +151,7 @@ namespace Hushlands.Tests
         {
             var content = new ContentSettings();
             var fair = new FairnessSettings();
-            JumpModel jump = JumpModel.ForDefaultVehicle(new RiderSettings(), new SpeedSettings(), new VehicleSettings());
+            JumpModel jump = JumpModel.ForAllVehicles(new RiderSettings(), new SpeedSettings(), new VehicleSettings());
             var gen = new ChunkGenerator(content, fair, new BiomeSettings(), jump);
             var checker = new FairnessChecker(fair, content, jump);
             for (int seed = 1; seed <= 50; seed++)

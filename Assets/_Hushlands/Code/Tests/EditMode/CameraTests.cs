@@ -169,7 +169,7 @@ namespace Hushlands.Tests
             var cam = new CameraSettings();
             var rider = new RiderSettings();
             var speed = new SpeedSettings();
-            JumpModel jump = JumpModel.ForDefaultVehicle(rider, speed, new VehicleSettings());
+            JumpModel jump = JumpModel.ForAllVehicles(rider, speed, new VehicleSettings());
             List<Chunk> stretch = new ChunkGenerator(content, fair, new BiomeSettings(), jump).Generate(2, BiomeId.MeadowSea, content.chunksPerStretch);
             var slope = new StretchSlope(stretch);
             var kin = new KinematicRider(rider, speed, slope, new SurfaceTable(new SurfaceSettings()));

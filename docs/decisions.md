@@ -184,3 +184,11 @@ Format: ID · date · question · default used · status.
 ## D-045 · 2026-11-02 · Squall is mild weather
 - Bible lists a squall with the landslide but no rules. Default: short seeded gust windows with a small headwind, denser fog within the mist-fairness check, scarf gusts; no new crash cause.
 - Status: open.
+
+## D-046 · 2026-11-02 · No shop: vehicles unlock by lifetime coins
+- Hard rule 4 forbids a shop. Default: `unlockLifetimeCoins` thresholds on coins earned; coins are never spent. Thresholds 150–1200 are first guesses.
+- Status: open (economy review).
+
+## D-047 · 2026-11-02 · Fairness for every vehicle
+- The toboggan jumps 5% lower than the sled, so default-vehicle fairness could make stretches impossible on it. Content now uses the weakest jumpScale; the bot validates all six vehicles. Content 200/200 for each; goldens repinned.
+- Status: decided.

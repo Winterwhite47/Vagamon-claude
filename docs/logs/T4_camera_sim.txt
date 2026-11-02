@@ -1,4 +1,4 @@
-steps=10453 distance=849.0 states=['Air', 'Boost', 'Cruise', 'Danger']
-worst ahead=40.62 m (need 40.0), worst riderX=-0.665 (limit -0.8), worst |riderY|=0.228 (limit 0.9)
+steps=13311 distance=1140.2 states=['Air', 'Boost', 'Cruise', 'Danger']
+worst ahead=40.62 m (need 40.0), worst riderX=-0.665 (limit -0.8), worst |riderY|=0.173 (limit 0.9)
 violations=0
 RESULT PASS

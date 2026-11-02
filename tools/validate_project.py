@@ -204,6 +204,13 @@ check(H["landslideMaxSpeed"] < SP["maxSpeed"], "landslide must stay slower than 
 check("squallFogScale" in (CODE / "Runtime/Config/HushConfigSet.cs").read_text(), "squall fog not in mist fairness check")
 check((ROOT / "tools/qa/hazard_sim.py").is_file(), "missing hazard reference model")
 
+# 21. T11: fairness against the weakest vehicle; garage unlocks by earned coins (no shop); loadout per vehicle.
+check("ForDefaultVehicle" not in "".join(f.read_text() for f in CODE.rglob("*.cs")), "fairness must use ForAllVehicles")
+veh_src = (CODE / "Core/Meta/Vehicles.cs").read_text()
+for bad in ["Buy", "Purchase", "Spend", "Price"]:
+    check(bad not in veh_src, f"garage must not have a shop ({bad})")
+check("--all-vehicles" in (ROOT / "tools/qa/content_sim.py").read_text(), "content mirror must ride every vehicle")
+
 for e in errors:
     print("FAIL:", e)
 print(f"validate_project: {checks - len(errors)}/{checks} checks passed, {len(errors)} failed")

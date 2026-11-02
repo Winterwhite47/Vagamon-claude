@@ -12,18 +12,29 @@ namespace Hushlands.Core
     {
         private readonly RiderSettings _rider;
         private readonly SpeedSettings _speed;
-        private readonly SurfaceSettings _surfaces;
         private readonly FairnessSettings _fair;
+
+        private readonly ISurfaceProvider _surfaceProvider;
 
         public BotValidator(RiderSettings rider, SpeedSettings speed, SurfaceSettings surfaces,
             FairnessSettings fairness, VehicleSettings vehicles)
+            : this(rider, speed, surfaces, fairness, vehicles, vehicles != null ? vehicles.defaultVehicle : VehicleId.WoodenHillSled)
+        {
+        }
+
+        /// <summary>Bot riding a specific vehicle (its jump, drag and friction), for the all-vehicles check.</summary>
+        public BotValidator(RiderSettings rider, SpeedSettings speed, SurfaceSettings surfaces,
+            FairnessSettings fairness, VehicleSettings vehicles, VehicleId vehicle)
         {
             if (rider == null) throw new ArgumentNullException(nameof(rider));
             if (vehicles == null) throw new ArgumentNullException(nameof(vehicles));
-            _rider = rider.WithJumpScale(vehicles.Get(vehicles.defaultVehicle).jumpScale);
-            _speed = speed ?? throw new ArgumentNullException(nameof(speed));
-            _surfaces = surfaces ?? throw new ArgumentNullException(nameof(surfaces));
+            if (speed == null) throw new ArgumentNullException(nameof(speed));
+            if (surfaces == null) throw new ArgumentNullException(nameof(surfaces));
             _fair = fairness ?? throw new ArgumentNullException(nameof(fairness));
+            VehicleLoadout loadout = VehicleLoadout.Build(vehicles.Get(vehicle), rider, speed, surfaces);
+            _rider = loadout.Rider;
+            _speed = loadout.Speed;
+            _surfaceProvider = loadout.Surfaces;
         }
 
         public float MinSpeedSeen { get; private set; }
@@ -39,7 +50,7 @@ namespace Hushlands.Core
             }
 
             var slope = new StretchSlope(stretch);
-            var rider = new KinematicRider(_rider, _speed, slope, new SurfaceTable(_surfaces));
+            var rider = new KinematicRider(_rider, _speed, slope, _surfaceProvider);
             var input = new ScriptedInput();
             var pilot = new BotPilot(stretch, _fair.botTakeoffSeconds);
             IReadOnlyList<Span> hazards = pilot.Hazards;

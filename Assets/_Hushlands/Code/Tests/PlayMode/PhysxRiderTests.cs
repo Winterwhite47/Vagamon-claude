@@ -258,7 +258,7 @@ namespace Hushlands.Tests
         {
             var content = new ContentSettings();
             var fair = new FairnessSettings();
-            JumpModel jump = JumpModel.ForDefaultVehicle(new RiderSettings(), new SpeedSettings(), new VehicleSettings());
+            JumpModel jump = JumpModel.ForAllVehicles(new RiderSettings(), new SpeedSettings(), new VehicleSettings());
             var gen = new ChunkGenerator(content, fair, new BiomeSettings(), jump);
             List<Chunk> stretch = gen.Generate(2, BiomeId.MeadowSea, content.chunksPerStretch);
             World w = Make(stretch);

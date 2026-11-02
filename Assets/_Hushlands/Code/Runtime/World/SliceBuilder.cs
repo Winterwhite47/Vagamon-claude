@@ -16,6 +16,8 @@ namespace Hushlands
         public MistField Mist;
         public PhysxRider Rider;
         public Transform Sled;
+        public VehicleLoadout Loadout;
+        public GameObject Deck;
         public VerletScarf Scarf;
         public Fog Fog;
         public float FogBaseMeanFreePath;
@@ -38,14 +40,15 @@ namespace Hushlands
     /// </summary>
     public static class SliceBuilder
     {
-        public static SliceRefs Build(HushConfigSet c, SliceAssets assets, BiomeId biome, int seed, Transform parent)
+        public static SliceRefs Build(HushConfigSet c, SliceAssets assets, BiomeId biome, int seed, Transform parent,
+            VehicleId vehicle)
         {
             LookSettings ls = c.look.Settings;
             BiomeLook look = ls.Get(biome);
             var r = new SliceRefs { Root = new GameObject("Slice_" + biome) };
             if (parent != null) r.Root.transform.SetParent(parent, false);
 
-            JumpModel jump = JumpModel.ForDefaultVehicle(c.rider.Settings, c.speed.Settings, c.vehicles.Settings);
+            JumpModel jump = JumpModel.ForAllVehicles(c.rider.Settings, c.speed.Settings, c.vehicles.Settings);
             var gen = new ChunkGenerator(c.content.Settings, c.fairness.Settings, c.biomes.Settings, jump);
             r.Stretch = gen.Generate(seed, biome, c.content.Settings.chunksPerStretch);
             r.Slope = new StretchSlope(r.Stretch);
@@ -62,7 +65,8 @@ namespace Hushlands
             r.Mist = new MistField(r.Stretch, c.biomes.Settings.Get(biome).baseMistDensity);
             r.MistVolumes = AddMistVolumes(r, ls, look, world);
             AddLighting(r, look, world);
-            BuildRider(r, c, assets);
+            r.Loadout = VehicleLoadout.Build(c.vehicles.Settings.Get(vehicle), c.rider.Settings, c.speed.Settings, c.surfaces.Settings);
+            BuildRider(r, c, assets, c.vehicles.Settings.Get(vehicle));
             r.Mix = new MixDirector(c.audioMix.Settings);
             return r;
         }
@@ -141,7 +145,7 @@ namespace Hushlands
             r.Volume.sharedProfile = profile;
         }
 
-        private static void BuildRider(SliceRefs r, HushConfigSet c, SliceAssets assets)
+        private static void BuildRider(SliceRefs r, HushConfigSet c, SliceAssets assets, VehicleEntry vehicle)
         {
             TrackSettings t = c.track.Settings;
             var go = new GameObject("Rider");
@@ -154,9 +158,15 @@ namespace Hushlands
             var sled = new GameObject("Sled").transform;
             sled.SetParent(go.transform, false);
             r.Sled = sled;
-            GameObject deck = Primitive(PrimitiveType.Cube, "Deck", sled, assets.Get("Wood"));
+            GameObject deck = Primitive(PrimitiveType.Cube, "Deck_" + vehicle.vehicle, sled, assets.Get("Wood"));
             deck.transform.localPosition = new Vector3(0f, rs.colliderRadius, 0f);
-            deck.transform.localScale = new Vector3(rs.colliderLength, t.sledDeckThickness, t.sledWidth);
+            deck.transform.localScale = new Vector3(rs.colliderLength * vehicle.deckLengthScale, t.sledDeckThickness,
+                t.sledWidth * vehicle.deckWidthScale);
+            // Per-vehicle tint on an instance of the wood material (placeholder until authored vehicle models).
+            Palette.TryParse(vehicle.color, out float vr, out float vg, out float vb);
+            MeshRenderer deckRenderer = deck.GetComponent<MeshRenderer>();
+            deckRenderer.material.SetColor("_BaseColor", new Color(vr, vg, vb, 1f));
+            r.Deck = deck;
             GameObject body = Primitive(PrimitiveType.Capsule, "Body", go.transform, assets.Get("Jacket"));
             body.transform.localPosition = new Vector3(0f, rs.colliderRadius + t.riderBodyHeight * 0.5f, 0f);
             body.transform.localScale = new Vector3(t.riderBodyWidth, t.riderBodyHeight * 0.5f, t.riderBodyWidth);

@@ -19,6 +19,11 @@ namespace Hushlands.Core
         public float tuckDragMultiplier = 0.55f;
         public float tuckTargetBonus = 1.5f;
 
+        public SpeedSettings Copy()
+        {
+            return (SpeedSettings)MemberwiseClone();
+        }
+
         public float TargetAt(double runSeconds)
         {
             double steps = Math.Max(0d, runSeconds) / rampIntervalSeconds;

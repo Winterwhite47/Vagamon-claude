@@ -9,7 +9,7 @@ namespace Hushlands.Tests
         private static List<Chunk> Stretch()
         {
             var content = new ContentSettings();
-            JumpModel jump = JumpModel.ForDefaultVehicle(new RiderSettings(), new SpeedSettings(), new VehicleSettings());
+            JumpModel jump = JumpModel.ForAllVehicles(new RiderSettings(), new SpeedSettings(), new VehicleSettings());
             return new ChunkGenerator(content, new FairnessSettings(), new BiomeSettings(), jump).Generate(2, BiomeId.MeadowSea, content.chunksPerStretch);
         }
 

@@ -41,7 +41,7 @@ namespace Hushlands.Editor
         public static void ExportSample()
         {
             HushConfigSet set = Require();
-            JumpModel jump = JumpModel.ForDefaultVehicle(set.rider.Settings, set.speed.Settings, set.vehicles.Settings);
+            JumpModel jump = JumpModel.ForAllVehicles(set.rider.Settings, set.speed.Settings, set.vehicles.Settings);
             var gen = new ChunkGenerator(set.content.Settings, set.fairness.Settings, set.biomes.Settings, jump);
             List<Chunk> stretch = gen.Generate(1, BiomeId.MeadowSea, set.content.Settings.chunksPerStretch);
             ProjectBootstrap.EnsureFolder(Path.GetDirectoryName(SamplePath)?.Replace('\\', '/'));

@@ -24,7 +24,7 @@ namespace Hushlands.Core
         public static StretchValidation FromSettings(ContentSettings content, FairnessSettings fairness, BiomeSettings biomes,
             RiderSettings rider, SpeedSettings speed, SurfaceSettings surfaces, VehicleSettings vehicles)
         {
-            JumpModel jump = JumpModel.ForDefaultVehicle(rider, speed, vehicles);
+            JumpModel jump = JumpModel.ForAllVehicles(rider, speed, vehicles);
             return new StretchValidation(new ChunkGenerator(content, fairness, biomes, jump),
                 new FairnessChecker(fairness, content, jump),
                 new BotValidator(rider, speed, surfaces, fairness, vehicles), content);

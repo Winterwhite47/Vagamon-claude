@@ -23,7 +23,7 @@ namespace Hushlands
             Mix = new MixDirector(c.audioMix.Settings);
             Score = new ScoreService(c.score.Settings);
             Save = new MemorySaveService();
-            Jump = JumpModel.ForDefaultVehicle(c.rider.Settings, c.speed.Settings, c.vehicles.Settings);
+            Jump = JumpModel.ForAllVehicles(c.rider.Settings, c.speed.Settings, c.vehicles.Settings);
             Generator = new ChunkGenerator(c.content.Settings, c.fairness.Settings, c.biomes.Settings, Jump);
             Fairness = new FairnessChecker(c.fairness.Settings, c.content.Settings, Jump);
             Bot = new BotValidator(c.rider.Settings, c.speed.Settings, c.surfaces.Settings, c.fairness.Settings,

@@ -26,6 +26,8 @@ namespace Hushlands
         public ScoreHud Hud { get; private set; }
         public DucklingPresenter Ducklings { get; private set; }
         public HazardPresenter Hazards { get; private set; }
+        public ISaveService Save { get; private set; }
+        public Garage Garage { get; private set; }
 
         public void Assign(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge)
         {
@@ -44,7 +46,9 @@ namespace Hushlands
                 return;
             }
 
-            SliceRefs r = SliceBuilder.Build(c, assets, biome, seed, transform);
+            Save = SaveProvider.Open(c);
+            Garage = new Garage(c.vehicles.Settings, Save);
+            SliceRefs r = SliceBuilder.Build(c, assets, biome, seed, transform, Garage.Selected);
             Refs = r;
             Autopilot = ForceAutopilot || AutopilotInput.Requested();
 
@@ -62,7 +66,7 @@ namespace Hushlands
                 input = player;
             }
 
-            r.Rider.Initialize(c.rider.Settings, c.speed.Settings, c.surfaces.Settings, r.Slope, input, true);
+            r.Rider.Initialize(r.Loadout.Rider, r.Loadout.Speed, r.Loadout.Surfaces, r.Slope, input, true);
             double start = c.content.Settings.checkpointOffsetMeters;
             r.Rider.ResetTo(new SlopePoint(start, r.Slope.HeightAt(start)), c.speed.Settings.startSpeed);
 

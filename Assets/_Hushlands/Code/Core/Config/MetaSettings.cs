@@ -114,9 +114,14 @@ namespace Hushlands.Core
         public float jumpScale;
         public float flipScale;
         public bool unlockedByDefault;
-        public int unlockCost;
+        /// <summary>Unlocks when lifetime spice coins reach this (earned, never spent: no shop, D-046).</summary>
+        public int unlockLifetimeCoins;
+        public string color;
+        public float deckLengthScale;
+        public float deckWidthScale;
 
-        public VehicleEntry(VehicleId vehicle, float friction, float drag, float jump, float flip, bool unlocked, int cost)
+        public VehicleEntry(VehicleId vehicle, float friction, float drag, float jump, float flip, bool unlocked, int coins,
+            string color, float deckLength, float deckWidth)
         {
             this.vehicle = vehicle;
             frictionScale = friction;
@@ -124,7 +129,10 @@ namespace Hushlands.Core
             jumpScale = jump;
             flipScale = flip;
             unlockedByDefault = unlocked;
-            unlockCost = cost;
+            unlockLifetimeCoins = coins;
+            this.color = color;
+            deckLengthScale = deckLength;
+            deckWidthScale = deckWidth;
         }
     }
 
@@ -134,12 +142,12 @@ namespace Hushlands.Core
         public VehicleId defaultVehicle = VehicleId.WoodenHillSled;
         public VehicleEntry[] entries =
         {
-            new VehicleEntry(VehicleId.WoodenHillSled, 1f, 1f, 1f, 1f, true, 0),
-            new VehicleEntry(VehicleId.TeaCrateBoard, 0.95f, 1.05f, 1.05f, 1.1f, false, 400),
-            new VehicleEntry(VehicleId.BananaLeafToboggan, 0.85f, 0.95f, 0.95f, 0.9f, false, 650),
-            new VehicleEntry(VehicleId.BambooSled, 1f, 0.9f, 1.1f, 1f, false, 900),
-            new VehicleEntry(VehicleId.GliderSkid, 1.05f, 1f, 1.2f, 1.15f, false, 1300),
-            new VehicleEntry(VehicleId.RainUmbrellaSlider, 0.9f, 1.1f, 1.25f, 0.95f, false, 1800),
+            new VehicleEntry(VehicleId.WoodenHillSled, 1f, 1f, 1f, 1f, true, 0, "#6B3A24", 1f, 1f),
+            new VehicleEntry(VehicleId.TeaCrateBoard, 0.95f, 1.05f, 1.05f, 1.1f, false, 150, "#8D3F2D", 0.9f, 1.1f),
+            new VehicleEntry(VehicleId.BananaLeafToboggan, 0.85f, 0.95f, 0.95f, 0.9f, false, 300, "#2E6B2A", 1.3f, 0.8f),
+            new VehicleEntry(VehicleId.BambooSled, 1f, 0.9f, 1.1f, 1f, false, 500, "#B9A15A", 1.1f, 0.9f),
+            new VehicleEntry(VehicleId.GliderSkid, 1.05f, 1f, 1.2f, 1.15f, false, 800, "#4A6B82", 1.2f, 1.3f),
+            new VehicleEntry(VehicleId.RainUmbrellaSlider, 0.9f, 1.1f, 1.25f, 0.95f, false, 1200, "#D4AF37", 0.8f, 1f),
         };
 
         public VehicleEntry Get(VehicleId id)
@@ -162,7 +170,11 @@ namespace Hushlands.Core
                 SettingsCheck.Positive(e, o, v.vehicle + ".dragScale", v.dragScale);
                 SettingsCheck.Positive(e, o, v.vehicle + ".jumpScale", v.jumpScale);
                 SettingsCheck.Positive(e, o, v.vehicle + ".flipScale", v.flipScale);
-                SettingsCheck.NonNegative(e, o, v.vehicle + ".unlockCost", v.unlockCost);
+                SettingsCheck.NonNegative(e, o, v.vehicle + ".unlockLifetimeCoins", v.unlockLifetimeCoins);
+                SettingsCheck.Positive(e, o, v.vehicle + ".deckLengthScale", v.deckLengthScale);
+                SettingsCheck.Positive(e, o, v.vehicle + ".deckWidthScale", v.deckWidthScale);
+                if (!Palette.TryParse(v.color, out _, out _, out _)) e.Add(o + ": bad colour for " + v.vehicle);
+                if (v.unlockedByDefault != (v.unlockLifetimeCoins == 0)) e.Add(o + ": " + v.vehicle + " unlockedByDefault must match zero coins");
             }
             SettingsCheck.CoversEnum(e, o, keys);
             bool defaultFound = false;

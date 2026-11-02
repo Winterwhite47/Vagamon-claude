@@ -101,6 +101,19 @@ Collapse zones: whole until the rider is within the warning lead (≥ 1 s at 18 
 Squall: seeded, first at 25 s, every 40–70 s, 12 s with 3 s ramps: −1 m/s headwind (never below 6), fog × 0.85 (mist
 fairness still ≥ 60%), +0.15 mist low-pass, gusts on the scarf.
 
+## Vehicles and garage (T11)
+| Vehicle | Jump | Flip | Drag | Friction | Unlock (lifetime spice coins) |
+|---|---|---|---|---|---|
+| Wooden hill sled | 1.00 | 1.00 | 1.00 | 1.00 | default |
+| Tea-crate board | 1.05 | 1.10 | 1.05 | 0.95 | 150 |
+| Banana-leaf toboggan | 0.95 | 0.90 | 0.95 | 0.85 | 300 |
+| Bamboo sled | 1.10 | 1.00 | 0.90 | 1.00 | 500 |
+| Glider-skid | 1.20 | 1.15 | 1.00 | 1.05 | 800 |
+| Rain-umbrella slider | 1.25 | 0.95 | 1.10 | 0.90 | 1200 |
+Content is generated and checked for the weakest jumper (`JumpModel.ForAllVehicles`), and the bot rides every stretch on
+every vehicle (1200/1200 in the reference model), so no vehicle is required or a handicap. Vehicles unlock as lifetime
+coins grow; nothing is bought or spent (no shop). Selection persists.
+
 ## Duckling safety (absolute)
 - Never shown injured, drowning or falling.
 - Nest cover closes on crash.

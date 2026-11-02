@@ -67,7 +67,7 @@ namespace Hushlands.Tests
         {
             var fair = new FairnessSettings();
             var content = new ContentSettings();
-            JumpModel jump = JumpModel.ForDefaultVehicle(new RiderSettings(), new SpeedSettings(), new VehicleSettings());
+            JumpModel jump = JumpModel.ForAllVehicles(new RiderSettings(), new SpeedSettings(), new VehicleSettings());
             List<Chunk> s = null;
             for (int seed = 1; seed < 100 && s == null; seed++)
             {
@@ -137,7 +137,7 @@ namespace Hushlands.Tests
         {
             var content = new ContentSettings();
             var fair = new FairnessSettings();
-            JumpModel jump = JumpModel.ForDefaultVehicle(new RiderSettings(), new SpeedSettings(), new VehicleSettings());
+            JumpModel jump = JumpModel.ForAllVehicles(new RiderSettings(), new SpeedSettings(), new VehicleSettings());
             List<Chunk> stretch = new ChunkGenerator(content, fair, new BiomeSettings(), jump).Generate(2, BiomeId.MeadowSea, content.chunksPerStretch);
             var slope = new StretchSlope(stretch);
             var rider = new KinematicRider(new RiderSettings(), new SpeedSettings(), slope, new SurfaceTable(new SurfaceSettings()));

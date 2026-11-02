@@ -50,11 +50,18 @@ namespace Hushlands
         public void Initialize(RiderSettings rider, SpeedSettings speed, SurfaceSettings surfaces,
             ISlopeSpline slope, IInputSource input, bool stepAutomatically)
         {
+            Initialize(rider, speed, new SurfaceTable(surfaces), slope, input, stepAutomatically);
+        }
+
+        /// <summary>Vehicle-aware setup: settings and surfaces from a VehicleLoadout.</summary>
+        public void Initialize(RiderSettings rider, SpeedSettings speed, ISurfaceProvider surfaces,
+            ISlopeSpline slope, IInputSource input, bool stepAutomatically)
+        {
             _r = rider ?? throw new ArgumentNullException(nameof(rider));
             _s = speed ?? throw new ArgumentNullException(nameof(speed));
             _slope = slope ?? throw new ArgumentNullException(nameof(slope));
             _input = input;
-            _surfaces = new SurfaceTable(surfaces);
+            _surfaces = surfaces ?? throw new ArgumentNullException(nameof(surfaces));
             _speed = new SpeedModel(speed);
             _brain = new RiderBrain(rider);
             autoStep = stepAutomatically;

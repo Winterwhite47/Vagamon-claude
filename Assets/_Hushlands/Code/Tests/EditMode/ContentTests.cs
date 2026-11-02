@@ -24,7 +24,7 @@ namespace Hushlands.Tests
             var rider = new RiderSettings();
             var speed = new SpeedSettings();
             var vehicles = new VehicleSettings();
-            _jump = JumpModel.ForDefaultVehicle(rider, speed, vehicles);
+            _jump = JumpModel.ForAllVehicles(rider, speed, vehicles);
             _gen = new ChunkGenerator(_content, _fair, new BiomeSettings(), _jump);
             _checker = new FairnessChecker(_fair, _content, _jump);
             _bot = new BotValidator(rider, speed, new SurfaceSettings(), _fair, vehicles);
@@ -90,9 +90,9 @@ namespace Hushlands.Tests
             Assert.AreEqual(68.72984330132456, s[0].Length, 1e-9);
             Assert.AreEqual(3, s[0].Difficulty);
             Assert.AreEqual(0.13672475516796112, s[0].SlopeRadians, 1e-7);
-            Assert.AreEqual(868.9707005877356, total, 1e-6);
-            Assert.AreEqual(6, hazards);
-            Assert.AreEqual(62, features);
+            Assert.AreEqual(1160.1591064950214, total, 1e-6);
+            Assert.AreEqual(12, hazards);
+            Assert.AreEqual(66, features);
         }
 
         [Test]

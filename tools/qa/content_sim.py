@@ -60,8 +60,10 @@ def load():
     s["biomes"] = {m[0]: m[1] for m in
                    re.findall(r"new BiomeEntry\(BiomeId\.(\w+), [^)]*SurfaceId\.(\w+)\)", src)}
     veh = re.findall(r"new VehicleEntry\(VehicleId\.(\w+), ([\d.]+)f, ([\d.]+)f, ([\d.]+)f", src)
-    default = re.search(r"defaultVehicle = VehicleId\.(\w+)", src).group(1)
-    s["jumpScale"] = {v[0]: float(v[3]) for v in veh}[default]
+    s["defaultVehicle"] = re.search(r"defaultVehicle = VehicleId\.(\w+)", src).group(1)
+    s["vehicles"] = {v[0]: {"friction": float(v[1]), "drag": float(v[2]), "jump": float(v[3])} for v in veh}
+    # Content is generated and checked for the weakest jumper (JumpModel.ForAllVehicles).
+    s["jumpScale"] = min(v["jump"] for v in s["vehicles"].values())
     return s
 
 
@@ -354,9 +356,10 @@ def check(s, chunks):
 
 
 # ---------- bot (KinematicRider + SpeedModel mirror) ----------
-def bot(s, chunks):
+def bot(s, chunks, vehicle=None):
     sp, r, F = s["SpeedSettings"], s["RiderSettings"], s["FairnessSettings"]
-    vy0 = r["jumpVelocity"] * s["jumpScale"]
+    veh = s["vehicles"][vehicle or s["defaultVehicle"]]
+    vy0 = r["jumpVelocity"] * veh["jump"]
     heights, h = [], 0.0
     for c in chunks:
         heights.append(h)
@@ -400,9 +403,9 @@ def bot(s, chunks):
             jumped, jumps = nxt, jumps + 1
         run += dt
         ang = chunks[idx(d)].slope
-        fric = s["surfaces"][surface(d)][0]
+        fric = s["surfaces"][surface(d)][0] * veh["friction"]
         if not air:
-            drag = sp["baseDrag"]
+            drag = sp["baseDrag"] * veh["drag"]
             acc = sp["gravity"] * math.sin(ang) - sp["gravity"] * math.cos(ang) * fric - drag * speed * speed
             target = min(sp["maxSpeed"], sp["minSpeed"] + max(0.0, run) / sp["rampIntervalSeconds"] * sp["rampAmount"])
             acc += (target - speed) * sp["assistGain"]
@@ -488,6 +491,7 @@ def main():
     ap.add_argument("--first-seed", type=int, default=1)
     ap.add_argument("--log", default="Logs/content_validation_py.txt")
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--all-vehicles", action="store_true")
     a = ap.parse_args()
     s = load()
     if a.selftest:
@@ -500,7 +504,7 @@ def main():
         print(f"selftest: {len(res) - bad}/{len(res)} mutations caught")
         return 1 if bad else 0
     count = a.count or s["ContentSettings"]["validationStretchCount"]
-    lines, passed, hazards, kinds = [], 0, 0, {}
+    lines, passed, hazards, kinds, vehicle_runs = [], 0, 0, {}, {}
     for i in range(count):
         seed, biome = a.first_seed + i, BIOMES[i % len(BIOMES)]
         chunks = generate(s, seed, biome, s["ContentSettings"]["chunksPerStretch"])
@@ -511,10 +515,18 @@ def main():
                 kinds[f.kind] = kinds.get(f.kind, 0) + 1
         viol = check(s, chunks)
         ok_bot, rep = bot(s, chunks)
+        if a.all_vehicles:
+            for vname in s["vehicles"]:
+                vok, vrep = bot(s, chunks, vname)
+                vehicle_runs[vname] = vehicle_runs.get(vname, 0) + vok
+                if not vok:
+                    ok_bot, rep = False, f"{vname}: {vrep}"
         ok = ok_bot and not viol
         passed += ok
         lines.append(f"{'PASS' if ok else 'FAIL'} {biome} seed={seed} {rep}" + "".join(f" [{x}]" for x in viol))
     summary = f"summary: {passed}/{count} passed, hazards={hazards}, features={dict(sorted(kinds.items()))}"
+    if a.all_vehicles:
+        summary += " vehicles=" + ", ".join(f"{k} {v}/{count}" for k, v in vehicle_runs.items())
     lines.append(summary)
     out = ROOT / a.log
     out.parent.mkdir(parents=True, exist_ok=True)
