@@ -329,7 +329,7 @@ def check(s, chunks):
             v.append("jump.clearable")
         if z.whole[0] < z.c.start - eps or z.whole[1] > z.c.start + z.c.length + eps:
             v.append("zone.within.chunk")
-        if z.f.kind == "CollapseZone" and z.f.warning + eps < F["collapseWarningSeconds"] * jump.vmax:
+        if z.f.kind == "CollapseZone" and z.f.warning + eps < F["collapseWarningSeconds"] * jump.vmax + jump.takeoff_len(F["takeoffWindowMaxSeconds"]):
             v.append("collapse.warning")
         if any(overlaps(m[0], z.reveal) and m[1] > F["maxMistOverRequiredJump"] + eps for m in mist):
             v.append("mist.hides.jump")

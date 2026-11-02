@@ -120,7 +120,7 @@ namespace Hushlands.Core
     /// Kinematic reference rider on the 2.5D plane. Stub for T1; the PhysX rider (T3) replaces it in play,
     /// and the bot validator (T2) keeps using it as a deterministic model.
     /// </summary>
-    public sealed class KinematicRider : IRider, IAssistable, IBoostable
+    public sealed class KinematicRider : IRider, IAssistable, IBoostable, ICrashable
     {
         private readonly RiderSettings _rider;
         private readonly SpeedSettings _speedSettings;

@@ -31,9 +31,8 @@ namespace Hushlands.Tests
             var r = new Rig { Chunks = ChunkSerializer.Read(Track) };
             r.Slope = new StretchSlope(r.Chunks);
             r.Rider = new KinematicRider(new RiderSettings(), new SpeedSettings(), r.Slope, new SurfaceTable(new SurfaceSettings()));
-            r.Session = RunSession.Create(new FailureSettings(), new AssistSettings(), new MessageSettings(), new PickupSettings(),
-                new ScoreSettings(), new DucklingSettings(), 1.1f, 0.6f, 1, r.Rider, r.Rider, r.Rider,
-                new SpeedModel(new SpeedSettings()), r.Chunks, r.Slope, r.Nests, null, new RiderCameraSignals(r.Rider, r.Chunks));
+            r.Session = RunSession.Create(new RunSettingsBundle(), 1.1f, 0.6f, 1, r.Rider, r.Chunks, r.Slope, r.Nests, null,
+                new RiderCameraSignals(r.Rider, r.Chunks));
             return r;
         }
 

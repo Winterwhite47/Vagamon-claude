@@ -106,8 +106,9 @@ namespace Hushlands.Core
                     z.Whole.End > z.Chunk.StartDistance + z.Chunk.Length + Epsilon)
                     v.Add(new FairnessViolation(id, z.Body.Start, RuleZoneInChunk));
 
+                // The full warning must play out before the rider can reach the takeoff zone, even at max speed.
                 if (z.Feature.kind == FeatureKind.CollapseZone &&
-                    z.Feature.warningLead + Epsilon < _f.collapseWarningSeconds * _jump.MaxSpeed)
+                    z.Feature.warningLead + Epsilon < _f.collapseWarningSeconds * _jump.MaxSpeed + _jump.TakeoffZoneLength(_f.takeoffWindowMaxSeconds))
                     v.Add(new FairnessViolation(id, z.Body.Start, RuleCollapseWarning));
 
                 foreach (KeyValuePair<Span, float> m in mist)

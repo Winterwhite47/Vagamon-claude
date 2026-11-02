@@ -21,6 +21,7 @@ namespace Hushlands
         public MessageConfig messages;
         public DucklingConfig ducklings;
         public FairnessConfig fairness;
+        public HazardConfig hazards;
         public ContentConfig content;
         public BiomeConfig biomes;
         public CameraConfig camera;
@@ -30,6 +31,23 @@ namespace Hushlands
         public ScoreConfig score;
         public VehicleConfig vehicles;
         public ClothConfig cloth;
+
+        /// <summary>Settings bundle for a RunSession.</summary>
+        public Hushlands.Core.RunSettingsBundle RunBundle()
+        {
+            return new Hushlands.Core.RunSettingsBundle
+            {
+                Failure = failure.Settings,
+                Assist = assist.Settings,
+                Messages = messages.Settings,
+                Pickups = pickups.Settings,
+                Score = score.Settings,
+                Ducklings = ducklings.Settings,
+                Hazards = hazards.Settings,
+                Fairness = fairness.Settings,
+                Speed = speed.Settings,
+            };
+        }
 
         public static HushConfigSet Load()
         {
@@ -51,6 +69,7 @@ namespace Hushlands
             Collect(errors, nameof(assist), assist == null ? null : assist.Validate());
             Collect(errors, nameof(messages), messages == null ? null : messages.Validate());
             Collect(errors, nameof(ducklings), ducklings == null ? null : ducklings.Validate());
+            Collect(errors, nameof(hazards), hazards == null ? null : hazards.Validate());
             Collect(errors, nameof(fairness), fairness == null ? null : fairness.Validate());
             Collect(errors, nameof(content), content == null ? null : content.Validate());
             Collect(errors, nameof(biomes), biomes == null ? null : biomes.Validate());
@@ -76,7 +95,8 @@ namespace Hushlands
                     errors.Add("assist.speedScale too high to give extraRevealSeconds within visibleAheadMeters");
             }
             if (look != null && camera != null && fairness != null)
-                errors.AddRange(Hushlands.Core.MistVisibility.Check(look.Settings, camera.Settings, fairness.Settings));
+                errors.AddRange(Hushlands.Core.MistVisibility.Check(look.Settings, camera.Settings, fairness.Settings,
+                    hazards != null ? hazards.Settings.squallFogScale : 1f));
             if (camera != null && content != null &&
                 camera.Settings.maxSlopeForFramingDegrees < content.Settings.maxSlopeDegrees)
                 errors.Add("camera.maxSlopeForFramingDegrees must cover content.maxSlopeDegrees");

@@ -25,6 +25,7 @@ namespace Hushlands
         public PickupPresenter Pickups { get; private set; }
         public ScoreHud Hud { get; private set; }
         public DucklingPresenter Ducklings { get; private set; }
+        public HazardPresenter Hazards { get; private set; }
 
         public void Assign(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge)
         {
@@ -98,7 +99,12 @@ namespace Hushlands
             Hud = hudGo.AddComponent<ScoreHud>();
             Hud.Initialize(r.Run.Session.Score, c.uiMotion.Settings, reducedMotion);
 
-            if (mistLowPass != null) mistLowPass.Initialize(r.Mix, r.Mist, r.Rider.transform, r.Run.Session.Pickups);
+            var hazardsGo = new GameObject("Hazards");
+            hazardsGo.transform.SetParent(transform, false);
+            Hazards = hazardsGo.AddComponent<HazardPresenter>();
+            Hazards.Initialize(r.Run.Session, r, c.hazards.Settings, c.cloth.Settings, c.look.Settings, c.track.Settings, assets);
+
+            if (mistLowPass != null) mistLowPass.Initialize(r.Mix, r.Mist, r.Rider.transform, r.Run.Session);
             if (mixBridge != null) mixBridge.Initialize(r.Mix, null);
         }
     }

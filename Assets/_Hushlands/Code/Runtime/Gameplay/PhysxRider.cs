@@ -13,7 +13,7 @@ namespace Hushlands
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     [DisallowMultipleComponent]
-    public sealed class PhysxRider : MonoBehaviour, IRider, IAssistable, IBoostable
+    public sealed class PhysxRider : MonoBehaviour, IRider, IAssistable, IBoostable, ICrashable
     {
         [SerializeField] private bool autoStep = true;
 

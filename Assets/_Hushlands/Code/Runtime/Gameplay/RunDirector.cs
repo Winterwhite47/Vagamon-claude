@@ -27,9 +27,8 @@ namespace Hushlands
             Ducklings = new DucklingNestService();
             TrackSettings t = config.track.Settings;
             float bodyOffset = config.rider.Settings.colliderRadius + t.riderBodyHeight * 0.5f;
-            _session = RunSession.Create(config.failure.Settings, config.assist.Settings, config.messages.Settings,
-                config.pickups.Settings, config.score.Settings, config.ducklings.Settings, t.pickupHover, bodyOffset, seed, rider, rider, rider,
-                new SpeedModel(config.speed.Settings), stretch, slope, Ducklings, camera != null ? camera.Core : null, signals);
+            _session = RunSession.Create(config.RunBundle(), t.pickupHover, bodyOffset, seed, rider, stretch, slope,
+                Ducklings, camera != null ? camera.Core : null, signals);
         }
 
         private void FixedUpdate()

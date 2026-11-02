@@ -172,3 +172,15 @@ Format: ID · date · question · default used · status.
 ## D-042 · 2026-11-02 · Covers reopen only when riding resumes
 - Restore happens mid-wipe; opening covers there would show ducklings while the run is still failing. Covers now reopen in RunFlow as the phase returns to Riding.
 - Status: decided.
+
+## D-043 · 2026-11-02 · Landslide tuned for tension, not punishment
+- Default chase never catches a rider riding at cruise; it only closes on a rider stuck at minimum speed. Danger fires only when it is gaining or within 10 m (normal riding: 0% Danger time). Fits "calm"; harder modes can raise pace ratio later.
+- Status: open (playtest).
+
+## D-044 · 2026-11-02 · Collapse warning rule tightened
+- At 18 m/s the old 22.5 m warning ended after the latest takeoff point (24.3 m). Rule `collapse.warning` now requires 1 s at max speed plus the takeoff zone; generator slack 1.25 → 1.4. Content still 200/200; golden values repinned.
+- Status: decided.
+
+## D-045 · 2026-11-02 · Squall is mild weather
+- Bible lists a squall with the landslide but no rules. Default: short seeded gust windows with a small headwind, denser fog within the mist-fairness check, scarf gusts; no new crash cause.
+- Status: open.

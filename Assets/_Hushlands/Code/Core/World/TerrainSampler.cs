@@ -168,15 +168,17 @@ namespace Hushlands.Core
             return s.mistMeanFreePathAtFull / d;
         }
 
-        public static double RevealTransmittance(LookSettings s, BiomeLook look, float densityThreshold, double cameraDistance)
+        public static double RevealTransmittance(LookSettings s, BiomeLook look, float densityThreshold, double cameraDistance,
+            float fogScale = 1f)
         {
-            double global = System.Math.Exp(-cameraDistance / look.fogMeanFreePath);
+            double global = System.Math.Exp(-cameraDistance / (look.fogMeanFreePath * fogScale));
             double local = System.Math.Exp(-(s.mistVolumeDepth * 0.5) / MeanFreePath(s, densityThreshold));
             return global * local;
         }
 
-        /// <summary>Worst case over tuned biomes at the farthest camera distance of any state.</summary>
-        public static System.Collections.Generic.List<string> Check(LookSettings s, CameraSettings cam, FairnessSettings fair)
+        /// <summary>Worst case over tuned biomes at the farthest camera distance of any state (and densest squall fog).</summary>
+        public static System.Collections.Generic.List<string> Check(LookSettings s, CameraSettings cam, FairnessSettings fair,
+            float fogScale = 1f)
         {
             var errors = new System.Collections.Generic.List<string>();
             foreach (BiomeLook b in s.biomes)
@@ -185,7 +187,7 @@ namespace Hushlands.Core
                 double far = 0d;
                 BiomeCameraModifier m = cam.Get(b.biome);
                 foreach (CameraStateProfile p in cam.states) far = System.Math.Max(far, p.distance * m.distanceScale);
-                double t = RevealTransmittance(s, b, fair.maxMistOverRequiredJump, far);
+                double t = RevealTransmittance(s, b, fair.maxMistOverRequiredJump, far, fogScale);
                 if (t < s.minRevealTransmittance)
                     errors.Add("look." + b.biome + ": mist hides jumps (transmittance " + t.ToString("F2") + ")");
             }

@@ -93,7 +93,7 @@ namespace Hushlands.Core
         public float gapMaxLength = 5f;
         public float collapseMinLength = 2f;
         public float collapseMaxLength = 4.5f;
-        public float collapseWarningSlack = 1.25f;
+        public float collapseWarningSlack = 1.4f;
         public float hazardSpacingJitterMeters = 8f;
         public float sizeShrinkFactor = 0.85f;
         public int sizeShrinkTries = 6;

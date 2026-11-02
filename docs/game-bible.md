@@ -91,6 +91,16 @@ Touch radius 0.9 m around the rider's body. Same pickup again refreshes its time
 collected pickups stay collected after retry. Score: 1 pt per metre of new ground (retries can't farm it),
 100 per flip, 10 per coin, 250 per duckling group; all × the tea multiplier. HUD shows score on change, fades after 2.5 s.
 
+## Landslide, collapse, squall (T10)
+Landslide: starts 30 m behind after a calm 4 s; speed = 0.95 × rider cruise target + 0.15 × (gap − 22 m), clamped
+6.3–17.5 m/s. A rider at cruise pulls ahead to ~24–28 m and is never caught (200/200 stretches, closest 12.3 m); only a
+rider stalled at the 6 m/s floor is slowly closed on (caught after ~87 s, Danger camera ~38 s earlier). Danger when it
+is gaining with < 2.5 s to contact or within 10 m. Catch = Landslide crash; retry puts it 30 m behind with the calm delay.
+Collapse zones: whole until the rider is within the warning lead (≥ 1 s at 18 m/s plus the takeoff zone), crack for
+1 s (Danger camera), then open; whole again ahead of a retry point.
+Squall: seeded, first at 25 s, every 40–70 s, 12 s with 3 s ramps: −1 m/s headwind (never below 6), fog × 0.85 (mist
+fairness still ≥ 60%), +0.15 mist low-pass, gusts on the scarf.
+
 ## Duckling safety (absolute)
 - Never shown injured, drowning or falling.
 - Nest cover closes on crash.

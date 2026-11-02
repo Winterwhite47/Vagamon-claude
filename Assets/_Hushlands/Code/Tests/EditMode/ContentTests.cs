@@ -90,9 +90,9 @@ namespace Hushlands.Tests
             Assert.AreEqual(68.72984330132456, s[0].Length, 1e-9);
             Assert.AreEqual(3, s[0].Difficulty);
             Assert.AreEqual(0.13672475516796112, s[0].SlopeRadians, 1e-7);
-            Assert.AreEqual(1103.1335235570673, total, 1e-6);
-            Assert.AreEqual(12, hazards);
-            Assert.AreEqual(69, features);
+            Assert.AreEqual(868.9707005877356, total, 1e-6);
+            Assert.AreEqual(6, hazards);
+            Assert.AreEqual(62, features);
         }
 
         [Test]

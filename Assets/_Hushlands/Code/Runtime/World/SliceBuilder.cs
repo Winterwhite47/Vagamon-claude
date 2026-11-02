@@ -16,6 +16,9 @@ namespace Hushlands
         public MistField Mist;
         public PhysxRider Rider;
         public Transform Sled;
+        public VerletScarf Scarf;
+        public Fog Fog;
+        public float FogBaseMeanFreePath;
         public RiderCameraSignals Signals;
         public MixDirector Mix;
         public RunDirector Run;
@@ -123,6 +126,8 @@ namespace Hushlands
             fog.anisotropy.Override(look.fogAnisotropy);
             Palette.TryParse(look.fogAlbedo, out float fr, out float fg, out float fb);
             fog.albedo.Override(new Color(fr, fg, fb, 1f));
+            r.Fog = fog;
+            r.FogBaseMeanFreePath = look.fogMeanFreePath;
             Exposure exposure = profile.Add<Exposure>(true);
             exposure.mode.Override(ExposureMode.Fixed);
             exposure.fixedExposure.Override(look.exposureEV);
@@ -171,7 +176,8 @@ namespace Hushlands
                 bones[i] = new GameObject("ScarfBone_" + i).transform;
                 bones[i].SetParent(scarfRoot, false);
             }
-            scarfRoot.gameObject.AddComponent<VerletScarf>().Initialize(cloth, c.speed.Settings.gravity, neck, body.transform, bones, true);
+            r.Scarf = scarfRoot.gameObject.AddComponent<VerletScarf>();
+            r.Scarf.Initialize(cloth, c.speed.Settings.gravity, neck, body.transform, bones, true);
             scarfRoot.gameObject.AddComponent<ScarfLine>().Initialize(bones, assets.Get("Scarf"), cloth.scarfWidth);
 
             go.AddComponent<SledFlexDriver>().Initialize(cloth, r.Rider, sled);

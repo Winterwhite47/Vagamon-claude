@@ -21,6 +21,7 @@ namespace Hushlands.Editor
             set.messages = Make<MessageConfig>("Gameplay");
             set.ducklings = Make<DucklingConfig>("Gameplay");
             set.fairness = Make<FairnessConfig>("Content");
+            set.hazards = Make<HazardConfig>("Gameplay");
             set.content = Make<ContentConfig>("Content");
             set.biomes = Make<BiomeConfig>("Content");
             set.camera = Make<CameraConfig>("Camera");

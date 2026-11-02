@@ -163,9 +163,8 @@ namespace Hushlands.Tests
             var signals = new RiderCameraSignals(rider, chunks);
             var ducks = new DucklingNestService();
             float bodyOffset = 0.6f;
-            RunSession session = RunSession.Create(new FailureSettings(), new AssistSettings(), new MessageSettings(),
-                new PickupSettings(), new ScoreSettings(), new DucklingSettings(), Hover, bodyOffset, 1, rider, rider, rider,
-                new SpeedModel(new SpeedSettings()), chunks, slope, ducks, null, signals);
+            RunSession session = RunSession.Create(new RunSettingsBundle(), Hover, bodyOffset, 1, rider, chunks, slope, ducks,
+                null, signals);
             var input = new ScriptedInput();
             while (rider.Position.Distance < 40)
             {

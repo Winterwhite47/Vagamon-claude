@@ -94,7 +94,7 @@ for doc in ["docs/game-bible.md", "docs/playbook.md", "docs/decisions.md"]:
 # 10. T1: every settings block has a config asset wrapper, is linked in HushConfigSet and built by bootstrap.
 settings_src = "".join(f.read_text() for f in (CODE / "Core/Config").glob("*.cs"))
 settings = sorted(set(re.findall(r"class (\w+)Settings\s*:\s*ISettings", settings_src)))
-check(len(settings) == 19, f"expected 19 settings blocks, found {len(settings)}")
+check(len(settings) == 20, f"expected 20 settings blocks, found {len(settings)}")
 config_set = (CODE / "Runtime/Config/HushConfigSet.cs").read_text()
 builder = (CODE / "Editor/ConfigSetBuilder.cs").read_text()
 for name in settings:
@@ -189,6 +189,20 @@ restore = nest_src[nest_src.index("public void RestoreToCheckpoint"):nest_src.in
 check("NestCoversClosed = false" not in restore, "RestoreToCheckpoint must not open covers")
 pres = (CODE / "Runtime/World/DucklingPresenter.cs").read_text()
 check("Rigidbody" not in pres and "DucklingSafetyAudit.Check" in pres, "ducklings must have no physics and be audited")
+
+# 20. T10: hazards present, landslide floor above rider floor (chase is real), squall fog in mist check.
+for f in ["Core/Hazards/Hazards.cs", "Core/Config/HazardSettings.cs", "Runtime/World/HazardPresenter.cs", "Runtime/Config/HazardConfig.cs"]:
+    check((CODE / f).is_file(), f"missing {f}")
+hz = cs_scalars = None
+import importlib.util
+spec = importlib.util.spec_from_file_location("content_sim", ROOT / "tools/qa/content_sim.py")
+mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+H = mod.scalars(mod.class_body((CODE / "Core/Config/HazardSettings.cs").read_text(), "HazardSettings"))
+SP = mod.scalars(mod.class_body((CODE / "Core/Config/GameplaySettings.cs").read_text(), "SpeedSettings"))
+check(H["landslideMinSpeed"] > SP["minSpeed"], "landslide floor must exceed rider minimum speed")
+check(H["landslideMaxSpeed"] < SP["maxSpeed"], "landslide must stay slower than max rider speed")
+check("squallFogScale" in (CODE / "Runtime/Config/HushConfigSet.cs").read_text(), "squall fog not in mist fairness check")
+check((ROOT / "tools/qa/hazard_sim.py").is_file(), "missing hazard reference model")
 
 for e in errors:
     print("FAIL:", e)

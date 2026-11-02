@@ -72,6 +72,8 @@ namespace Hushlands.Core
         public bool LanternActive => Active(PickupId.MistLantern);
         public bool TeaActive => Active(PickupId.TeaFlask);
         public float MistScale => LanternActive ? _s.lanternMistScale : 1f;
+        /// <summary>Cruise bonus from pickups (wind feather); RunSession composes it with the squall headwind.</summary>
+        public float BoostBonus => WindActive ? _s.windSpeedBonus : 0f;
         public event Action<PickupInstance> Collected;
         public event Action<PickupId, bool> EffectChanged;
 
@@ -175,7 +177,7 @@ namespace Hushlands.Core
 
         private void Apply()
         {
-            _boost?.SetBoost(WindActive ? _s.windSpeedBonus : 0f);
+            _boost?.SetBoost(BoostBonus);
             _score.Multiplier = TeaActive ? _s.teaScoreMultiplier : 1f;
         }
     }

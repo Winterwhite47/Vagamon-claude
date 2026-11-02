@@ -18,9 +18,15 @@ namespace Hushlands.Core
         private readonly float[] _px;
         private readonly float[] _py;
         private readonly float[] _pz;
+        private float _windX;
+        private float _windY;
+        private float _windZ;
 
         public VerletScarfSolver(ClothSettings settings, float gravity)
         {
+            _windX = settings.windX;
+            _windY = settings.windY;
+            _windZ = settings.windZ;
             _s = settings ?? throw new ArgumentNullException(nameof(settings));
             _gravity = gravity * settings.gravityScale;
             Count = settings.scarfSegments + 1;
@@ -34,6 +40,14 @@ namespace Hushlands.Core
         }
 
         public int Count { get; }
+
+        /// <summary>Weather override (squall gusts); defaults to the ClothSettings wind.</summary>
+        public void SetWind(float x, float y, float z)
+        {
+            _windX = x;
+            _windY = y;
+            _windZ = z;
+        }
         public float SegmentLength => _segment;
         public float X(int i) => _x[i];
         public float Y(int i) => _y[i];
@@ -125,9 +139,9 @@ namespace Hushlands.Core
                 _px[i] = _x[i] + cx;
                 _py[i] = _y[i] + cy;
                 _pz[i] = _z[i] + cz;
-                float axx = drag * (_s.windX - (vx + cx) / h);
-                float ayy = drag * (_s.windY - (vy + cy) / h) - _gravity;
-                float azz = drag * (_s.windZ - (vz + cz) / h);
+                float axx = drag * (_windX - (vx + cx) / h);
+                float ayy = drag * (_windY - (vy + cy) / h) - _gravity;
+                float azz = drag * (_windZ - (vz + cz) / h);
                 _x[i] += cx + vx + axx * h2;
                 _y[i] += cy + vy + ayy * h2;
                 _z[i] += cz + vz + azz * h2;

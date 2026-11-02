@@ -170,6 +170,7 @@ namespace Hushlands.Core
         public float riderBodyHeight = 0.7f;
         public float riderBodyWidth = 0.4f;
         public float riderHeadDiameter = 0.24f;
+        public float collapseSlabThickness = 0.1f;
 
         public void Validate(List<string> e)
         {
@@ -186,6 +187,7 @@ namespace Hushlands.Core
                          new KeyValuePair<string, float>(nameof(riderBodyHeight), riderBodyHeight),
                          new KeyValuePair<string, float>(nameof(riderBodyWidth), riderBodyWidth),
                          new KeyValuePair<string, float>(nameof(riderHeadDiameter), riderHeadDiameter),
+                         new KeyValuePair<string, float>(nameof(collapseSlabThickness), collapseSlabThickness),
                      })
             {
                 SettingsCheck.Positive(e, o, kv.Key, kv.Value);

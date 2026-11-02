@@ -27,6 +27,7 @@ namespace Hushlands.Tests
             yield return new VehicleSettings();
             yield return new ClothSettings();
             yield return new LookSettings();
+            yield return new HazardSettings();
         }
 
         [TestCaseSource(nameof(AllDefaults))]
