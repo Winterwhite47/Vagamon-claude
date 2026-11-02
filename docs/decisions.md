@@ -160,3 +160,15 @@ Format: ID · date · question · default used · status.
 ## D-039 · 2026-11-02 · No pickup respawn on retry
 - Collected pickups stay collected and distance scores only new ground, so crashing cannot farm score. Timed effects end on a crash.
 - Status: decided.
+
+## D-040 · 2026-11-02 · Rescue mechanic
+- Bible says "rescuing ducklings" without a mechanic. Default: pass a nest grounded (no button), ducklings ride in a covered basket; rescues count at once and are never undone (kind; matches D-008).
+- Status: open (design review).
+
+## D-041 · 2026-11-02 · Fix: retry restore boundary
+- T1 code kept a nest Waiting when it sat just after the retry checkpoint, though the rider restarts before it. Fixed to "at or after the checkpoint"; two tests that encoded the bug were corrected.
+- Status: decided.
+
+## D-042 · 2026-11-02 · Covers reopen only when riding resumes
+- Restore happens mid-wipe; opening covers there would show ducklings while the run is still failing. Covers now reopen in RunFlow as the phase returns to Riding.
+- Status: decided.

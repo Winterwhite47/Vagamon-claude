@@ -224,6 +224,12 @@ namespace Hushlands
             if (h != null) Crash(h.cause);
         }
 
+        /// <summary>External crash (landslide catch, scripted tests).</summary>
+        public void ForceCrash(CrashCause cause)
+        {
+            Crash(cause);
+        }
+
         private void Crash(CrashCause cause)
         {
             if (_state == RiderState.Crashed) return;

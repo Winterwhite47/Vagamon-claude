@@ -108,9 +108,14 @@ namespace Hushlands.Tests
             d.OnCrash();
             Assert.IsTrue(d.NestCoversClosed);
             d.RestoreToCheckpoint(1);
+            Assert.IsTrue(d.NestCoversClosed, "covers stay shut until riding resumes");
+            d.OpenCovers();
             Assert.AreEqual(DucklingGroupStatus.Rescued, d.StatusOf(1));
-            Assert.AreEqual(DucklingGroupStatus.Waiting, d.StatusOf(2));
+            Assert.AreEqual(DucklingGroupStatus.Ahead, d.StatusOf(2), "group after the retry checkpoint is ahead again");
             Assert.AreEqual(DucklingGroupStatus.Ahead, d.StatusOf(3));
+            d.MarkPassed(2);
+            d.RestoreToCheckpoint(2);
+            Assert.AreEqual(DucklingGroupStatus.Waiting, d.StatusOf(2), "group before the retry checkpoint keeps waiting");
             Assert.IsFalse(d.NestCoversClosed);
             foreach (DucklingGroupStatus s in Enum.GetValues(typeof(DucklingGroupStatus)))
             {

@@ -15,6 +15,7 @@ namespace Hushlands
         public TerrainSampler Terrain;
         public MistField Mist;
         public PhysxRider Rider;
+        public Transform Sled;
         public RiderCameraSignals Signals;
         public MixDirector Mix;
         public RunDirector Run;
@@ -55,7 +56,6 @@ namespace Hushlands
             TerrainMeshBuilder.BuildTrackStrip(r.Terrain, ls, length, assets.Get("Track"), world, c.track.Settings.stripLift);
 
             AddObstacleVisuals(r, assets);
-            AddFeatureProps(r, c, assets, world);
             r.Mist = new MistField(r.Stretch, c.biomes.Settings.Get(biome).baseMistDensity);
             r.MistVolumes = AddMistVolumes(r, ls, look, world);
             AddLighting(r, look, world);
@@ -73,26 +73,6 @@ namespace Hushlands
                 GameObject v = Primitive(PrimitiveType.Cube, "Visual", h.transform, assets.Get("Stone"));
                 v.transform.localScale = box.size;
                 r.Obstacles++;
-            }
-        }
-
-        private static void AddFeatureProps(SliceRefs r, HushConfigSet c, SliceAssets assets, Transform world)
-        {
-            TrackSettings t = c.track.Settings;
-            foreach (IChunk ch in r.Stretch)
-            {
-                foreach (ChunkFeature f in ch.Features)
-                {
-                    double x = ch.StartDistance + f.start;
-                    float y = r.Slope.HeightAt(x);
-                    if (f.kind == FeatureKind.DucklingNest)
-                    {
-                        GameObject nest = Primitive(PrimitiveType.Cylinder, "Nest_" + f.variant, world, assets.Get("Nest"));
-                        nest.transform.position = new Vector3((float)x, y, t.propSideOffset);
-                        nest.transform.localScale = new Vector3(t.nestDiameter, t.nestHeight, t.nestDiameter);
-                        r.Nests++;
-                    }
-                }
             }
         }
 
@@ -168,6 +148,7 @@ namespace Hushlands
             // Hero placeholder: wooden hill sled, rider in a mist-blue jacket, gold scarf.
             var sled = new GameObject("Sled").transform;
             sled.SetParent(go.transform, false);
+            r.Sled = sled;
             GameObject deck = Primitive(PrimitiveType.Cube, "Deck", sled, assets.Get("Wood"));
             deck.transform.localPosition = new Vector3(0f, rs.colliderRadius, 0f);
             deck.transform.localScale = new Vector3(rs.colliderLength, t.sledDeckThickness, t.sledWidth);

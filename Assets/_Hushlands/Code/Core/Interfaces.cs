@@ -153,9 +153,12 @@ namespace Hushlands.Core
         DucklingGroupStatus StatusOf(int groupId);
         IReadOnlyList<int> Groups { get; }
         void Rescue(int groupId);
-        /// <summary>On crash: close nest covers, keep rescued groups, mark missed groups Waiting.</summary>
+        /// <summary>On crash: close nest covers and the basket lid at once; rescued groups stay rescued.</summary>
         void OnCrash();
+        /// <summary>Groups at or after the checkpoint and not rescued become Ahead; earlier missed groups keep Waiting.</summary>
         void RestoreToCheckpoint(int checkpointIndex);
+        /// <summary>Reopen covers once riding resumes.</summary>
+        void OpenCovers();
     }
 
     // ---------- Pickups, score, progression, save ----------

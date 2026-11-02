@@ -186,7 +186,7 @@ namespace Hushlands.Tests
         }
 
         [Test]
-        public void Ducklings_RestoredOnRetry_MissedWait_NeverLost()
+        public void Ducklings_RestoredOnRetry_RescuedKept_NeverLost()
         {
             Rig r = Make();
             Ride(r, 130);
@@ -197,7 +197,7 @@ namespace Hushlands.Tests
             Assert.IsTrue(r.Ducks.NestCoversClosed);
             Wait(r, r.Failure.failureHoldSeconds + r.Failure.retryTransitionSeconds + 0.05f);
             Assert.AreEqual(DucklingGroupStatus.Rescued, r.Ducks.StatusOf(0));
-            Assert.AreEqual(DucklingGroupStatus.Waiting, r.Ducks.StatusOf(1));
+            Assert.AreEqual(DucklingGroupStatus.Ahead, r.Ducks.StatusOf(1), "nest after the retry checkpoint is rescuable again");
             Assert.IsFalse(r.Ducks.NestCoversClosed);
         }
 

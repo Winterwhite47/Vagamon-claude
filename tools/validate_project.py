@@ -179,6 +179,17 @@ for name in ["SpiceCoin", "GoldenMistbell", "WindFeather", "MagnetBell", "MistLa
     check(f"PickupId.{name}" in ps_src, f"PickupSystem does not handle {name}")
 check("if (t > _s.maxSpeed) t = _s.maxSpeed;" in (CODE / "Core/Services/GameplayServices.cs").read_text(), "boost must be capped at maxSpeed")
 
+# 19. T9: duckling loop, audit and presenter; covers reopen only when riding resumes; ducklings have no physics.
+for f in ["Core/Ducklings/DucklingLoop.cs", "Runtime/World/DucklingPresenter.cs"]:
+    check((CODE / f).is_file(), f"missing {f}")
+flow_src = (CODE / "Core/Flow/RunFlow.cs").read_text()
+check("_ducklings.OpenCovers();" in flow_src, "covers must reopen in RunFlow when riding resumes")
+nest_src = (CODE / "Core/Services/FlowServices.cs").read_text()
+restore = nest_src[nest_src.index("public void RestoreToCheckpoint"):nest_src.index("public void OpenCovers")]
+check("NestCoversClosed = false" not in restore, "RestoreToCheckpoint must not open covers")
+pres = (CODE / "Runtime/World/DucklingPresenter.cs").read_text()
+check("Rigidbody" not in pres and "DucklingSafetyAudit.Check" in pres, "ducklings must have no physics and be audited")
+
 for e in errors:
     print("FAIL:", e)
 print(f"validate_project: {checks - len(errors)}/{checks} checks passed, {len(errors)} failed")

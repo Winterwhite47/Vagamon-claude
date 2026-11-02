@@ -87,6 +87,7 @@ namespace Hushlands.Core
             new MaterialSpec("Feather", "#E8EEF2", 0.3f, 0f),
             new MaterialSpec("Tea", Terracotta, 0.7f, 0f),
             new MaterialSpec("Bell", "#B8B2A3", 0.85f, 1f),
+            new MaterialSpec("Duckling", "#E9C46A", 0.35f, 0f),
         };
 
         // --- Terrain mesh ---

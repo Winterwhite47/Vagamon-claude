@@ -110,6 +110,7 @@ namespace Hushlands.Core
                     if (_teleported && PhaseTime >= _f.retryTransitionSeconds)
                     {
                         if (_signals != null) _signals.FailureHold = false;
+                        _ducklings.OpenCovers();
                         SetPhase(FlowPhase.Riding);
                     }
                     break;

@@ -97,6 +97,14 @@ collected pickups stay collected after retry. Score: 1 pt per metre of new groun
 - Checkpoint groups restored.
 - Missed groups are "Waiting", never lost. (Enforced in `DucklingGroupStatus`: Ahead, Rescued, Waiting only.)
 
+Loop (T9): ride past a nest on or near the ground (within 2.5 m, ≤ 0.6 m above the slope) and its four ducklings hop
+into the covered sled basket (+250 pts, gentle line). Jumping past a nest leaves it Waiting. On a crash every nest cover
+and the basket lid shut on that same step and stay shut through the hold and the mist wipe; they reopen when riding
+resumes. Retry from a checkpoint before a waiting nest makes it Ahead again; rescued groups always stay rescued (and
+are not re-scored). Ducklings are only children of a nest or basket and have no physics. `DucklingSafetyAudit` checks
+every frame: covers shut while failing, nothing visible while shut, nothing drawn outside nest or basket, only safe
+statuses. Content rule `nest.safe` keeps nests 6 m clear of every hazard zone.
+
 ## Fairness
 - 1.5 s obstacle reveal at current speed.
 - Mist never hides a required jump.

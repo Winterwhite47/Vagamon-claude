@@ -24,6 +24,7 @@ namespace Hushlands
         public RetryOverlay Overlay { get; private set; }
         public PickupPresenter Pickups { get; private set; }
         public ScoreHud Hud { get; private set; }
+        public DucklingPresenter Ducklings { get; private set; }
 
         public void Assign(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge)
         {
@@ -84,6 +85,13 @@ namespace Hushlands
             Pickups = pickupsGo.AddComponent<PickupPresenter>();
             Pickups.Initialize(r.Run.Session.Pickups, c.pickups.Settings, assets, c.track.Settings.pickupDiameter);
             r.Pickups = Pickups.ViewCount;
+
+            var ducksGo = new GameObject("Ducklings");
+            ducksGo.transform.SetParent(transform, false);
+            Ducklings = ducksGo.AddComponent<DucklingPresenter>();
+            Ducklings.Initialize(r.Run.Ducklings, r.Run.Session.Ducklings, r.Run.Flow, r.Rider, r.Sled, r.Slope,
+                c.ducklings.Settings, c.track.Settings, assets);
+            r.Nests = Ducklings.NestCount;
 
             var hudGo = new GameObject("ScoreHud");
             hudGo.transform.SetParent(transform, false);

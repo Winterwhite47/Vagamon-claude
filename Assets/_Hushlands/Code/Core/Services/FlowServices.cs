@@ -115,7 +115,23 @@ namespace Hushlands.Core
         private readonly List<int> _groups = new List<int>();
 
         public IReadOnlyList<int> Groups => _groups;
+        /// <summary>Nest covers and the sled basket lid. Closed from the crash step until the retry completes.</summary>
         public bool NestCoversClosed { get; private set; }
+
+        public int CheckpointOf(int groupId)
+        {
+            return _groupCheckpoint.TryGetValue(groupId, out int c) ? c : -1;
+        }
+
+        public int Count(DucklingGroupStatus status)
+        {
+            int n = 0;
+            foreach (int g in _groups)
+            {
+                if (_status[g] == status) n++;
+            }
+            return n;
+        }
 
         public void Register(int groupId, int checkpointIndex)
         {
@@ -152,11 +168,17 @@ namespace Hushlands.Core
         {
             foreach (int g in _groups)
             {
-                if (_groupCheckpoint[g] > checkpointIndex && _status[g] != DucklingGroupStatus.Rescued)
+                // Groups at or after the retry checkpoint are ahead of the rider again (the checkpoint precedes them).
+                if (_groupCheckpoint[g] >= checkpointIndex && _status[g] != DucklingGroupStatus.Rescued)
                 {
                     _status[g] = DucklingGroupStatus.Ahead;
                 }
             }
+        }
+
+        /// <summary>Covers open only when riding resumes (never during failure hold or the retry wipe).</summary>
+        public void OpenCovers()
+        {
             NestCoversClosed = false;
         }
     }

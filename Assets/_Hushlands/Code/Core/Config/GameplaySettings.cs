@@ -259,6 +259,12 @@ namespace Hushlands.Core
         {
             "A friendly wind will help for a while.",
         };
+        public string[] rescue =
+        {
+            "Little ones tucked in, warm and safe.",
+            "Safe in the basket. Homeward now.",
+            "A happy little chorus behind you.",
+        };
         public string retryHint = "Tap to ride again";
         public int maxLength = 60;
         /// <summary>Words that must never appear in player-facing failure text (duckling safety, calm tone).</summary>
@@ -300,6 +306,8 @@ namespace Hushlands.Core
                 if (lines == null || lines.Length == 0) e.Add(o + ": no lines for " + c);
                 else CheckAll(e, o, c.ToString(), lines);
             }
+            if (rescue == null || rescue.Length == 0) e.Add(o + ": no rescue lines");
+            else CheckAll(e, o, nameof(rescue), rescue);
             if (assistOffer == null || assistOffer.Length == 0) e.Add(o + ": no assistOffer lines");
             else CheckAll(e, o, nameof(assistOffer), assistOffer);
             if (!IsClean(retryHint)) e.Add(o + ": retryHint not clean");
@@ -339,7 +347,13 @@ namespace Hushlands.Core
     {
         public int ducklingsPerGroup = 4;
         public float nestCoverCloseSeconds = 0.25f;
+        /// <summary>Rider rescues a nest while within this distance along the run of it.</summary>
         public float rescueRadius = 2.5f;
+        /// <summary>Only while on or just above the ground: ducklings hop into the basket, never into the air.</summary>
+        public float maxRescueHeight = 0.6f;
+        /// <summary>Most ducklings drawn in the sled basket at once.</summary>
+        public int basketMaxShown = 6;
+        public float ducklingSize = 0.14f;
 
         public void Validate(List<string> e)
         {
@@ -347,6 +361,9 @@ namespace Hushlands.Core
             SettingsCheck.Positive(e, o, nameof(ducklingsPerGroup), ducklingsPerGroup);
             SettingsCheck.Positive(e, o, nameof(nestCoverCloseSeconds), nestCoverCloseSeconds);
             SettingsCheck.Positive(e, o, nameof(rescueRadius), rescueRadius);
+            SettingsCheck.NonNegative(e, o, nameof(maxRescueHeight), maxRescueHeight);
+            SettingsCheck.Positive(e, o, nameof(basketMaxShown), basketMaxShown);
+            SettingsCheck.Positive(e, o, nameof(ducklingSize), ducklingSize);
         }
     }
 }

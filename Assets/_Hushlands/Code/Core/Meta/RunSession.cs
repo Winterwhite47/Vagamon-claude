@@ -15,10 +15,14 @@ namespace Hushlands.Core
         private int _flipsCounted;
 
         /// <param name="bodyOffset">Height of the rider's body centre above the sled point; pickups are touched there.</param>
-        public RunSession(RunFlow flow, PickupSystem pickups, ScoreService score, IRider rider, RiderCameraSignals signals,
-            float bodyOffset)
+        private readonly ISlopeSpline _slope;
+
+        public RunSession(RunFlow flow, PickupSystem pickups, ScoreService score, DucklingLoop ducklings, IRider rider,
+            ISlopeSpline slope, RiderCameraSignals signals, float bodyOffset)
         {
             _bodyOffset = bodyOffset;
+            _slope = slope ?? throw new ArgumentNullException(nameof(slope));
+            Ducklings = ducklings ?? throw new ArgumentNullException(nameof(ducklings));
             Flow = flow ?? throw new ArgumentNullException(nameof(flow));
             Pickups = pickups ?? throw new ArgumentNullException(nameof(pickups));
             Score = score ?? throw new ArgumentNullException(nameof(score));
@@ -32,6 +36,7 @@ namespace Hushlands.Core
         public RunFlow Flow { get; }
         public PickupSystem Pickups { get; }
         public ScoreService Score { get; }
+        public DucklingLoop Ducklings { get; }
 
         public void Tick(IInputSource input, float dt)
         {
@@ -39,6 +44,8 @@ namespace Hushlands.Core
             if (Flow.Phase != FlowPhase.Riding || _rider.State == RiderState.Crashed) return;
             SlopePoint p = _rider.Position;
             Pickups.Step(p.Distance, p.Height + _bodyOffset, dt);
+            bool grounded = _rider.State == RiderState.Grounded || _rider.State == RiderState.Tucking;
+            Ducklings.Step(p.Distance, p.Height - _slope.HeightAt(p.Distance), grounded);
             Score.TrackDistance(p.Distance);
             int flips = _rider.CompletedFlips;
             if (flips > _flipsCounted)
@@ -51,14 +58,15 @@ namespace Hushlands.Core
 
         /// <summary>Convenience for scenes and tests: flow + pickups + score from config blocks.</summary>
         public static RunSession Create(FailureSettings failure, AssistSettings assist, MessageSettings messages,
-            PickupSettings pickups, ScoreSettings score, float pickupHover, float bodyOffset, long seed, IRider rider, IAssistable assistable,
+            PickupSettings pickups, ScoreSettings score, DucklingSettings duckSettings, float pickupHover, float bodyOffset, long seed, IRider rider, IAssistable assistable,
             IBoostable boostable, ISpeedModel speed, IReadOnlyList<IChunk> stretch, ISlopeSpline slope,
             DucklingNestService ducklings, IFlowCamera camera, RiderCameraSignals signals)
         {
             var flow = new RunFlow(failure, assist, messages, seed, rider, assistable, speed, stretch, slope, ducklings, camera, signals);
             var scoreService = new ScoreService(score);
             var system = new PickupSystem(pickups, scoreService, boostable, stretch, slope, pickupHover);
-            return new RunSession(flow, system, scoreService, rider, signals, bodyOffset);
+            var loop = new DucklingLoop(duckSettings, ducklings, scoreService, stretch, messages);
+            return new RunSession(flow, system, scoreService, loop, rider, slope, signals, bodyOffset);
         }
     }
 }
