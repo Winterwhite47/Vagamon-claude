@@ -40,7 +40,7 @@ Unity -batchmode -quit -projectPath . -executeMethod Hushlands.Editor.BuildScrip
 Unity -batchmode -projectPath . -executeMethod Hushlands.Editor.ContentToolMenu.ValidateBatch
 python3 tools/qa/content_sim.py && python3 tools/qa/content_sim.py --selftest
 # 4K capture (on Windows test GPU)
-Builds/Windows/Hushlands.exe -screen-width 3840 -screen-height 2160 -hushCapture
+Builds/Windows/Hushlands.exe -screen-width 3840 -screen-height 2160 -hushCapture -hushAutopilot
 # -> Captures/frametime_*.txt, Captures/frame_*.png
 ```
 

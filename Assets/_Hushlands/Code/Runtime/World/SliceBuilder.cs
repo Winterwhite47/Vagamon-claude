@@ -1,0 +1,217 @@
+using System.Collections.Generic;
+using Hushlands.Core;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
+
+namespace Hushlands
+{
+    /// <summary>Everything a built slice exposes to its bootstrap and tests.</summary>
+    public sealed class SliceRefs
+    {
+        public GameObject Root;
+        public List<Chunk> Stretch;
+        public StretchSlope Slope;
+        public TerrainSampler Terrain;
+        public MistField Mist;
+        public PhysxRider Rider;
+        public RiderCameraSignals Signals;
+        public MixDirector Mix;
+        public RunDirector Run;
+        public Light Sun;
+        public Volume Volume;
+        public int TerrainTiles;
+        public int MistVolumes;
+        public int Obstacles;
+        public int Nests;
+        public int Pickups;
+    }
+
+    /// <summary>
+    /// Builds a playable biome slice procedurally from config: generated stretch, PhysX track, terrain, track strip,
+    /// obstacle/nest/pickup props, mist volumes, sun and HDRP volume, rider with sled flex and scarf.
+    /// Camera, overlay and input are wired by SliceBootstrap. All geometry is original procedural placeholder art.
+    /// </summary>
+    public static class SliceBuilder
+    {
+        public static SliceRefs Build(HushConfigSet c, SliceAssets assets, BiomeId biome, int seed, Transform parent)
+        {
+            LookSettings ls = c.look.Settings;
+            BiomeLook look = ls.Get(biome);
+            var r = new SliceRefs { Root = new GameObject("Slice_" + biome) };
+            if (parent != null) r.Root.transform.SetParent(parent, false);
+
+            JumpModel jump = JumpModel.ForDefaultVehicle(c.rider.Settings, c.speed.Settings, c.vehicles.Settings);
+            var gen = new ChunkGenerator(c.content.Settings, c.fairness.Settings, c.biomes.Settings, jump);
+            r.Stretch = gen.Generate(seed, biome, c.content.Settings.chunksPerStretch);
+            r.Slope = new StretchSlope(r.Stretch);
+            double length = r.Slope.Length + c.track.Settings.runOutMeters;
+
+            TrackBuilder.Build(r.Stretch, r.Slope, c.track.Settings, r.Root.transform);
+            r.Terrain = new TerrainSampler(r.Slope, r.Stretch, ls, look, seed);
+            var world = new GameObject("World").transform;
+            world.SetParent(r.Root.transform, false);
+            r.TerrainTiles = TerrainMeshBuilder.BuildTerrain(r.Terrain, ls, length, assets.Get("Grass"), world).Count;
+            TerrainMeshBuilder.BuildTrackStrip(r.Terrain, ls, length, assets.Get("Track"), world, c.track.Settings.stripLift);
+
+            AddObstacleVisuals(r, assets);
+            AddFeatureProps(r, c, assets, world);
+            r.Mist = new MistField(r.Stretch, c.biomes.Settings.Get(biome).baseMistDensity);
+            r.MistVolumes = AddMistVolumes(r, ls, look, world);
+            AddLighting(r, look, world);
+            BuildRider(r, c, assets);
+            r.Mix = new MixDirector(c.audioMix.Settings);
+            return r;
+        }
+
+        private static void AddObstacleVisuals(SliceRefs r, SliceAssets assets)
+        {
+            foreach (HazardMarker h in r.Root.GetComponentsInChildren<HazardMarker>())
+            {
+                if (h.cause != CrashCause.Obstacle) continue;
+                var box = h.GetComponent<BoxCollider>();
+                GameObject v = Primitive(PrimitiveType.Cube, "Visual", h.transform, assets.Get("Stone"));
+                v.transform.localScale = box.size;
+                r.Obstacles++;
+            }
+        }
+
+        private static void AddFeatureProps(SliceRefs r, HushConfigSet c, SliceAssets assets, Transform world)
+        {
+            TrackSettings t = c.track.Settings;
+            foreach (IChunk ch in r.Stretch)
+            {
+                foreach (ChunkFeature f in ch.Features)
+                {
+                    double x = ch.StartDistance + f.start;
+                    float y = r.Slope.HeightAt(x);
+                    if (f.kind == FeatureKind.DucklingNest)
+                    {
+                        GameObject nest = Primitive(PrimitiveType.Cylinder, "Nest_" + f.variant, world, assets.Get("Nest"));
+                        nest.transform.position = new Vector3((float)x, y, t.propSideOffset);
+                        nest.transform.localScale = new Vector3(t.nestDiameter, t.nestHeight, t.nestDiameter);
+                        r.Nests++;
+                    }
+                    else if (f.kind == FeatureKind.Pickup)
+                    {
+                        GameObject p = Primitive(PrimitiveType.Sphere, "Pickup", world, assets.Get("Pickup"));
+                        p.transform.position = new Vector3((float)x, y + t.pickupHover, 0f);
+                        p.transform.localScale = Vector3.one * t.pickupDiameter;
+                        r.Pickups++;
+                    }
+                }
+            }
+        }
+
+        private static int AddMistVolumes(SliceRefs r, LookSettings ls, BiomeLook look, Transform world)
+        {
+            Palette.TryParse(look.fogAlbedo, out float cr, out float cg, out float cb);
+            int n = 0;
+            foreach (KeyValuePair<Span, float> bank in r.Mist.Banks)
+            {
+                double mid = (bank.Key.Start + bank.Key.End) * 0.5;
+                var go = new GameObject("Mist_" + n);
+                go.transform.SetParent(world, false);
+                go.transform.position = new Vector3((float)mid, r.Slope.HeightAt(mid) + ls.mistVolumeHeight * 0.5f, 0f);
+                var fog = go.AddComponent<LocalVolumetricFog>();
+                fog.parameters.albedo = new Color(cr, cg, cb, 1f);
+                fog.parameters.meanFreePath = (float)MistVisibility.MeanFreePath(ls, bank.Value);
+                fog.parameters.size = new Vector3((float)(bank.Key.End - bank.Key.Start), ls.mistVolumeHeight, ls.mistVolumeDepth);
+                n++;
+            }
+            return n;
+        }
+
+        private static void AddLighting(SliceRefs r, BiomeLook look, Transform world)
+        {
+            var sunGo = new GameObject("Sun");
+            sunGo.transform.SetParent(world, false);
+            sunGo.transform.rotation = Quaternion.Euler(look.sunElevationDegrees, look.sunAzimuthDegrees, 0f);
+            r.Sun = sunGo.AddComponent<Light>();
+            r.Sun.type = LightType.Directional;
+            r.Sun.lightUnit = LightUnit.Lux;
+            r.Sun.intensity = look.sunLux;
+            r.Sun.useColorTemperature = true;
+            r.Sun.colorTemperature = look.sunKelvin;
+            r.Sun.color = Color.white;
+            r.Sun.shadows = LightShadows.Soft;
+
+            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
+            profile.name = "SliceProfile_" + look.biome;
+            VisualEnvironment env = profile.Add<VisualEnvironment>(true);
+            env.skyType.Override((int)SkyType.PhysicallyBased);
+            profile.Add<PhysicallyBasedSky>(true);
+            Fog fog = profile.Add<Fog>(true);
+            fog.enabled.Override(true);
+            fog.enableVolumetricFog.Override(true);
+            fog.meanFreePath.Override(look.fogMeanFreePath);
+            fog.baseHeight.Override(look.fogBaseHeight);
+            fog.maximumHeight.Override(look.fogMaximumHeight);
+            fog.anisotropy.Override(look.fogAnisotropy);
+            Palette.TryParse(look.fogAlbedo, out float fr, out float fg, out float fb);
+            fog.albedo.Override(new Color(fr, fg, fb, 1f));
+            Exposure exposure = profile.Add<Exposure>(true);
+            exposure.mode.Override(ExposureMode.Fixed);
+            exposure.fixedExposure.Override(look.exposureEV);
+            Tonemapping tone = profile.Add<Tonemapping>(true);
+            tone.mode.Override(TonemappingMode.ACES);
+
+            var volGo = new GameObject("Volume");
+            volGo.transform.SetParent(world, false);
+            r.Volume = volGo.AddComponent<Volume>();
+            r.Volume.isGlobal = true;
+            r.Volume.sharedProfile = profile;
+        }
+
+        private static void BuildRider(SliceRefs r, HushConfigSet c, SliceAssets assets)
+        {
+            TrackSettings t = c.track.Settings;
+            var go = new GameObject("Rider");
+            go.transform.SetParent(r.Root.transform, false);
+            go.AddComponent<Rigidbody>();
+            r.Rider = go.AddComponent<PhysxRider>();
+            RiderSettings rs = c.rider.Settings;
+
+            // Hero placeholder: wooden hill sled, rider in a mist-blue jacket, gold scarf.
+            var sled = new GameObject("Sled").transform;
+            sled.SetParent(go.transform, false);
+            GameObject deck = Primitive(PrimitiveType.Cube, "Deck", sled, assets.Get("Wood"));
+            deck.transform.localPosition = new Vector3(0f, rs.colliderRadius, 0f);
+            deck.transform.localScale = new Vector3(rs.colliderLength, t.sledDeckThickness, t.sledWidth);
+            GameObject body = Primitive(PrimitiveType.Capsule, "Body", go.transform, assets.Get("Jacket"));
+            body.transform.localPosition = new Vector3(0f, rs.colliderRadius + t.riderBodyHeight * 0.5f, 0f);
+            body.transform.localScale = new Vector3(t.riderBodyWidth, t.riderBodyHeight * 0.5f, t.riderBodyWidth);
+            GameObject head = Primitive(PrimitiveType.Sphere, "Head", go.transform, assets.Get("Skin"));
+            head.transform.localPosition = new Vector3(0f, rs.colliderRadius + t.riderBodyHeight + t.riderHeadDiameter * 0.5f, 0f);
+            head.transform.localScale = Vector3.one * t.riderHeadDiameter;
+
+            var neck = new GameObject("ScarfAnchor").transform;
+            neck.SetParent(go.transform, false);
+            neck.localPosition = new Vector3(0f, rs.colliderRadius + t.riderBodyHeight, 0f);
+            ClothSettings cloth = c.cloth.Settings;
+            var bones = new Transform[cloth.scarfSegments + 1];
+            var scarfRoot = new GameObject("Scarf").transform;
+            scarfRoot.SetParent(r.Root.transform, false);
+            for (int i = 0; i < bones.Length; i++)
+            {
+                bones[i] = new GameObject("ScarfBone_" + i).transform;
+                bones[i].SetParent(scarfRoot, false);
+            }
+            scarfRoot.gameObject.AddComponent<VerletScarf>().Initialize(cloth, c.speed.Settings.gravity, neck, body.transform, bones, true);
+            scarfRoot.gameObject.AddComponent<ScarfLine>().Initialize(bones, assets.Get("Scarf"), cloth.scarfWidth);
+
+            go.AddComponent<SledFlexDriver>().Initialize(cloth, r.Rider, sled);
+        }
+
+        private static GameObject Primitive(PrimitiveType type, string name, Transform parent, Material mat)
+        {
+            GameObject g = GameObject.CreatePrimitive(type);
+            g.name = name;
+            g.transform.SetParent(parent, false);
+            // Immediate: a deferred destroy would leave the collider in the rider's compound body for a frame.
+            Object.DestroyImmediate(g.GetComponent<Collider>());
+            g.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            return g;
+        }
+    }
+}

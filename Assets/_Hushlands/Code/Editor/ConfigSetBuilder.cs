@@ -11,6 +11,7 @@ namespace Hushlands.Editor
             HushConfigSet set = ProjectBootstrap.EnsureAsset<HushConfigSet>(HushPaths.ConfigSetAsset);
             set.targets = targets;
             set.bootLook = look;
+            set.look = Make<LookConfig>("Rendering");
             set.speed = Make<SpeedConfig>("Gameplay");
             set.rider = Make<RiderConfig>("Gameplay");
             set.surfaces = Make<SurfaceConfig>("Gameplay");

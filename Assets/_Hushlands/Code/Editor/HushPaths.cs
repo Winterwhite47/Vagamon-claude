@@ -18,6 +18,9 @@ namespace Hushlands.Editor
         public const string HdrpAsset = RenderingFolder + "/HushlandsHDRP.asset";
         public const string BootVolumeProfile = RenderingFolder + "/BootVolumeProfile.asset";
         public const string BootScene = Root + "/Scenes/Boot.unity";
+        public const string SliceScene = Root + "/Scenes/Slice_MeadowSea.unity";
+        public const string MaterialsFolder = Root + "/Art/Materials";
+        public const string SliceAssetsAsset = ConfigResources + "/SliceAssets.asset";
         public const string WindowsBuild = "Builds/Windows/Hushlands.exe";
         public const string ProductName = "Hushlands";
         public const string CompanyName = "Hushlands Team";

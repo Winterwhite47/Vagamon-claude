@@ -39,7 +39,13 @@ namespace Hushlands.Editor
             VolumeProfile profile = EnsureBootVolumeProfile(look, targets);
             EnsureBootScene(targets, look, profile);
 
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(HushPaths.BootScene, true) };
+            SliceMenu.BuildAll(set: null);
+            // Slice first so the player (and -hushCapture) opens the vertical slice; Boot stays for setup checks.
+            EditorBuildSettings.scenes = new[]
+            {
+                new EditorBuildSettingsScene(HushPaths.SliceScene, true),
+                new EditorBuildSettingsScene(HushPaths.BootScene, true),
+            };
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Hushlands] Bootstrap complete.");

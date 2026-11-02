@@ -43,6 +43,16 @@ Reduced motion locks framing to Cruise (no zooms). Mix snapshots follow every ca
 Hyper-real but calm. Volumetric mist, soft light.
 Palette: emerald `#0B3B17`, terracotta `#8D3F2D`, mist blue `#4A6B82`, gold `#D4AF37`.
 
+## Vertical slice (T7): Meadow Sea, golden hour
+Built procedurally at play time by `SliceBootstrap` (scene `Slice_MeadowSea`, first in the build):
+generated seed-2 stretch, PhysX track, terrain (corridor exactly on the slope line, ravines at gaps, front ground always
+below the track, rolling backdrop hills), terracotta track strip, stone obstacles, nests, gold pickups, local mist
+volumes per content mist bank, physically based sky, volumetric fog in mist blue, ACES.
+Golden hour: sun 9° high from −38°, 3600 K, 32 klx, EV 12.6. Mist visual rule: a jump behind a mist bank at the
+fairness threshold keeps ≥ 60% transmittance at the farthest camera (Meadow: 65%).
+Audio: mist low-pass on the listener from `MixDirector`; snapshot bridge for an authored AudioMixer.
+All art is original procedural placeholder in the canon palette; final hero assets are an approval item.
+
 ## UI
 Motion graphics, smooth video-like transitions over the live 3D world. Near-zero HUD.
 Continuous camera and mist transitions; no loading cuts. Reduced-motion option.

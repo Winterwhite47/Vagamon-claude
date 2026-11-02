@@ -157,9 +157,40 @@ namespace Hushlands.Core
         /// <summary>Extra ground length past the stretch end so the rider never runs off the mesh.</summary>
         public float runOutMeters = 30f;
 
+        // --- Placeholder props (T7 slice; replaced by authored hero assets) ---
+        /// <summary>Track strip sits this far above the terrain line to avoid z-fighting.</summary>
+        public float stripLift = 0.01f;
+        public float propSideOffset = 2f;
+        public float nestDiameter = 0.9f;
+        public float nestHeight = 0.12f;
+        public float pickupHover = 1.1f;
+        public float pickupDiameter = 0.35f;
+        public float sledDeckThickness = 0.08f;
+        public float sledWidth = 0.5f;
+        public float riderBodyHeight = 0.7f;
+        public float riderBodyWidth = 0.4f;
+        public float riderHeadDiameter = 0.24f;
+
         public void Validate(List<string> e)
         {
             const string o = nameof(TrackSettings);
+            foreach (KeyValuePair<string, float> kv in new[]
+                     {
+                         new KeyValuePair<string, float>(nameof(stripLift), stripLift),
+                         new KeyValuePair<string, float>(nameof(nestDiameter), nestDiameter),
+                         new KeyValuePair<string, float>(nameof(nestHeight), nestHeight),
+                         new KeyValuePair<string, float>(nameof(pickupHover), pickupHover),
+                         new KeyValuePair<string, float>(nameof(pickupDiameter), pickupDiameter),
+                         new KeyValuePair<string, float>(nameof(sledDeckThickness), sledDeckThickness),
+                         new KeyValuePair<string, float>(nameof(sledWidth), sledWidth),
+                         new KeyValuePair<string, float>(nameof(riderBodyHeight), riderBodyHeight),
+                         new KeyValuePair<string, float>(nameof(riderBodyWidth), riderBodyWidth),
+                         new KeyValuePair<string, float>(nameof(riderHeadDiameter), riderHeadDiameter),
+                     })
+            {
+                SettingsCheck.Positive(e, o, kv.Key, kv.Value);
+            }
+            SettingsCheck.NonNegative(e, o, nameof(propSideOffset), propSideOffset);
             SettingsCheck.Positive(e, o, nameof(groundThickness), groundThickness);
             SettingsCheck.Positive(e, o, nameof(trackWidth), trackWidth);
             SettingsCheck.Positive(e, o, nameof(pitDepth), pitDepth);

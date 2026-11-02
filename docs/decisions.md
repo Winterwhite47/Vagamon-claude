@@ -128,3 +128,23 @@ Format: ID · date · question · default used · status.
 ## D-031 · 2026-11-02 · Benchmark harness constants
 - Anchor test motion (arc amplitudes, spacing, body offset) in `ScarfBenchmark` are QA-harness constants, not gameplay tuning; kept in code.
 - Status: decided.
+
+## D-032 · 2026-11-02 · T7 "final quality" not achievable in this environment
+- No Unity, GPU or authored art here. Delivered: the full slice pipeline with procedural placeholder geometry in the canon palette, golden-hour lighting, mist, camera, audio hooks and UI overlay. Final quality needs authored original hero assets (terrain textures, grass, sled, rider, ducklings, nest) and an Editor look pass. The gate cannot be approved on placeholder art.
+- Status: open (owner).
+
+## D-033 · 2026-11-02 · Slice is the first build scene
+- The player and `-hushCapture -hushAutopilot` open the slice directly, so the 4K capture records real gameplay.
+- Status: decided.
+
+## D-034 · 2026-11-02 · No audio clips yet
+- Original audio is required and none exists. T7 ships the mist low-pass and snapshot bridge; the AudioMixer asset and clips are authored later (T16).
+- Status: open.
+
+## D-035 · 2026-11-02 · Overlay layout numbers
+- Font sizes and label boxes in `RetryOverlay` are placeholder layout (legacy runtime font). T13 replaces the overlay with the motion-graphics UI and moves layout to config.
+- Status: decided.
+
+## D-036 · 2026-11-02 · Mist visual mapping
+- Local mist mean free path = 45 m / density, so a bank at the fairness threshold (0.35 x 0.85) stays see-through; checked by `MistVisibility` in config validation.
+- Status: decided.

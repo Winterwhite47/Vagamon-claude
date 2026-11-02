@@ -94,7 +94,7 @@ for doc in ["docs/game-bible.md", "docs/playbook.md", "docs/decisions.md"]:
 # 10. T1: every settings block has a config asset wrapper, is linked in HushConfigSet and built by bootstrap.
 settings_src = "".join(f.read_text() for f in (CODE / "Core/Config").glob("*.cs"))
 settings = sorted(set(re.findall(r"class (\w+)Settings\s*:\s*ISettings", settings_src)))
-check(len(settings) == 18, f"expected 18 settings blocks, found {len(settings)}")
+check(len(settings) == 19, f"expected 19 settings blocks, found {len(settings)}")
 config_set = (CODE / "Runtime/Config/HushConfigSet.cs").read_text()
 builder = (CODE / "Editor/ConfigSetBuilder.cs").read_text()
 for name in settings:
@@ -158,6 +158,18 @@ for f in ["Core/Cloth/VerletScarfSolver.cs", "Runtime/Cloth/VerletScarf.cs", "Ru
     check((CODE / f).is_file(), f"missing {f}")
 check((ROOT / "tools/qa/scarf_sim.py").is_file(), "missing scarf reference model")
 check("UnityEngine" not in re.sub(r"//.*", "", (CODE / "Core/Cloth/VerletScarfSolver.cs").read_text()), "solver must be engine-free")
+
+# 17. T7: slice pieces present; Meadow Sea look uses canon palette; mist visibility rule wired.
+for f in ["Core/Config/LookSettings.cs", "Core/World/TerrainSampler.cs", "Runtime/World/SliceBuilder.cs",
+          "Runtime/World/SliceBootstrap.cs", "Runtime/World/TerrainMeshBuilder.cs", "Runtime/World/RetryOverlay.cs",
+          "Runtime/World/MistAudio.cs", "Editor/World/SliceMenu.cs"]:
+    check((CODE / f).is_file(), f"missing {f}")
+look_src = (CODE / "Core/Config/LookSettings.cs").read_text()
+meadow = look_src[look_src.index("biome = BiomeId.MeadowSea"):]
+meadow = meadow[:meadow.index("},")]
+for token in ["fogAlbedo = MistBlue", "grass = Emerald", "soil = Terracotta", "accent = Gold", "tuned = true"]:
+    check(token in meadow, f"Meadow Sea look missing {token}")
+check("MistVisibility.Check" in (CODE / "Runtime/Config/HushConfigSet.cs").read_text(), "mist visibility not validated")
 
 for e in errors:
     print("FAIL:", e)

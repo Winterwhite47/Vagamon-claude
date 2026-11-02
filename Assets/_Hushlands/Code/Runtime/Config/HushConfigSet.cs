@@ -11,6 +11,7 @@ namespace Hushlands
 
         public ProjectTargetsConfig targets;
         public BootLookConfig bootLook;
+        public LookConfig look;
         public SpeedConfig speed;
         public RiderConfig rider;
         public SurfaceConfig surfaces;
@@ -41,6 +42,7 @@ namespace Hushlands
             var errors = new List<string>();
             if (targets == null) errors.Add("targets missing");
             if (bootLook == null) errors.Add("bootLook missing");
+            Collect(errors, nameof(look), look == null ? null : look.Validate());
             Collect(errors, nameof(speed), speed == null ? null : speed.Validate());
             Collect(errors, nameof(rider), rider == null ? null : rider.Validate());
             Collect(errors, nameof(surfaces), surfaces == null ? null : surfaces.Validate());
@@ -73,6 +75,8 @@ namespace Hushlands
                 if (revealSeconds < fairness.Settings.obstacleRevealSeconds + assist.Settings.extraRevealSeconds)
                     errors.Add("assist.speedScale too high to give extraRevealSeconds within visibleAheadMeters");
             }
+            if (look != null && camera != null && fairness != null)
+                errors.AddRange(Hushlands.Core.MistVisibility.Check(look.Settings, camera.Settings, fairness.Settings));
             if (camera != null && content != null &&
                 camera.Settings.maxSlopeForFramingDegrees < content.Settings.maxSlopeDegrees)
                 errors.Add("camera.maxSlopeForFramingDegrees must cover content.maxSlopeDegrees");
