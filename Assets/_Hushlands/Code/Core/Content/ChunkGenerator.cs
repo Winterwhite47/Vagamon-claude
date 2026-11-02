@@ -149,6 +149,13 @@ namespace Hushlands.Core
                 // Same random draws either way; a chunk too short for a shelter simply has none.
                 if (sl > 0d) chunk.AddFeature(ChunkFeature.Make(FeatureKind.Shelter, ss, sl));
             }
+            if (k.VistaChance > 0f && rng.NextDouble() < k.VistaChance)
+            {
+                double room = length - _c.leadInMeters - _c.tailOutMeters;
+                double vl = Math.Min(rng.Range(k.VistaMin, k.VistaMax), room);
+                double vs = rng.Range(_c.leadInMeters, _c.leadInMeters + Math.Max(0d, room - vl));
+                if (vl > 0d) chunk.AddFeature(ChunkFeature.Make(FeatureKind.Vista, vs, vl));
+            }
 
             // Pickups on clear ground.
             for (int k = 0; k < _c.pickupsPerChunk; k++)

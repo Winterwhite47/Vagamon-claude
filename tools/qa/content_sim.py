@@ -69,6 +69,7 @@ def load():
         b = re.search(r"biome = BiomeId\.(\w+)", body).group(1)
         num = {k: float(v) for k, v in re.findall(r"(\w+) = ([\d.]+)f", body)}
         num.setdefault("shelterChance", 0.0)
+        num.setdefault("vistaChance", 0.0)
         sec_m = re.search(r"secondarySurfaces = new\[\] \{([^}]*)\}", body)
         sec = re.findall(r"SurfaceId\.(\w+)", sec_m.group(1)) if sec_m else []
         s["profiles"][b] = dict(num, secondary=sec or list(SURFACES))
@@ -223,7 +224,7 @@ def build_chunk(s, rng, biome, seed, idx, nest, jump):
     K = s["profiles"].get(biome, {"minSlopeDegrees": C["minSlopeDegrees"], "maxSlopeDegrees": C["maxSlopeDegrees"],
                                   "obstacleWeight": C["obstacleWeight"], "gapWeight": C["gapWeight"],
                                   "mistBankChance": C["mistBankChance"], "secondary": list(SURFACES),
-                                  "shelterChance": 0.0})
+                                  "shelterChance": 0.0, "vistaChance": 0.0})
     slope_deg = rng.range(K["minSlopeDegrees"], K["maxSlopeDegrees"])
     c = Chunk(f"{biome}_{seed}_{idx}", biome, diff, length, f32(slope_deg * math.pi / 180.0))
     tan = math.tan(c.slope)
@@ -292,6 +293,12 @@ def build_chunk(s, rng, biome, seed, idx, nest, jump):
         ss = rng.range(C["leadInMeters"], C["leadInMeters"] + max(0.0, room - sl))
         if sl > 0:
             c.features.append(Feature("Shelter", ss, sl))
+    if K["vistaChance"] > 0 and rng.next_double() < K["vistaChance"]:
+        room = length - C["leadInMeters"] - C["tailOutMeters"]
+        vl = min(rng.range(K["vistaMinLength"], K["vistaMaxLength"]), room)
+        vs = rng.range(C["leadInMeters"], C["leadInMeters"] + max(0.0, room - vl))
+        if vl > 0:
+            c.features.append(Feature("Vista", vs, vl))
 
     def place(spacing):
         for _ in range(C["placementTries"]):
@@ -556,7 +563,7 @@ def main():
     print("\n".join(lines[:5]))
     print("...")
     print(summary)
-    print(f"log: {out.relative_to(ROOT)}")
+    print(f"log: {out}")
     return 0 if passed == count else 1
 
 

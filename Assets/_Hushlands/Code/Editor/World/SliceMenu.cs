@@ -85,6 +85,13 @@ namespace Hushlands.Editor
             EditorSceneManager.OpenScene(HushPaths.SliceSceneFor(BiomeId.PineHollow));
         }
 
+        [MenuItem("Hushlands/Slice/Build Terrace Country Slice")]
+        public static void BuildTerraceFromMenu()
+        {
+            BuildAll(null);
+            EditorSceneManager.OpenScene(HushPaths.SliceSceneFor(BiomeId.TerraceCountry));
+        }
+
         public static void BuildScene(BiomeId biome)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);

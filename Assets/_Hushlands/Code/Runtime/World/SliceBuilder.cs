@@ -97,6 +97,14 @@ namespace Hushlands
             {
                 Material mat = assets.Get(p.Material);
                 float y = (float)p.Y;
+                if (p.Shape == "Post")
+                {
+                    GameObject post = Primitive(PrimitiveType.Cylinder, p.Name, root, mat);
+                    post.transform.localScale = new Vector3(p.Scale * 0.08f, p.Scale * 0.5f, p.Scale * 0.08f);
+                    post.transform.position = new Vector3((float)p.X, y + p.Scale * 0.5f, (float)p.Z);
+                    n++;
+                    continue;
+                }
                 if (p.Shape == "Pine")
                 {
                     // Placeholder pine: a wood trunk and three narrowing tiers of needles.

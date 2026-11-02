@@ -238,10 +238,11 @@ check("Contrast.Ratio" in (CODE / "Core/Config/UiSettings.cs").read_text(), "UI 
 # 25. T14: tuned biomes each have a slice scene path, a fair content log, and scatter that respects the corridor.
 look_src = (CODE / "Core/Config/LookSettings.cs").read_text()
 tuned = re.findall(r"biome = BiomeId\.(\w+), tuned = true", look_src)
-check({"MeadowSea", "WindmouthRidge", "PineHollow"} <= set(tuned), f"tuned biomes: {tuned}")
+check({"MeadowSea", "WindmouthRidge", "PineHollow", "TerraceCountry"} <= set(tuned), f"tuned biomes: {tuned}")
 for b in tuned:
     if b != "MeadowSea":
-        log = ROOT / "docs/logs" / ("T14_" + b.replace("Ridge", "").replace("Hollow", "hollow").lower() + "_content.txt")
+        names = {"WindmouthRidge": "windmouth", "PineHollow": "pinehollow", "TerraceCountry": "terracecountry", "MirrorLake": "mirrorlake"}
+        log = ROOT / "docs/logs" / ("T14_" + names[b] + "_content.txt")
         check(log.is_file() and "200/200 passed" in log.read_text(), f"{b}: missing passing content log {log.name}")
 check("SliceSceneFor" in (CODE / "Editor/World/SliceMenu.cs").read_text(), "slice scenes must be per biome")
 check((ROOT / "docs/logs/T14_windmouth_content.txt").is_file(), "missing Windmouth content log")

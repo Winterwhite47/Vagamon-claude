@@ -68,6 +68,14 @@ Late-afternoon light through a pine valley: sun 22° from −15°, 4300 K, 28 kl
 canopy Shelter zones in half the chunks (camera Shelter framing, still ≥ 40 m reveal). Backdrop: pines (trunk and three
 tiers) and logs, behind the track only. Mist rule 0.61 in a squall. Slice `Slice_PineHollow`.
 
+## Terrace Country (T14, biome 3)
+Soft morning over stepped tea slopes: sun 18° from −50°, 4800 K, 40 klx, EV 13.0; low mist lifting off the terraces
+(230 m, to 70 m); tea-green ground, terracotta earth, gold accents; 26 m backdrop hills cut into 3 m terraces (flat treads,
+short smooth risers). Content: slopes 6–11°, more gaps between terraces (0.4), fewer obstacles (0.4), mist in half the
+chunks, grass / mud / boardwalk patches on terrace soil, open Vista zones in 40% of chunks (wide camera, still ≥ 40 m
+reveal). Backdrop: tea-bush rows and wooden posts, behind the track only. Mist rule 0.62 in a squall.
+Slice `Slice_TerraceCountry`.
+
 ## UI
 Motion graphics, smooth video-like transitions over the live 3D world. Near-zero HUD.
 Continuous camera and mist transitions; no loading cuts. Reduced-motion option.

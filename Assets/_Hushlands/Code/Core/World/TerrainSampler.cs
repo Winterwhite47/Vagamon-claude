@@ -62,8 +62,18 @@ namespace Hushlands.Core
                 return track - w * (_s.frontDrop + dip);
             }
             double hills = (ValueNoise.Fbm(x / _look.hillWavelength, z / _look.hillWavelength, _seed) * 0.5 + 0.5) * _look.hillAmplitude;
+            if (_look.terraceStep > 0f) hills = Terrace(hills, _look.terraceStep, _look.terraceRiser);
             double detail = ValueNoise.Fbm(x / _look.detailWavelength, z / _look.detailWavelength, _seed + 13) * _look.detailAmplitude;
             return track + w * (hills + detail);
+        }
+
+        /// <summary>Flat treads with smooth short risers; continuous and never higher than the next step.</summary>
+        public static double Terrace(double h, double step, double riser)
+        {
+            double level = Math.Floor(h / step);
+            double frac = h / step - level;
+            double t = (frac - (1d - riser)) / riser;
+            return step * (level + Smooth(t));
         }
 
         private static double Smooth(double t)

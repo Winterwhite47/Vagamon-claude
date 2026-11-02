@@ -244,3 +244,11 @@ Format: ID · date · question · default used · status.
 ## D-060 · 2026-11-02 · Fix: mirror parser read nested braces
 - The Python mirror stopped a profile at the first "}," inside an array initializer and missed Pine Hollow's shelter settings, so its runs did not match the C#. Parser now closes on the profile's own brace. Found because the shelter count was 0.
 - Status: decided.
+
+## D-061 · 2026-11-02 · Pine Hollow gate: provisional approval
+- Owner said "continue" at the Pine Hollow gate; treated as provisional approval on placeholder art. Render, capture and sign-off remain owed.
+- Status: open.
+
+## D-062 · 2026-11-02 · Terrace Country art direction, vistas and terraces (default)
+- Default: soft morning over tea terraces, canon terracotta earth and mist blue. Vista zones use the same zero-draw rule as shelters; terraces quantise only the backdrop hills (never the track corridor) and only for biomes with a terrace step, so other biomes' terrain is unchanged. Tea and terraces are generic agricultural forms, not any specific place or game.
+- Status: open (approval gate).

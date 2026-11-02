@@ -30,6 +30,10 @@ namespace Hushlands.Core
         /// <summary>Added to the ClothSettings wind (exposed ridges blow harder).</summary>
         public float windExtraX;
         public float windExtraZ;
+        /// <summary>Backdrop terraces: tread height step in metres (0 = smooth hills).</summary>
+        public float terraceStep;
+        /// <summary>Fraction of each step that is riser (the rest is flat tread).</summary>
+        public float terraceRiser;
     }
 
     /// <summary>Backdrop props scattered behind the track (never in the corridor, never in front of the rider).</summary>
@@ -111,7 +115,17 @@ namespace Hushlands.Core
                 hillAmplitude = 22f, hillWavelength = 110f, detailAmplitude = 1.4f, detailWavelength = 12f,
                 windExtraX = 0.4f, windExtraZ = -0.2f,
             },
-            Placeholder(BiomeId.TerraceCountry, 35f, "#3E6B2A", Terracotta),
+            new BiomeLook
+            {
+                // Terrace Country (T14): soft morning over stepped tea slopes; low mist lifting off the terraces.
+                biome = BiomeId.TerraceCountry, tuned = true,
+                sunElevationDegrees = 18f, sunAzimuthDegrees = -50f, sunLux = 40000f, sunKelvin = 4800f,
+                exposureEV = 13.0f,
+                fogMeanFreePath = 230f, fogBaseHeight = -40f, fogMaximumHeight = 70f, fogAnisotropy = 0.7f,
+                fogAlbedo = MistBlue, grass = "#2F5A22", soil = Terracotta, accent = Gold,
+                hillAmplitude = 26f, hillWavelength = 150f, detailAmplitude = 1.0f, detailWavelength = 16f,
+                terraceStep = 3f, terraceRiser = 0.25f,
+            },
             Placeholder(BiomeId.MirrorLake, 22f, "#2F5A3A", "#6B5B4B"),
         };
 
@@ -132,6 +146,7 @@ namespace Hushlands.Core
             new MaterialSpec("Bell", "#B8B2A3", 0.85f, 1f),
             new MaterialSpec("Duckling", "#E9C46A", 0.35f, 0f),
             new MaterialSpec("Pine", "#14331C", 0.2f, 0f),
+            new MaterialSpec("TeaLeaf", "#2F5A22", 0.3f, 0f),
         };
 
         public PropScatter[] scatters =
@@ -155,6 +170,16 @@ namespace Hushlands.Core
             {
                 biome = BiomeId.PineHollow, name = "Log", material = "Wood", density = 0.02f,
                 minDepth = 12f, maxDepth = 40f, minScale = 0.4f, maxScale = 0.8f, minStack = 1, maxStack = 1, shape = "Rock",
+            },
+            new PropScatter
+            {
+                biome = BiomeId.TerraceCountry, name = "TeaBush", material = "TeaLeaf", density = 0.5f,
+                minDepth = 12f, maxDepth = 150f, minScale = 0.7f, maxScale = 1.2f, minStack = 1, maxStack = 1, shape = "Rock",
+            },
+            new PropScatter
+            {
+                biome = BiomeId.TerraceCountry, name = "Post", material = "Wood", density = 0.02f,
+                minDepth = 12f, maxDepth = 60f, minScale = 1.4f, maxScale = 2.2f, minStack = 1, maxStack = 1, shape = "Post",
             },
         };
 
@@ -230,6 +255,8 @@ namespace Hushlands.Core
                 SettingsCheck.Positive(e, t, nameof(b.hillWavelength), b.hillWavelength);
                 SettingsCheck.NonNegative(e, t, nameof(b.detailAmplitude), b.detailAmplitude);
                 SettingsCheck.Positive(e, t, nameof(b.detailWavelength), b.detailWavelength);
+                SettingsCheck.NonNegative(e, t, nameof(b.terraceStep), b.terraceStep);
+                if (b.terraceStep > 0f) SettingsCheck.Range(e, t, nameof(b.terraceRiser), b.terraceRiser, 0.05f, 1f);
                 foreach (string hex in new[] { b.fogAlbedo, b.grass, b.soil, b.accent })
                 {
                     if (!Palette.TryParse(hex, out _, out _, out _)) e.Add(t + ": bad colour '" + hex + "'");
@@ -255,7 +282,7 @@ namespace Hushlands.Core
                 SettingsCheck.Positive(e, t, nameof(p.minScale), p.minScale);
                 SettingsCheck.Ordered(e, t, nameof(p.minScale), p.minScale, nameof(p.maxScale), p.maxScale);
                 if (p.minStack < 1 || p.maxStack < p.minStack) e.Add(t + ": bad stack range");
-                if (p.shape != "Rock" && p.shape != "Pine") e.Add(t + ": unknown shape '" + p.shape + "'");
+                if (p.shape != "Rock" && p.shape != "Pine" && p.shape != "Post") e.Add(t + ": unknown shape '" + p.shape + "'");
             }
             SettingsCheck.Positive(e, o, nameof(terrainCellMeters), terrainCellMeters);
             SettingsCheck.Positive(e, o, nameof(terrainFrontDepth), terrainFrontDepth);

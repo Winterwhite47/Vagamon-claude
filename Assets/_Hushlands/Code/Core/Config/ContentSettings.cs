@@ -76,6 +76,10 @@ namespace Hushlands.Core
         public float shelterChance;
         public float shelterMinLength;
         public float shelterMaxLength;
+        /// <summary>Chance per chunk of a Vista camera zone (open view); 0 draws no random numbers.</summary>
+        public float vistaChance;
+        public float vistaMinLength;
+        public float vistaMaxLength;
     }
 
     /// <summary>Resolved generation knobs for one biome.</summary>
@@ -90,10 +94,17 @@ namespace Hushlands.Core
         public readonly float ShelterChance;
         public readonly float ShelterMin;
         public readonly float ShelterMax;
+        public readonly float VistaChance;
+        public readonly float VistaMin;
+        public readonly float VistaMax;
 
         public ContentKnobs(float minSlope, float maxSlope, float obstacle, float gap, float mist, SurfaceId[] secondary,
-            float shelterChance = 0f, float shelterMin = 0f, float shelterMax = 0f)
+            float shelterChance = 0f, float shelterMin = 0f, float shelterMax = 0f,
+            float vistaChance = 0f, float vistaMin = 0f, float vistaMax = 0f)
         {
+            VistaChance = vistaChance;
+            VistaMin = vistaMin;
+            VistaMax = vistaMax;
             ShelterChance = shelterChance;
             ShelterMin = shelterMin;
             ShelterMax = shelterMax;
@@ -174,6 +185,14 @@ namespace Hushlands.Core
                 secondarySurfaces = new[] { SurfaceId.Grass, SurfaceId.Mud, SurfaceId.Stone },
                 shelterChance = 0.5f, shelterMinLength = 20f, shelterMaxLength = 50f,
             },
+            // Terrace Country: gentle stepped tea slopes, more gaps between terraces, open vistas.
+            new BiomeContentProfile
+            {
+                biome = BiomeId.TerraceCountry, minSlopeDegrees = 6f, maxSlopeDegrees = 11f,
+                obstacleWeight = 0.4f, gapWeight = 0.4f, mistBankChance = 0.5f,
+                secondarySurfaces = new[] { SurfaceId.Grass, SurfaceId.Mud, SurfaceId.Boardwalk },
+                vistaChance = 0.4f, vistaMinLength = 25f, vistaMaxLength = 60f,
+            },
         };
 
         private static readonly SurfaceId[] AnySurface = (SurfaceId[])Enum.GetValues(typeof(SurfaceId));
@@ -187,7 +206,7 @@ namespace Hushlands.Core
                     if (p.biome != biome) continue;
                     SurfaceId[] sec = p.secondarySurfaces != null && p.secondarySurfaces.Length > 0 ? p.secondarySurfaces : AnySurface;
                     return new ContentKnobs(p.minSlopeDegrees, p.maxSlopeDegrees, p.obstacleWeight, p.gapWeight, p.mistBankChance, sec,
-                        p.shelterChance, p.shelterMinLength, p.shelterMaxLength);
+                        p.shelterChance, p.shelterMinLength, p.shelterMaxLength, p.vistaChance, p.vistaMinLength, p.vistaMaxLength);
                 }
             }
             return new ContentKnobs(minSlopeDegrees, maxSlopeDegrees, obstacleWeight, gapWeight, mistBankChance, AnySurface);
@@ -246,6 +265,12 @@ namespace Hushlands.Core
                 SettingsCheck.Range(e, t, nameof(p.gapWeight), p.gapWeight, 0f, 1f - p.obstacleWeight);
                 SettingsCheck.Range(e, t, nameof(p.mistBankChance), p.mistBankChance, 0f, 1f);
                 SettingsCheck.Range(e, t, nameof(p.shelterChance), p.shelterChance, 0f, 1f);
+                SettingsCheck.Range(e, t, nameof(p.vistaChance), p.vistaChance, 0f, 1f);
+                if (p.vistaChance > 0f)
+                {
+                    SettingsCheck.Positive(e, t, nameof(p.vistaMinLength), p.vistaMinLength);
+                    SettingsCheck.Ordered(e, t, nameof(p.vistaMinLength), p.vistaMinLength, nameof(p.vistaMaxLength), p.vistaMaxLength);
+                }
                 if (p.shelterChance > 0f)
                 {
                     SettingsCheck.Positive(e, t, nameof(p.shelterMinLength), p.shelterMinLength);
