@@ -16,6 +16,20 @@ namespace Hushlands
         [SerializeField] private RiderConfig riderConfig;
         private InputAction _action;
 
+        private bool _suppress;
+
+        /// <summary>Gentle timing: overrides RiderSettings.holdThresholdSeconds when set (> 0).</summary>
+        public float HoldThresholdOverride { get; set; }
+
+        /// <summary>Ignore the current press until it is released (the press that chose "Ride" must not jump).</summary>
+        public void SuppressUntilRelease()
+        {
+            _suppress = true;
+            TapThisStep = false;
+            IsHeld = false;
+            HeldSeconds = 0f;
+        }
+
         public bool TapThisStep { get; private set; }
         public bool IsHeld { get; private set; }
         public float HeldSeconds { get; private set; }
@@ -44,8 +58,13 @@ namespace Hushlands
         private void FixedUpdate()
         {
             if (_action == null || riderConfig == null) return;
-            Sample(_action.WasPressedThisFrame(), _action.WasReleasedThisFrame(), _action.IsPressed(),
-                Time.fixedDeltaTime, riderConfig.Settings.holdThresholdSeconds);
+            if (_suppress)
+            {
+                if (!_action.IsPressed()) _suppress = false;
+                return;
+            }
+            float threshold = HoldThresholdOverride > 0f ? HoldThresholdOverride : riderConfig.Settings.holdThresholdSeconds;
+            Sample(_action.WasPressedThisFrame(), _action.WasReleasedThisFrame(), _action.IsPressed(), Time.fixedDeltaTime, threshold);
         }
 
         /// <summary>Pure sampling rule, exposed for tests.</summary>

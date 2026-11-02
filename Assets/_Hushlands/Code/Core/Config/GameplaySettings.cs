@@ -76,6 +76,11 @@ namespace Hushlands.Core
         public float takeoffGroundIgnoreSeconds = 0.1f;
 
         /// <summary>Copy with jump velocity scaled by a vehicle's jumpScale.</summary>
+        public RiderSettings Copy()
+        {
+            return (RiderSettings)MemberwiseClone();
+        }
+
         public RiderSettings WithJumpScale(float scale)
         {
             var copy = (RiderSettings)MemberwiseClone();
@@ -220,6 +225,11 @@ namespace Hushlands.Core
         /// <summary>Accept free assists without a prompt when offered (they can be switched off in settings).</summary>
         public bool autoAcceptAssists = true;
 
+        public FailureSettings Copy()
+        {
+            return (FailureSettings)MemberwiseClone();
+        }
+
         public void Validate(List<string> e)
         {
             const string o = nameof(FailureSettings);
@@ -273,6 +283,8 @@ namespace Hushlands.Core
             "A happy little chorus behind you.",
         };
         public string retryHint = "Tap to ride again";
+        /// <summary>Shown when assists are offered and auto-accept is off: a tap accepts and rides on.</summary>
+        public string assistAcceptHint = "Tap for a friendly wind";
         public int maxLength = 60;
         /// <summary>Words that must never appear in player-facing failure text (duckling safety, calm tone).</summary>
         public string[] bannedWords =
@@ -318,6 +330,7 @@ namespace Hushlands.Core
             if (assistOffer == null || assistOffer.Length == 0) e.Add(o + ": no assistOffer lines");
             else CheckAll(e, o, nameof(assistOffer), assistOffer);
             if (!IsClean(retryHint)) e.Add(o + ": retryHint not clean");
+            if (!IsClean(assistAcceptHint)) e.Add(o + ": assistAcceptHint not clean");
         }
 
         private void CheckAll(List<string> e, string o, string group, string[] lines)

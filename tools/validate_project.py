@@ -94,7 +94,7 @@ for doc in ["docs/game-bible.md", "docs/playbook.md", "docs/decisions.md"]:
 # 10. T1: every settings block has a config asset wrapper, is linked in HushConfigSet and built by bootstrap.
 settings_src = "".join(f.read_text() for f in (CODE / "Core/Config").glob("*.cs"))
 settings = sorted(set(re.findall(r"class (\w+)Settings\s*:\s*ISettings", settings_src)))
-check(len(settings) == 21, f"expected 21 settings blocks, found {len(settings)}")
+check(len(settings) == 22, f"expected 22 settings blocks, found {len(settings)}")
 config_set = (CODE / "Runtime/Config/HushConfigSet.cs").read_text()
 builder = (CODE / "Editor/ConfigSetBuilder.cs").read_text()
 for name in settings:
@@ -224,6 +224,16 @@ for token in ["public const int Version", "Crc32", ".bak", ".tmp", "ReadOnlyNewe
 for t in ["Tests/PlayMode/SliceTests.cs", "Tests/PlayMode/DucklingSafetyTests.cs"]:
     check("SaveProvider.UseMemory = true" in (CODE / t).read_text(), f"{t} must isolate the player save")
 check("AttachProgression" in (CODE / "Runtime/World/SliceBootstrap.cs").read_text(), "slice must report runs to progression")
+
+# 24. T13: UI core engine-free; pause never uses timeScale; all UI text from config; contrast enforced.
+for f in ["Core/UI/UiModel.cs", "Core/Config/UiSettings.cs", "Runtime/UI/UiDirector.cs", "Runtime/UI/UiInput.cs"]:
+    check((CODE / f).is_file(), f"missing {f}")
+all_rt = "".join(f.read_text() for f in (CODE / "Runtime").rglob("*.cs"))
+check("Time.timeScale" not in re.sub(r"//.*", "", all_rt), "pause must not use Time.timeScale (input runs in FixedUpdate)")
+ui_src = re.sub(r"//.*", "", (CODE / "Runtime/UI/UiDirector.cs").read_text())
+literals = [m for m in re.findall(r'"([^"]*)"', ui_src) if re.search(r"[a-z]{3,} [a-z]{3,}", m)]
+check(not literals, f"UI prose must come from UiSettings, found {literals[:3]}")
+check("Contrast.Ratio" in (CODE / "Core/Config/UiSettings.cs").read_text(), "UI contrast must be validated")
 
 for e in errors:
     print("FAIL:", e)

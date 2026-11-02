@@ -27,6 +27,7 @@ namespace Hushlands
         public CameraConfig camera;
         public AudioMixConfig audioMix;
         public UiMotionConfig uiMotion;
+        public UiConfig ui;
         public PickupConfig pickups;
         public ScoreConfig score;
         public VehicleConfig vehicles;
@@ -76,6 +77,7 @@ namespace Hushlands
             Collect(errors, nameof(biomes), biomes == null ? null : biomes.Validate());
             Collect(errors, nameof(camera), camera == null ? null : camera.Validate());
             Collect(errors, nameof(audioMix), audioMix == null ? null : audioMix.Validate());
+            Collect(errors, nameof(ui), ui == null ? null : ui.Validate());
             Collect(errors, nameof(uiMotion), uiMotion == null ? null : uiMotion.Validate());
             Collect(errors, nameof(pickups), pickups == null ? null : pickups.Validate());
             Collect(errors, nameof(score), score == null ? null : score.Validate());

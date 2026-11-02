@@ -15,6 +15,9 @@ namespace Hushlands
         private bool _reduced;
 
         public float Alpha => _group != null ? _group.alpha : 0f;
+        /// <summary>UI layer multiplier (0 outside the Riding screen).</summary>
+        public float Visibility { get; set; } = 1f;
+        public bool ReducedMotion { set => _reduced = value; }
         public string Text => _label != null ? _label.text : string.Empty;
 
         public void Initialize(ScoreService score, UiMotionSettings motion, bool reducedMotion)
@@ -59,7 +62,7 @@ namespace Hushlands
             _idle += Time.unscaledDeltaTime;
             float target = _idle < _motion.hudIdleSeconds ? 1f : 0f;
             float fade = _motion.TransitionSeconds(_reduced);
-            _group.alpha = Mathf.MoveTowards(_group.alpha, target, Time.unscaledDeltaTime / Mathf.Max(fade, 1e-3f));
+            _group.alpha = Mathf.MoveTowards(_group.alpha, target * Visibility, Time.unscaledDeltaTime / Mathf.Max(fade, 1e-3f));
         }
     }
 }

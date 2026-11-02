@@ -22,18 +22,19 @@ namespace Hushlands
         public bool Finished { get; private set; }
         public RunSummary Summary { get; private set; }
         public event System.Action<RunSummary> RunEnded;
+        public bool Paused { get; set; }
         public RunFlow Flow => _session?.Flow;
         public DucklingNestService Ducklings { get; private set; }
 
         public void Initialize(HushConfigSet config, PhysxRider rider, IInputSource input, IReadOnlyList<IChunk> stretch,
-            ISlopeSpline slope, CameraDirector camera, RiderCameraSignals signals, long seed)
+            ISlopeSpline slope, CameraDirector camera, RiderCameraSignals signals, long seed, RunSettingsBundle bundle = null)
         {
             _rider = rider;
             _input = input;
             Ducklings = new DucklingNestService();
             TrackSettings t = config.track.Settings;
             float bodyOffset = config.rider.Settings.colliderRadius + t.riderBodyHeight * 0.5f;
-            _session = RunSession.Create(config.RunBundle(), t.pickupHover, bodyOffset, seed, rider, stretch, slope,
+            _session = RunSession.Create(bundle ?? config.RunBundle(), t.pickupHover, bodyOffset, seed, rider, stretch, slope,
                 Ducklings, camera != null ? camera.Core : null, signals);
             _endX = slope.Length;
         }
@@ -60,7 +61,7 @@ namespace Hushlands
 
         private void FixedUpdate()
         {
-            if (_session == null || Finished) return;
+            if (_session == null || Finished || Paused) return;
             _session.Tick(_input, Time.fixedDeltaTime);
             if (_session.Flow.Phase == FlowPhase.Riding && _rider.Position.Distance >= _endX) FinishRun();
             else if (_progression != null) _progression.Goals.Evaluate(_session.Stats);

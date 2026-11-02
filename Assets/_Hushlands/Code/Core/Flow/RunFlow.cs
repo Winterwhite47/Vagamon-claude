@@ -91,6 +91,7 @@ namespace Hushlands.Core
                     }
                     break;
                 case FlowPhase.FailureHold:
+                    if (input != null && input.TapThisStep && _assists.AssistsOffered && !_assists.AssistsActive) AcceptAssist();
                     bool skip = input != null && input.TapThisStep && PhaseTime >= _f.minHoldBeforeSkipSeconds;
                     if (skip || PhaseTime >= _f.failureHoldSeconds)
                     {
@@ -127,7 +128,8 @@ namespace Hushlands.Core
             ApplyAssists();
 
             string text = newlyOffered ? _picker.PickAssist() : _picker.Pick(cause);
-            Message = new FlowMessage(text, _m.retryHint, newlyOffered);
+            string hint = newlyOffered && !_assists.AssistsActive ? _m.assistAcceptHint : _m.retryHint;
+            Message = new FlowMessage(text, hint, newlyOffered);
             if (_signals != null) _signals.FailureHold = true;
             SetPhase(FlowPhase.FailureHold);
             MessageShown?.Invoke(Message);

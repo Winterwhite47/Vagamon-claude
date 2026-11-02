@@ -22,6 +22,7 @@ namespace Hushlands
         private float _textAlpha;
 
         public float TextAlpha => _textAlpha;
+        public bool ReducedMotion { set => _reduced = value; }
         public float WipeAlpha => _wipe != null ? _wipe.color.a : 0f;
         public string Line => _line != null ? _line.text : string.Empty;
 

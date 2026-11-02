@@ -208,3 +208,19 @@ Format: ID · date · question · default used · status.
 ## D-051 · 2026-11-02 · Fix: MonoBehaviours sharing files
 - `MistLowPass`, `AudioMixBridge`, `ScarfLine` shared files with other classes, so scenes could not serialize them. Split into same-named files; validator now enforces the rule.
 - Status: decided.
+
+## D-052 · 2026-11-02 · Pause without timeScale
+- Input is processed in FixedUpdate (T3), which timeScale 0 stops, so the pause could never be ended. Pause sets physics to script mode and holds rider and run ticks; FixedUpdate keeps running.
+- Status: decided.
+
+## D-053 · 2026-11-02 · Reloads hidden by mist
+- "No loading cuts": Ride again, back to title and vehicle changes reload the scene only after a full mist wipe, and the new scene starts covered and clears. The cut exists but is never seen.
+- Status: open (a streamed in-place rebuild could replace it with T14's endless run).
+
+## D-054 · 2026-11-02 · Placeholder typography and panel contrast
+- Legacy runtime font, procedural layout. Contrast is validated against the opaque panel colour; the panel is semi-transparent over the world (0.55; 0.85 in high contrast), so T17 must check real composited frames.
+- Status: open.
+
+## D-055 · 2026-11-02 · Gentle timing applies at the next ride
+- The tap window in the input sampler updates at once; the rider's own rules take it at scene start (next ride).
+- Status: decided.

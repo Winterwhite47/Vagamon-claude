@@ -29,6 +29,7 @@ namespace Hushlands.Tests
             yield return new LookSettings();
             yield return new HazardSettings();
             yield return new GoalSettings();
+            yield return new UiSettings();
         }
 
         [TestCaseSource(nameof(AllDefaults))]

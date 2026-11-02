@@ -27,6 +27,7 @@ namespace Hushlands.Editor
             set.camera = Make<CameraConfig>("Camera");
             set.audioMix = Make<AudioMixConfig>("Audio");
             set.uiMotion = Make<UiMotionConfig>("UI");
+            set.ui = Make<UiConfig>("UI");
             set.pickups = Make<PickupConfig>("Meta");
             set.score = Make<ScoreConfig>("Meta");
             set.vehicles = Make<VehicleConfig>("Meta");

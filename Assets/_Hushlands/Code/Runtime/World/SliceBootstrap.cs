@@ -7,7 +7,7 @@ namespace Hushlands
     /// Vertical slice entry point. Builds the biome slice, then wires rider, camera director, run flow, overlay,
     /// mist low-pass and mix bridge. Player input by default; "-hushAutopilot" (or ForceAutopilot) rides with the bot.
     /// </summary>
-    public sealed class SliceBootstrap : MonoBehaviour
+    public sealed class SliceBootstrap : MonoBehaviour, IGameControl
     {
         /// <summary>Tests and captures can force the bot.</summary>
         public static bool ForceAutopilot;
@@ -29,6 +29,12 @@ namespace Hushlands
         public ISaveService Save { get; private set; }
         public Garage Garage { get; private set; }
         public ProgressionService Progression { get; private set; }
+        public AccessibilityOptions Options { get; private set; }
+        public UiDirector Ui { get; private set; }
+        public bool Riding { get; private set; }
+
+        private HushConfigSet _config;
+        private HushInputSource _playerInput;
 
         public void Assign(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge)
         {
@@ -47,7 +53,10 @@ namespace Hushlands
                 return;
             }
 
+            _config = c;
             Save = SaveProvider.Open(c);
+            Options = new AccessibilityOptions(Save, c.ui.Settings, c.uiMotion.Settings);
+            reducedMotion = Options.ReducedMotion;
             Progression = new ProgressionService(Save, c.vehicles.Settings, c.goals.Settings);
             Garage = Progression.Garage;
             if (GetComponent<SaveFlusher>() == null) gameObject.AddComponent<SaveFlusher>();
@@ -64,12 +73,15 @@ namespace Hushlands
             }
             else
             {
-                HushInputSource player = gameObject.AddComponent<HushInputSource>();
-                player.Configure(c.rider);
-                input = player;
+                _playerInput = gameObject.AddComponent<HushInputSource>();
+                _playerInput.Configure(c.rider);
+                input = _playerInput;
             }
 
-            r.Rider.Initialize(r.Loadout.Rider, r.Loadout.Speed, r.Loadout.Surfaces, r.Slope, input, true);
+            // Gentle timing lengthens the tap window in both the input sampler and the rider's input rules.
+            RiderSettings riderSettings = r.Loadout.Rider.Copy();
+            riderSettings.holdThresholdSeconds = Options.HoldThreshold(c.rider.Settings.holdThresholdSeconds);
+            r.Rider.Initialize(riderSettings, r.Loadout.Speed, r.Loadout.Surfaces, r.Slope, input, true);
             double start = c.content.Settings.checkpointOffsetMeters;
             r.Rider.ResetTo(new SlopePoint(start, r.Slope.HeightAt(start)), c.speed.Settings.startSpeed);
 
@@ -81,7 +93,10 @@ namespace Hushlands
             }
 
             r.Run = gameObject.AddComponent<RunDirector>();
-            r.Run.Initialize(c, r.Rider, input, r.Stretch, r.Slope, cameraDirector, r.Signals, seed);
+            RunSettingsBundle bundle = c.RunBundle();
+            bundle.Failure = c.failure.Settings.Copy();
+            bundle.Failure.autoAcceptAssists = Options.AutoAssists;
+            r.Run.Initialize(c, r.Rider, input, r.Stretch, r.Slope, cameraDirector, r.Signals, seed, bundle);
             r.Run.AttachProgression(Progression);
 
             var overlayGo = new GameObject("RetryOverlay");
@@ -114,6 +129,62 @@ namespace Hushlands
 
             if (mistLowPass != null) mistLowPass.Initialize(r.Mix, r.Mist, r.Rider.transform, r.Run.Session);
             if (mixBridge != null) mixBridge.Initialize(r.Mix, null);
+
+            bool autoRide = Autopilot || FrameTimeCaptureRequested() || SceneHandoff.AutoRide;
+            bool cover = SceneHandoff.CoverOnStart;
+            SceneHandoff.AutoRide = false;
+            SceneHandoff.CoverOnStart = false;
+
+            var uiGo = new GameObject("UI");
+            uiGo.transform.SetParent(transform, false);
+            Ui = uiGo.AddComponent<UiDirector>();
+            Ui.Initialize(c.ui.Settings, c.uiMotion.Settings, c.vehicles.Settings, Options, Progression, r.Run, this, Hud,
+                autoRide ? UiScreen.Riding : UiScreen.Title, cover);
+            ApplyOptions();
+            if (autoRide) StartRide();
+            else SetPaused(true);
+        }
+
+        private static bool FrameTimeCaptureRequested()
+        {
+            foreach (string a in System.Environment.GetCommandLineArgs())
+            {
+                if (string.Equals(a, FrameTimeCapture.CommandLineFlag, System.StringComparison.OrdinalIgnoreCase)) return true;
+            }
+            return false;
+        }
+
+        public void StartRide()
+        {
+            if (_playerInput != null) _playerInput.SuppressUntilRelease();
+            Riding = true;
+            SetPaused(false);
+        }
+
+        public void SetPaused(bool paused)
+        {
+            if (Refs == null) return;
+            // Not timeScale: input is processed in FixedUpdate, which timeScale 0 would stop (the pause could never end).
+            Physics.simulationMode = paused ? SimulationMode.Script : SimulationMode.FixedUpdate;
+            Refs.Rider.Paused = paused;
+            Refs.Run.Paused = paused;
+        }
+
+        public void Reload(bool autoRide)
+        {
+            Physics.simulationMode = SimulationMode.FixedUpdate;
+            if (Save is FileSaveService file && file.Dirty) file.Flush();
+        }
+
+        public void ApplyOptions()
+        {
+            if (Options == null) return;
+            AudioListener.volume = Options.Volume;
+            if (cameraDirector != null) cameraDirector.SetReducedMotion(Options.ReducedMotion);
+            if (Overlay != null) Overlay.ReducedMotion = Options.ReducedMotion;
+            if (Hud != null) Hud.ReducedMotion = Options.ReducedMotion;
+            if (_playerInput != null && _config != null)
+                _playerInput.HoldThresholdOverride = Options.HoldThreshold(_config.rider.Settings.holdThresholdSeconds);
         }
     }
 }

@@ -57,6 +57,17 @@ All art is original procedural placeholder in the canon palette; final hero asse
 Motion graphics, smooth video-like transitions over the live 3D world. Near-zero HUD.
 Continuous camera and mist transitions; no loading cuts. Reduced-motion option.
 
+Screens (T13, `UiFlow` + `UiDirector`): Title (name, the canon sentence, Ride / Garage / Goals / Settings, controls
+hint) over the live, held-still world; Riding (score appears on change, fades); Pause ("A quiet moment": Resume /
+Settings / Back to the ridge); Summary ("Home for now": score, distance, coins, little ones brought home, still waiting,
+goals completed, unlocks; Ride again / Garage / Back to the ridge); Garage (six vehicles, lifetime-coin unlocks);
+Goals (three active with progress); Settings. Screens crossfade with cubic easing and a 120 px glide; reduced motion
+keeps short fades, no glide, no zooms. Scene reloads (Ride again, title, new vehicle) happen fully under a mist wipe.
+Pause freezes the simulation (not timeScale). Navigation: arrows/WASD/d-pad, Enter/Space/South, Esc/East, mouse.
+Accessibility (saved): reduced motion, text size 100/125/150%, high contrast (21:1), gentle tap timing (×1.6 window),
+free assists on/off (off = tap during the hold accepts), volume. Contrast is validated: text ≥ 4.5:1 on its panel,
+high contrast ≥ 7:1.
+
 ## Content
 - Vehicles: wooden hill sled (default), tea-crate board, banana-leaf toboggan, bamboo sled, glider-skid, rain-umbrella slider.
 - Pickups: spice coins, mist lantern, wind feather, tea flask, magnet bell, golden mistbell.

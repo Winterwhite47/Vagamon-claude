@@ -115,9 +115,12 @@ namespace Hushlands
             _landingBonusDegrees = Mathf.Max(0f, degrees);
         }
 
+        /// <summary>Title and pause: the rider holds still (the physics scene is also not simulated).</summary>
+        public bool Paused { get; set; }
+
         private void FixedUpdate()
         {
-            if (autoStep && Initialized && _input != null) FixedStep(_input, Time.fixedDeltaTime);
+            if (!Paused && autoStep && Initialized && _input != null) FixedStep(_input, Time.fixedDeltaTime);
         }
 
         public void FixedStep(IInputSource input, float dt)
