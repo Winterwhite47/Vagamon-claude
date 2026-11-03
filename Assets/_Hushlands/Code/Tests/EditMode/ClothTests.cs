@@ -145,8 +145,8 @@ namespace Hushlands.Tests
         [Test]
         public void BenchmarkLog_ParsesChoice()
         {
-            Assert.AreEqual(ScarfMethod.UnityCloth, Hushlands.Editor.ScarfBenchmarkMenu.ParseChoice("x=1\nchoice=UnityCloth\n"));
-            Assert.Throws<FormatException>(() => Hushlands.Editor.ScarfBenchmarkMenu.ParseChoice("nothing"));
+            Assert.AreEqual(ScarfMethod.UnityCloth, ScarfMethodSelector.ParseLogChoice("x=1\nchoice=UnityCloth\n"));
+            Assert.Throws<FormatException>(() => ScarfMethodSelector.ParseLogChoice("nothing"));
         }
     }
 }

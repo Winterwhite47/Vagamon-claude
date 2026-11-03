@@ -27,13 +27,7 @@ namespace Hushlands.Editor
 
         public static ScarfMethod ParseChoice(string log)
         {
-            foreach (string line in log.Split('\n'))
-            {
-                string l = line.Trim();
-                if (l.StartsWith("choice=", StringComparison.Ordinal) &&
-                    Enum.TryParse(l.Substring("choice=".Length), out ScarfMethod m)) return m;
-            }
-            throw new FormatException("no choice= line in benchmark log");
+            return ScarfMethodSelector.ParseLogChoice(log);
         }
     }
 }

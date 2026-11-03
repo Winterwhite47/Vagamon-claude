@@ -3,6 +3,7 @@
 Format: ID · date · question · default used · status.
 
 ## D-001 · 2026-11-02 · No Unity Editor in agent container
+- Update 2026-11-03: the .NET 8 SDK is now installed from Ubuntu packages. `Hushlands.Core` compiles with warnings as errors and 169 engine-free EditMode tests pass (tools/dotnet). The first compile found one real error (a duplicate local `k` in ChunkGenerator); the first test run found three wrong test expectations, all fixed. Unity-bound code (Runtime, Editor, PlayMode) still needs Unity.
 - Context: cloud container is Linux, no Unity install, no license, no GPU. Installing external SDKs blocked by policy.
 - Default: author project as text (manifest, asmdefs, C#, editor bootstrap). Unity generates `ProjectSettings/*` and `.meta` on first open. Verification via `tools/validate_project.py` locally and GameCI in `.github/workflows/unity-ci.yml`.
 - Needs from owner: repo secrets `UNITY_LICENSE`, `UNITY_EMAIL`, `UNITY_PASSWORD`; or run the playbook commands on a Windows machine.

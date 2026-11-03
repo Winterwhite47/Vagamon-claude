@@ -79,7 +79,8 @@ namespace Hushlands.Tests
             RideTo(r, 36.5);
             Step(r, 1, true, 36.5);
             RideTo(r, 50);
-            Assert.Greater(jump.JumpDistance(6, System.Math.Tan(10 * System.Math.PI / 180)), 10);
+            // The arc must carry the rider past the far edge of the rescue window (nest 40 m + 2.5 m) from takeoff at 36.5 m.
+            Assert.Greater(jump.JumpDistance(6, System.Math.Tan(10 * System.Math.PI / 180)), 40 + new DucklingSettings().rescueRadius - 36.5);
             Assert.AreEqual(DucklingGroupStatus.Waiting, r.Nests.StatusOf(0));
             Assert.AreEqual(0, r.Session.Score.Rescues);
         }

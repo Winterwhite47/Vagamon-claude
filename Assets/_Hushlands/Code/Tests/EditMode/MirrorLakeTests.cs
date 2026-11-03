@@ -34,7 +34,8 @@ namespace Hushlands.Tests
                 Assert.Less(t.WaterLevel(x), slope.HeightAt(x), "water above the track at " + x);
                 for (double z = look.waterMinDepth; z <= look.waterMaxDepth; z += 10)
                     Assert.LessOrEqual(t.Height(x, z), t.WaterLevel(x) - look.waterBed + 1e-9, "lake bed above water");
-                Assert.AreEqual(slope.HeightAt(x), t.Height(x, 0), 1e-4, "corridor untouched");
+                double corridor = t.InGap(x) ? slope.HeightAt(x) - ls.gapDepth : slope.HeightAt(x);
+                Assert.AreEqual(corridor, t.Height(x, 0), 1e-4, "corridor untouched by the lake");
             }
             foreach (BiomeId other in new[] { BiomeId.MeadowSea, BiomeId.WindmouthRidge, BiomeId.PineHollow, BiomeId.TerraceCountry })
                 Assert.IsFalse(Terrain(other, out _, out _).HasWater, other + " has water");

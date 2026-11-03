@@ -291,6 +291,18 @@ namespace Hushlands.Core
     /// <summary>T6 rule: choose by measured per-scarf cost; ties (within tieToleranceRatio) go to Verlet.</summary>
     public static class ScarfMethodSelector
     {
+        /// <summary>Reads the "choice=" line of a benchmark log (Logs/scarf_benchmark.txt).</summary>
+        public static ScarfMethod ParseLogChoice(string log)
+        {
+            foreach (string line in (log ?? string.Empty).Split('\n'))
+            {
+                string l = line.Trim();
+                if (l.StartsWith("choice=", StringComparison.Ordinal) &&
+                    Enum.TryParse(l.Substring("choice=".Length), out ScarfMethod m) && Enum.IsDefined(typeof(ScarfMethod), m)) return m;
+            }
+            throw new FormatException("no choice= line in benchmark log");
+        }
+
         public static ScarfChoice Choose(double verletMs, double clothMs, ClothSettings s)
         {
             if (double.IsNaN(verletMs) || double.IsNaN(clothMs) || verletMs < 0d || clothMs < 0d)

@@ -36,6 +36,9 @@ Unity -batchmode -projectPath . -runTests -testPlatform EditMode -testResults Lo
 Unity -batchmode -projectPath . -runTests -testPlatform PlayMode -testResults Logs/playmode.xml
 # Build
 Unity -batchmode -quit -projectPath . -executeMethod Hushlands.Editor.BuildScript.BuildWindows -logFile Logs/build.log
+# Engine-free core: compile as Unity does + run its EditMode tests (no Unity needed)
+dotnet build tools/dotnet/Core/Hushlands.Core.csproj -warnaserror
+dotnet test tools/dotnet/CoreTests/Hushlands.CoreTests.csproj
 # Content: 200 stretches (Unity) / reference model (no Unity)
 Unity -batchmode -projectPath . -executeMethod Hushlands.Editor.ContentToolMenu.ValidateBatch
 python3 tools/qa/content_sim.py && python3 tools/qa/content_sim.py --selftest

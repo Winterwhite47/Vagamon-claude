@@ -158,7 +158,7 @@ namespace Hushlands.Core
             }
 
             // Pickups on clear ground.
-            for (int k = 0; k < _c.pickupsPerChunk; k++)
+            for (int pick = 0; pick < _c.pickupsPerChunk; pick++)
             {
                 double rareRoll = rng.NextDouble();
                 int rareIndex = rng.RangeInclusive(1, (int)PickupId.GoldenMistbell);

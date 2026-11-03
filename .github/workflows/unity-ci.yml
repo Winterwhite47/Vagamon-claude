@@ -13,8 +13,26 @@ jobs:
       - uses: actions/checkout@v4
       - run: python3 tools/validate_project.py
 
-  test:
+  core:
+    # Engine-free core compiled exactly as Unity does (netstandard2.1, C# 9, warnings as errors) + its NUnit tests.
     needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet build tools/dotnet/Core/Hushlands.Core.csproj -warnaserror
+      - run: dotnet test tools/dotnet/CoreTests/Hushlands.CoreTests.csproj
+      - run: |
+          python3 tools/qa/content_sim.py --all-vehicles
+          python3 tools/qa/content_sim.py --selftest
+          python3 tools/qa/camera_sim.py
+          python3 tools/qa/hazard_sim.py
+          python3 tools/qa/scarf_sim.py
+
+  test:
+    needs: core
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -149,8 +149,11 @@ namespace Hushlands.Tests
             for (double x = 0; x <= 100; x += 0.013) score.TrackDistance(x);
             long after = score.Score;
             Assert.AreEqual(100, after, 1);
+            double furthest = 0;
+            for (double x = 0; x <= 100; x += 0.013) furthest = x;
             score.TrackDistance(40);
-            for (double x = 40; x <= 100; x += 0.5) score.TrackDistance(x);
+            // Re-ride everything up to (not past) the furthest point already scored.
+            for (double x = 40; x < furthest; x += 0.5) score.TrackDistance(x);
             Assert.AreEqual(after, score.Score, "retry must not re-score ground");
         }
 
