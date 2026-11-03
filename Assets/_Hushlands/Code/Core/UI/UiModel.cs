@@ -156,7 +156,7 @@ namespace Hushlands.Core
         Select = 10,
     }
 
-    public sealed class MenuItem
+    public sealed class UiMenuItem
     {
         public string Label;
         public MenuAction Action;
@@ -166,17 +166,17 @@ namespace Hushlands.Core
     }
 
     /// <summary>Vertical menu: Up/Down move focus (wrapping, skipping disabled rows); Left/Right/Submit act.</summary>
-    public sealed class Menu
+    public sealed class UiMenu
     {
-        public Menu(IEnumerable<MenuItem> items)
+        public UiMenu(IEnumerable<UiMenuItem> items)
         {
-            Items = new List<MenuItem>(items);
+            Items = new List<UiMenuItem>(items);
             Focus = FirstEnabled();
         }
 
-        public List<MenuItem> Items { get; }
+        public List<UiMenuItem> Items { get; }
         public int Focus { get; private set; }
-        public MenuItem Focused => Focus >= 0 && Focus < Items.Count ? Items[Focus] : null;
+        public UiMenuItem Focused => Focus >= 0 && Focus < Items.Count ? Items[Focus] : null;
 
         public void Move(int dir)
         {

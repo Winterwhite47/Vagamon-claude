@@ -70,11 +70,11 @@ namespace Hushlands.Tests
         [Test]
         public void Menu_WrapsAndSkipsDisabled()
         {
-            var m = new Menu(new[]
+            var m = new UiMenu(new[]
             {
-                new MenuItem { Label = "a" },
-                new MenuItem { Label = "b", Enabled = false },
-                new MenuItem { Label = "c" },
+                new UiMenuItem { Label = "a" },
+                new UiMenuItem { Label = "b", Enabled = false },
+                new UiMenuItem { Label = "c" },
             });
             Assert.AreEqual(0, m.Focus);
             m.Move(1);

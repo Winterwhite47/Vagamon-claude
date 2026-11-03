@@ -24,6 +24,12 @@ jobs:
           dotnet-version: 8.0.x
       - run: dotnet build tools/dotnet/Core/Hushlands.Core.csproj -warnaserror
       - run: dotnet test tools/dotnet/CoreTests/Hushlands.CoreTests.csproj
+      - name: Compile Runtime, Editor and Unity-bound tests against Unity 6 refs + verified package stubs
+        run: |
+          export UNITY_REFS=$(tools/dotnet/fetch_unity_refs.sh "$RUNNER_TEMP/unityrefs")
+          for p in Runtime/Hushlands.Runtime.csproj Editor/Hushlands.Editor.csproj PlayModeTests/Hushlands.PlayModeTests.csproj EditModeUnityTests/Hushlands.EditModeUnityTests.csproj; do
+            dotnet build tools/dotnet/$p -warnaserror
+          done
       - run: |
           python3 tools/qa/content_sim.py --all-vehicles
           python3 tools/qa/content_sim.py --selftest

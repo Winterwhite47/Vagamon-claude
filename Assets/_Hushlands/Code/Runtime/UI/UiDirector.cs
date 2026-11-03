@@ -22,7 +22,7 @@ namespace Hushlands
             public CanvasGroup Group;
             public RectTransform Content;
             public Image Panel;
-            public Menu Menu;
+            public UiMenu Menu;
             public readonly List<Text> Rows = new List<Text>();
         }
 
@@ -155,9 +155,9 @@ namespace Hushlands
                     break;
             }
 
-            v.Menu = new Menu(BuildMenu(screen));
+            v.Menu = new UiMenu(BuildMenu(screen));
             y += _ui.menuTop * _options.TextScale;
-            foreach (MenuItem item in v.Menu.Items)
+            foreach (UiMenuItem item in v.Menu.Items)
             {
                 Text t = MakeText(v.Content, RowText(item), _ui.bodySize, y);
                 v.Rows.Add(t);
@@ -183,65 +183,65 @@ namespace Hushlands
             return y;
         }
 
-        private List<MenuItem> BuildMenu(UiScreen s)
+        private List<UiMenuItem> BuildMenu(UiScreen s)
         {
-            var items = new List<MenuItem>();
+            var items = new List<UiMenuItem>();
             switch (s)
             {
                 case UiScreen.Title:
-                    items.Add(new MenuItem { Label = _ui.ride, Action = MenuAction.Ride });
-                    items.Add(new MenuItem { Label = _ui.garage, Action = MenuAction.Garage });
-                    items.Add(new MenuItem { Label = _ui.goals, Action = MenuAction.Goals });
-                    items.Add(new MenuItem { Label = _ui.settings, Action = MenuAction.Settings });
+                    items.Add(new UiMenuItem { Label = _ui.ride, Action = MenuAction.Ride });
+                    items.Add(new UiMenuItem { Label = _ui.garage, Action = MenuAction.Garage });
+                    items.Add(new UiMenuItem { Label = _ui.goals, Action = MenuAction.Goals });
+                    items.Add(new UiMenuItem { Label = _ui.settings, Action = MenuAction.Settings });
                     break;
                 case UiScreen.Pause:
-                    items.Add(new MenuItem { Label = _ui.resume, Action = MenuAction.Resume });
-                    items.Add(new MenuItem { Label = _ui.settings, Action = MenuAction.Settings });
-                    items.Add(new MenuItem { Label = _ui.toTitle, Action = MenuAction.ToTitle });
+                    items.Add(new UiMenuItem { Label = _ui.resume, Action = MenuAction.Resume });
+                    items.Add(new UiMenuItem { Label = _ui.settings, Action = MenuAction.Settings });
+                    items.Add(new UiMenuItem { Label = _ui.toTitle, Action = MenuAction.ToTitle });
                     break;
                 case UiScreen.Summary:
-                    items.Add(new MenuItem { Label = _ui.rideAgain, Action = MenuAction.RideAgain });
-                    items.Add(new MenuItem { Label = _ui.garage, Action = MenuAction.Garage });
-                    items.Add(new MenuItem { Label = _ui.toTitle, Action = MenuAction.ToTitle });
+                    items.Add(new UiMenuItem { Label = _ui.rideAgain, Action = MenuAction.RideAgain });
+                    items.Add(new UiMenuItem { Label = _ui.garage, Action = MenuAction.Garage });
+                    items.Add(new UiMenuItem { Label = _ui.toTitle, Action = MenuAction.ToTitle });
                     break;
                 case UiScreen.Garage:
                     Garage garage = _progression.Garage;
                     foreach (VehicleEntry entry in _vehicles.entries)
                     {
                         VehicleEntry e = entry;
-                        items.Add(new MenuItem
+                        items.Add(new UiMenuItem
                         {
                             Label = Names.Pretty(e.vehicle.ToString()), Action = MenuAction.Select, Value = (int)e.vehicle,
                             Detail = () => garage.Selected == e.vehicle ? _ui.selected
                                 : (garage.IsUnlocked(e.vehicle) ? "" : string.Format(CultureInfo.InvariantCulture, _ui.locked, e.unlockLifetimeCoins)),
                         });
                     }
-                    items.Add(new MenuItem { Label = _ui.back, Action = MenuAction.Back });
+                    items.Add(new UiMenuItem { Label = _ui.back, Action = MenuAction.Back });
                     break;
                 case UiScreen.Goals:
-                    items.Add(new MenuItem { Label = _ui.back, Action = MenuAction.Back });
+                    items.Add(new UiMenuItem { Label = _ui.back, Action = MenuAction.Back });
                     break;
                 case UiScreen.Settings:
                     items.Add(Toggle(_ui.reducedMotion, 0, () => _options.ReducedMotion));
-                    items.Add(new MenuItem { Label = _ui.textSize, Action = MenuAction.Cycle, Value = 1,
+                    items.Add(new UiMenuItem { Label = _ui.textSize, Action = MenuAction.Cycle, Value = 1,
                         Detail = () => Mathf.RoundToInt(_options.TextScale * 100f) + "%" });
                     items.Add(Toggle(_ui.highContrast, 2, () => _options.HighContrast));
                     items.Add(Toggle(_ui.gentleTiming, 3, () => _options.GentleTiming));
                     items.Add(Toggle(_ui.autoAssists, 4, () => _options.AutoAssists));
-                    items.Add(new MenuItem { Label = _ui.masterVolume, Action = MenuAction.Cycle, Value = 5,
+                    items.Add(new UiMenuItem { Label = _ui.masterVolume, Action = MenuAction.Cycle, Value = 5,
                         Detail = () => Mathf.RoundToInt(_options.Volume * 100f) + "%" });
-                    items.Add(new MenuItem { Label = _ui.back, Action = MenuAction.Back });
+                    items.Add(new UiMenuItem { Label = _ui.back, Action = MenuAction.Back });
                     break;
             }
             return items;
         }
 
-        private MenuItem Toggle(string label, int id, System.Func<bool> value)
+        private UiMenuItem Toggle(string label, int id, System.Func<bool> value)
         {
-            return new MenuItem { Label = label, Action = MenuAction.Toggle, Value = id, Detail = () => value() ? _ui.on : _ui.off };
+            return new UiMenuItem { Label = label, Action = MenuAction.Toggle, Value = id, Detail = () => value() ? _ui.on : _ui.off };
         }
 
-        private static string RowText(MenuItem item)
+        private static string RowText(UiMenuItem item)
         {
             string d = item.Detail != null ? item.Detail() : null;
             return string.IsNullOrEmpty(d) ? item.Label : item.Label + "   " + d;
@@ -370,7 +370,7 @@ namespace Hushlands
             }
         }
 
-        private void Activate(ScreenView v, MenuItem item, int dir, bool valueOnly = false)
+        private void Activate(ScreenView v, UiMenuItem item, int dir, bool valueOnly = false)
         {
             if (item == null) return;
             if (valueOnly && item.Action != MenuAction.Cycle && item.Action != MenuAction.Toggle) return;

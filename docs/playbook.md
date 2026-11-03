@@ -39,6 +39,11 @@ Unity -batchmode -quit -projectPath . -executeMethod Hushlands.Editor.BuildScrip
 # Engine-free core: compile as Unity does + run its EditMode tests (no Unity needed)
 dotnet build tools/dotnet/Core/Hushlands.Core.csproj -warnaserror
 dotnet test tools/dotnet/CoreTests/Hushlands.CoreTests.csproj
+# Compile-check Unity-bound code without Unity (Unity 6 refs + package stubs checked against Unity source)
+export UNITY_REFS=$(tools/dotnet/fetch_unity_refs.sh /tmp/unityrefs)
+dotnet build tools/dotnet/Editor/Hushlands.Editor.csproj -warnaserror        # also builds Runtime
+dotnet build tools/dotnet/PlayModeTests/Hushlands.PlayModeTests.csproj -warnaserror
+dotnet build tools/dotnet/EditModeUnityTests/Hushlands.EditModeUnityTests.csproj -warnaserror
 # Content: 200 stretches (Unity) / reference model (no Unity)
 Unity -batchmode -projectPath . -executeMethod Hushlands.Editor.ContentToolMenu.ValidateBatch
 python3 tools/qa/content_sim.py && python3 tools/qa/content_sim.py --selftest

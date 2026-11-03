@@ -6,7 +6,7 @@ namespace Hushlands
     /// <summary>Drives a scarf bone chain from VerletScarfSolver. Bones are optional (benchmark runs without a mesh).</summary>
     public sealed class VerletScarf : MonoBehaviour
     {
-        [SerializeField] private ClothConfig config;
+        [SerializeField] private ClothConfig config = null;
         [SerializeField] private Transform anchor;
         [SerializeField] private Transform body;
         [SerializeField] private Transform[] bones;
