@@ -23,6 +23,12 @@ namespace Hushlands
             if (_rider != null) _rider.Landed += OnLanded;
         }
 
+        /// <summary>Straighten the runners (retry teleport).</summary>
+        public void ResetFlex()
+        {
+            _flex?.Reset();
+        }
+
         private void OnLanded(float verticalSpeed)
         {
             _flex?.Land(verticalSpeed);

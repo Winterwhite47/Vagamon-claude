@@ -19,6 +19,7 @@ namespace Hushlands
         public VehicleLoadout Loadout;
         public GameObject Deck;
         public VerletScarf Scarf;
+        public SledFlexDriver Flex;
         public Fog Fog;
         public float FogBaseMeanFreePath;
         public RiderCameraSignals Signals;
@@ -99,11 +100,11 @@ namespace Hushlands
             foreach (IChunk c in r.Stretch)
             {
                 float level = (float)r.Terrain.WaterLevel(c.StartDistance);
-                GameObject water = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                water.name = "Water_" + c.Id;
+                // Plain mesh, not CreatePrimitive(Quad): that drags in MeshCollider, which IL2CPP engine stripping may remove.
+                var water = new GameObject("Water_" + c.Id);
                 water.transform.SetParent(root, false);
-                Object.DestroyImmediate(water.GetComponent<Collider>());
-                water.GetComponent<MeshRenderer>().sharedMaterial = assets.Get("Water");
+                water.AddComponent<MeshFilter>().sharedMesh = UnitQuad();
+                water.AddComponent<MeshRenderer>().sharedMaterial = assets.Get("Water");
                 float depth = look.waterMaxDepth - look.waterMinDepth;
                 water.transform.SetPositionAndRotation(
                     new Vector3((float)(c.StartDistance + c.Length * 0.5), level, look.waterMinDepth + depth * 0.5f),
@@ -112,6 +113,24 @@ namespace Hushlands
                 n++;
             }
             return n;
+        }
+
+        private static Mesh _unitQuad;
+
+        /// <summary>1 x 1 quad in its XY plane facing -Z (same layout as Unity's Quad primitive).</summary>
+        private static Mesh UnitQuad()
+        {
+            if (_unitQuad != null) return _unitQuad;
+            _unitQuad = new Mesh
+            {
+                name = "UnitQuad",
+                vertices = new[] { new Vector3(-0.5f, -0.5f, 0f), new Vector3(0.5f, -0.5f, 0f), new Vector3(-0.5f, 0.5f, 0f), new Vector3(0.5f, 0.5f, 0f) },
+                uv = new[] { new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 1f), new Vector2(1f, 1f) },
+                triangles = new[] { 0, 3, 1, 3, 0, 2 },
+            };
+            _unitQuad.RecalculateNormals();
+            _unitQuad.RecalculateBounds();
+            return _unitQuad;
         }
 
         private static int AddScatter(SliceRefs r, LookSettings ls, BiomeId biome, double length, int seed, SliceAssets assets,
@@ -269,7 +288,8 @@ namespace Hushlands
             r.Scarf.Initialize(cloth, c.speed.Settings.gravity, neck, body.transform, bones, true);
             scarfRoot.gameObject.AddComponent<ScarfLine>().Initialize(bones, assets.Get("Scarf"), cloth.scarfWidth);
 
-            go.AddComponent<SledFlexDriver>().Initialize(cloth, r.Rider, sled);
+            r.Flex = go.AddComponent<SledFlexDriver>();
+            r.Flex.Initialize(cloth, r.Rider, sled);
         }
 
         internal static GameObject Primitive(PrimitiveType type, string name, Transform parent, Material mat)

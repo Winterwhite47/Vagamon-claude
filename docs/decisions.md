@@ -266,3 +266,12 @@ Format: ID · date · question · default used · status.
 - Runtime, Editor, PlayMode and engine-bound EditMode code now compile outside Unity against Unity 6000.0 engine reference assemblies (NuGet Digitalroot.References.Unity 6000.0.75, "publicized", so internal-API misuse would not be caught) plus tools/dotnet/Stubs: HDRP / SRP Core (Graphics @ 6000.0/staging), Cinemachine 3.1.4 and Test Framework 1.4.6 (sha1-checked registry tarballs), and UnityEditor (UnityCsReference @ 6000.0). Every stub member was matched to a declaration in that source, except EditorSceneManager.SaveScene / NewSceneSetup and HDMaterial.ValidateMaterial (documented API; wrapper file not located). Stubs catch missing or misspelled APIs and type errors; they cannot catch runtime behaviour.
 - Found and fixed: `Hushlands.Core.MenuItem` collided with `UnityEditor.MenuItem` in every Editor menu file (Unity would have rejected the Editor assembly) → renamed UiMenuItem / UiMenu; VerletScarf serialized field warning (CS0649) → explicit default.
 - Status: decided. Real Unity compile + test run still owed (project version 6000.3 vs refs 6000.0).
+
+## D-066 · 2026-11-04 · Runtime review fixes (beyond what a compile can see)
+- Retry teleport left the scarf and sled flex in their pre-crash pose (scarf whipped across the gap) → reset on Flow.Retried.
+- UiInput sampled WasPressedThisFrame in FixedUpdate while only the player input set fixed-update processing; autopilot runs read menu input unreliably → UiInput sets the mode too.
+- After the run ended the rider slid off the run-out and fell forever under the summary → world pauses on RunEnded.
+- Active Input Handling was never set, so the Input System would receive no events (and warn) → ProjectBootstrap sets PlayerSettings.activeInputHandler = 1 (same serialized setting the Input System package edits).
+- IL2CPP engine stripping could remove MeshCollider (only reached via CreatePrimitive(Quad)) → lake uses a plain mesh; link.xml preserves runtime-only collider/cloth types and the game assemblies.
+- CI relied on -executeMethod running before the test runner → EditorAutoBootstrap runs the idempotent bootstrap whenever the config set is missing.
+- Status: decided.

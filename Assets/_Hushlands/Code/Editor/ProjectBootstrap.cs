@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Hushlands.Editor
 {
@@ -70,6 +71,25 @@ namespace Hushlands.Editor
             PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64,
                 new[] { UnityEngine.Rendering.GraphicsDeviceType.Direct3D12 });
             PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Standalone, ScriptingImplementation.IL2CPP);
+            EnableNewInputSystem();
+        }
+
+        /// <summary>
+        /// "Active Input Handling" = Input System Package (1), the same serialized setting the Input System package edits
+        /// (InputSystem/Editor/Settings/EditorPlayerSettingHelpers.cs). Without it the player input never receives events.
+        /// Takes effect after an editor restart; the player build reads it directly.
+        /// </summary>
+        internal static void EnableNewInputSystem()
+        {
+            const int newInputSystemOnly = 1;
+            Object[] all = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
+            if (all == null || all.Length == 0) return;
+            var settings = new SerializedObject(all[0]);
+            SerializedProperty handler = settings.FindProperty("activeInputHandler");
+            if (handler == null || handler.intValue == newInputSystemOnly) return;
+            handler.intValue = newInputSystemOnly;
+            settings.ApplyModifiedPropertiesWithoutUndo();
+            Debug.Log("[Hushlands] Active Input Handling set to the Input System package; restart the editor once.");
         }
 
         private static HDRenderPipelineAsset EnsureHdrpAsset(BootLookConfig look)

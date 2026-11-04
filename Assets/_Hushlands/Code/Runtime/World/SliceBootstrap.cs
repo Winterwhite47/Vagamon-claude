@@ -101,6 +101,14 @@ namespace Hushlands
             bundle.Failure.autoAcceptAssists = Options.AutoAssists;
             r.Run.Initialize(c, r.Rider, input, r.Stretch, r.Slope, cameraDirector, r.Signals, seed, bundle);
             r.Run.AttachProgression(Progression);
+            // A retry teleports the rider: lay the scarf straight and settle the runners so nothing whips across the gap.
+            r.Run.Flow.Retried += _ =>
+            {
+                if (r.Scarf != null) r.Scarf.ResetPose();
+                if (r.Flex != null) r.Flex.ResetFlex();
+            };
+            // The run is over at the end of the stretch: hold the world still under the summary.
+            r.Run.RunEnded += _ => SetPaused(true);
 
             var overlayGo = new GameObject("RetryOverlay");
             overlayGo.transform.SetParent(transform, false);

@@ -5,7 +5,7 @@
 // Modules/BuildReportingEditor/Managed/BuildSummary.cs, Editor/Mono/{EditorUtility,EditorApplication,SerializedObject,
 // SerializedProperty}.bindings.cs, Editor/Mono/Undo/Undo.bindings.cs, Editor/Mono/MenuItem.cs, Editor/Mono/BuildTarget.cs.
 // Documented-only (wrapper file not located in the reference source): EditorSceneManager.SaveScene, NewSceneSetup,
-// HDMaterial.ValidateMaterial (HDRP 17 Editor). Compile-time only; never shipped.
+// HDMaterial.ValidateMaterial (HDRP 17 Editor), InitializeOnLoadAttribute. Compile-time only; never shipped.
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -26,6 +26,7 @@ namespace UnityEditor
         public static string CreateFolder(string parentFolder, string newFolderName) { return null; }
         public static void AddObjectToAsset(Object objectToAdd, Object assetObject) { }
         public static void AddObjectToAsset(Object objectToAdd, string path) { }
+        public static Object[] LoadAllAssetsAtPath(string assetPath) { return null; }
     }
 
     public sealed class EditorBuildSettingsScene
@@ -80,13 +81,19 @@ namespace UnityEditor
 
     public static class EditorApplication
     {
+        public delegate void CallbackFunction();
+        public static CallbackFunction delayCall;
         public static void Exit(int returnValue) { }
     }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    public class InitializeOnLoadAttribute : Attribute { }
 
     public class SerializedProperty
     {
         public bool boolValue { get; set; }
         public float floatValue { get; set; }
+        public int intValue { get; set; }
     }
 
     public class SerializedObject

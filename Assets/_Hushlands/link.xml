@@ -1,0 +1,17 @@
+<!--
+  Keep engine types created only at runtime (GameObject.CreatePrimitive adds colliders that are destroyed at once;
+  the builders never name some of them), so IL2CPP managed and engine-code stripping cannot remove them.
+-->
+<linker>
+  <assembly fullname="UnityEngine.PhysicsModule">
+    <type fullname="UnityEngine.BoxCollider" preserve="all" />
+    <type fullname="UnityEngine.SphereCollider" preserve="all" />
+    <type fullname="UnityEngine.CapsuleCollider" preserve="all" />
+    <type fullname="UnityEngine.MeshCollider" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.ClothModule">
+    <type fullname="UnityEngine.Cloth" preserve="all" />
+  </assembly>
+  <assembly fullname="Hushlands.Runtime" preserve="all" />
+  <assembly fullname="Hushlands.Core" preserve="all" />
+</linker>

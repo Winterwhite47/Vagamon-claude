@@ -20,6 +20,8 @@ namespace Hushlands
 
         private void OnEnable()
         {
+            // Sampled in FixedUpdate: input must be processed there too (the player input source does the same).
+            InputSystem.settings.updateMode = InputSettings.UpdateMode.ProcessEventsInFixedUpdate;
             Add(UiCommand.Up, "<Keyboard>/upArrow", "<Keyboard>/w", "<Gamepad>/dpad/up");
             Add(UiCommand.Down, "<Keyboard>/downArrow", "<Keyboard>/s", "<Gamepad>/dpad/down");
             Add(UiCommand.Left, "<Keyboard>/leftArrow", "<Keyboard>/a", "<Gamepad>/dpad/left");
