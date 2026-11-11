@@ -1,0 +1,12 @@
+  Passed Atmosphere_BlendsBiomes_KeepsSunUp_AndWeatherOnlyDimsAndThickens
+  Passed Choreography_IsGentle_Monotone_AndSettlesInsideTheHold
+  Passed DayDrift_IsBounded_Smooth_AndSeeded
+  Passed Humor_EndsAtOnce_WhenTenseOrCancelled_AndCanBeSwitchedOff
+  Passed Humor_OnlyInCalm_Sparse_Seeded_NeverRepeatsBackToBack
+  Passed MistNeverHidesJumps_InTheThickestWeatherAndSquall
+  Passed Pacing_RisesNearHazardsDangerAndSpills_AndCalmNeedsAQuietSpell
+  Passed Settings_AreValid_AndLinesAreCalm
+  Passed Settings_RejectBrokenValues
+  Passed Weather_IsSeeded_ChangesOnlyWhenCalm_AndFadesSmoothly
+Total tests: 10
+     Passed: 10

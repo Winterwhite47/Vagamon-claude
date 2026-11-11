@@ -282,3 +282,11 @@ Format: ID · date · question · default used · status.
 - The camera profile switches at the border midpoint (dominant biome). Slice_Journey is now the first build scene (what the player opens); single-biome slices stay for tuning, tests and captures.
 - Verified: 11 engine-free tests, Python mirror 40/40 journeys on all 6 vehicles (docs/logs/journey_content.txt), all assemblies compile. Not verified here: Unity run, frame time of the 5 km scene (terrain is built in one go; streaming is a T17 item if the 16.6 ms budget is missed).
 - Status: open (needs Unity run and capture).
+
+## D-068 · 2026-11-11 · T15 directors are presentation only (default)
+- T15 names five things and no numbers. Defaults: nothing here may change fairness or content. Weather and the day swing touch only sun, exposure and fog (fog at most 5% thicker; first guess of 8% failed the mist check in Pine Hollow and was thinned). Rain or snow particles are deferred: no authored particle material exists and a default one would render wrong in HDRP.
+- Pacing does not edit the generated stretch or the squall timetable (both validated); it only gates calm-only presentation (weather changes, humor beats) and is the hook for T16's mix.
+- Humor beats are props, not duckling gags, so duckling safety code is untouched. Lines pass the calm-words check.
+- Failure choreography acts on the placeholder body only; a mist puff covers gap and landslide spills.
+- AtmospherePresenter now runs in every slice (replaces the journey-only blend), so slices and the journey share one path.
+- Status: open (needs Unity run and capture).

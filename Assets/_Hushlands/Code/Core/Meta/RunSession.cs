@@ -15,6 +15,7 @@ namespace Hushlands.Core
         public HazardSettings Hazards = new HazardSettings();
         public FairnessSettings Fairness = new FairnessSettings();
         public SpeedSettings Speed = new SpeedSettings();
+        public DirectorSettings Director = new DirectorSettings();
     }
 
     /// <summary>
@@ -55,12 +56,18 @@ namespace Hushlands.Core
             Landslide = new LandslideChaser(b.Hazards, rider.Position.Distance);
             Collapse = new CollapseController(b.Fairness, b.Hazards, stretch);
             Squall = new SquallDirector(b.Hazards, Rng.Mix(seed, 77));
+            Pacing = new PacingDirector(b.Director, stretch);
+            Weather = new WeatherDirector(b.Director, Rng.Mix(seed, 78));
+            Humor = new HumorDirector(b.Director, Rng.Mix(seed, 79));
+            Day = new DayDrift(b.Director, Rng.Mix(seed, 80));
 
             double start = rider.Position.Distance;
             Stats = new RunStats { StartX = start, FurthestX = start, CleanFromX = start };
             _rider.Crashed += _ =>
             {
                 Pickups.OnCrash();
+                Pacing.NoteFailure();
+                Humor.Cancel();
                 Stats.Crashes++;
                 Stats.LongestClean = Math.Max(Stats.LongestClean, Stats.CurrentClean);
                 Stats.CurrentClean = 0d;
@@ -81,6 +88,12 @@ namespace Hushlands.Core
         public LandslideChaser Landslide { get; }
         public CollapseController Collapse { get; }
         public SquallDirector Squall { get; }
+        public PacingDirector Pacing { get; }
+        public WeatherDirector Weather { get; }
+        public HumorDirector Humor { get; }
+        public DayDrift Day { get; }
+        /// <summary>Seconds actually ridden (holds and retries do not count).</summary>
+        public double RunSeconds => _run;
         public RunStats Stats { get; }
         public bool Ended { get; private set; }
 
@@ -88,6 +101,7 @@ namespace Hushlands.Core
         public RunSummary End()
         {
             Ended = true;
+            Humor.Cancel();
             Stats.LongestClean = Math.Max(Stats.LongestClean, Stats.CurrentClean);
             return new RunSummary(Score.Score, Stats.Distance, Score.SpiceCoins, Score.Flips, Score.Rescues,
                 Ducklings.WaitingGroups, Stats.Crashes, Stats.LongestClean);
@@ -130,6 +144,10 @@ namespace Hushlands.Core
                 _signals.CollapseWarningActive = Collapse.AnyWarning;
                 _signals.LandslideSeconds = Landslide.SecondsToContact(p.Distance, _rider.Speed);
             }
+            bool danger = Collapse.AnyWarning || (Landslide.Active && Landslide.Gap(p.Distance) < _b.Hazards.landslideDangerGap);
+            Pacing.Step(p.Distance, _rider.Speed, danger, Squall.Intensity, dt);
+            Weather.Step(dt, Pacing.Calm);
+            Humor.Step(p.Distance, Pacing.Calm, Pacing.Tense, dt);
             if (caught) _crash?.ForceCrash(CrashCause.Landslide);
         }
 

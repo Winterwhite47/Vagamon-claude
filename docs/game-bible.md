@@ -145,6 +145,17 @@ Collapse zones: whole until the rider is within the warning lead (≥ 1 s at 18 
 Squall: seeded, first at 25 s, every 40–70 s, 12 s with 3 s ramps: −1 m/s headwind (never below 6), fog × 0.85 (mist
 fairness still ≥ 60%), +0.15 mist low-pass, gusts on the scarf.
 
+## Time of day, weather, pacing, humor, failure choreography (T15)
+Presentation only; no rule of play changes. All numbers in `DirectorSettings`.
+Time of day: each biome keeps its own hour; the light swings slowly around it (±2.5° sun, ±250 K, ±0.15 EV over 300 s,
+seeded phase, sun never below 3°). Weather: Clear / Haze / Overcast, seeded, held 45–90 s, 12 s cross-fade; dims the sun
+and thickens fog by at most 5% (mist fairness is checked with weather × squall fog). Pacing: intensity 0–1 from hazards
+in the next 4 s, danger, squall and a recent spill; "calm" = below 0.25 for 2 s. Weather changes and humor beats only
+begin in calm. Humor: sparse sight gags behind the track 32 m ahead (kettle puff, signpost hat tip, snoozing cairn),
+35–70 s apart, 5 s long, never twice in a row, gone at once if the ride turns tense or on a spill.
+Failure choreography: the rider eases back and sits down (obstacle, landing); at a gap or under the slide a soft mist
+puff closes over the rider within 0.25 s, before anything unkind could be seen. Settles inside the 0.9 s hold.
+
 ## Vehicles and garage (T11)
 | Vehicle | Jump | Flip | Drag | Friction | Unlock (lifetime spice coins) |
 |---|---|---|---|---|---|

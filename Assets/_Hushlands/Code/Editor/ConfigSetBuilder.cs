@@ -33,6 +33,7 @@ namespace Hushlands.Editor
             set.vehicles = Make<VehicleConfig>("Meta");
             set.goals = Make<GoalConfig>("Meta");
             set.cloth = Make<ClothConfig>("Characters");
+            set.director = Make<DirectorConfig>("Gameplay");
             EditorUtility.SetDirty(set);
 
             foreach (string error in set.ValidateAll()) Debug.LogError("[Hushlands] Config: " + error, set);

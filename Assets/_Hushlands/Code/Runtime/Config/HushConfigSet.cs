@@ -33,6 +33,7 @@ namespace Hushlands
         public VehicleConfig vehicles;
         public GoalConfig goals;
         public ClothConfig cloth;
+        public DirectorConfig director;
 
         /// <summary>Settings bundle for a RunSession.</summary>
         public Hushlands.Core.RunSettingsBundle RunBundle()
@@ -48,6 +49,7 @@ namespace Hushlands
                 Hazards = hazards.Settings,
                 Fairness = fairness.Settings,
                 Speed = speed.Settings,
+                Director = director.Settings,
             };
         }
 
@@ -84,6 +86,14 @@ namespace Hushlands
             Collect(errors, nameof(cloth), cloth == null ? null : cloth.Validate());
             Collect(errors, nameof(goals), goals == null ? null : goals.Validate());
             Collect(errors, nameof(vehicles), vehicles == null ? null : vehicles.Validate());
+            Collect(errors, nameof(director), director == null ? null : director.Validate());
+            if (director != null && messages != null)
+            {
+                foreach (Hushlands.Core.HumorBeatEntry b in director.Settings.humorBeats)
+                {
+                    if (!messages.Settings.IsClean(b.line)) errors.Add("director.humorBeats." + b.id + ": line breaks the calm-words rule");
+                }
+            }
             if (targets != null && rider != null && !Mathf.Approximately(targets.fixedTimestep, rider.Settings.physicsStep))
                 errors.Add("rider.physicsStep must equal targets.fixedTimestep");
             if (rider != null && fairness != null &&
@@ -109,7 +119,8 @@ namespace Hushlands
             }
             if (look != null && camera != null && fairness != null)
                 errors.AddRange(Hushlands.Core.MistVisibility.Check(look.Settings, camera.Settings, fairness.Settings,
-                    hazards != null ? hazards.Settings.squallFogScale : 1f));
+                    (hazards != null ? hazards.Settings.squallFogScale : 1f) *
+                    (director != null ? director.Settings.WorstFogScale() : 1f)));
             if (camera != null && content != null &&
                 camera.Settings.maxSlopeForFramingDegrees < content.Settings.maxSlopeDegrees)
                 errors.Add("camera.maxSlopeForFramingDegrees must cover content.maxSlopeDegrees");

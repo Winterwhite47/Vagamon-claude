@@ -94,7 +94,7 @@ for doc in ["docs/game-bible.md", "docs/playbook.md", "docs/decisions.md"]:
 # 10. T1: every settings block has a config asset wrapper, is linked in HushConfigSet and built by bootstrap.
 settings_src = "".join(f.read_text() for f in (CODE / "Core/Config").glob("*.cs"))
 settings = sorted(set(re.findall(r"class (\w+)Settings\s*:\s*ISettings", settings_src)))
-check(len(settings) == 22, f"expected 22 settings blocks, found {len(settings)}")
+check(len(settings) == 23, f"expected 23 settings blocks, found {len(settings)}")
 config_set = (CODE / "Runtime/Config/HushConfigSet.cs").read_text()
 builder = (CODE / "Editor/ConfigSetBuilder.cs").read_text()
 for name in settings:
@@ -254,10 +254,21 @@ jlog = ROOT / "docs/logs/journey_content.txt"
 check(jlog.is_file() and "40/40 passed" in jlog.read_text(), "missing passing journey content log")
 check("GenerateJourney" in (CODE / "Core/Content/ChunkGenerator.cs").read_text(), "generator needs the journey")
 check("generate_journey" in (ROOT / "tools/qa/content_sim.py").read_text(), "content mirror needs the journey")
-check((CODE / "Runtime/World/JourneyAtmosphere.cs").is_file(), "missing journey atmosphere blend")
+check((CODE / "Runtime/World/AtmospherePresenter.cs").is_file(), "missing atmosphere blend")
 check("JourneyScene" in (CODE / "Editor/World/SliceMenu.cs").read_text(), "journey scene must be built")
 check("Slice_Journey" in (CODE / "Tests/PlayMode/SliceTests.cs").read_text(), "journey needs a play mode ride test")
 check((CODE / "Tests/EditMode/JourneyTests.cs").is_file(), "missing journey edit mode tests")
+
+# T15: directors (time of day, weather, pacing, humor, failure choreography) exist, are wired and logged.
+for f in ["Core/Config/DirectorSettings.cs", "Core/Director/Directors.cs", "Runtime/Config/DirectorConfig.cs",
+          "Runtime/World/HumorPresenter.cs", "Runtime/World/FailurePresenter.cs", "Tests/EditMode/DirectorTests.cs"]:
+    check((CODE / f).is_file(), f"missing {f}")
+session_src = (CODE / "Core/Meta/RunSession.cs").read_text()
+for d in ["PacingDirector", "WeatherDirector", "HumorDirector", "DayDrift"]:
+    check(f"new {d}(" in session_src, f"RunSession must own {d}")
+check("WorstFogScale()" in (CODE / "Runtime/Config/HushConfigSet.cs").read_text(), "mist fairness must include weather fog")
+tlog = ROOT / "docs/logs/T15_director_tests.txt"
+check(tlog.is_file() and "Passed: 10" in tlog.read_text() and "Failed " not in tlog.read_text(), "missing passing T15 director log")
 
 for e in errors:
     print("FAIL:", e)

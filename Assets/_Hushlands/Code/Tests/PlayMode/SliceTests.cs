@@ -76,15 +76,18 @@ namespace Hushlands.Tests
                     Assert.IsNotNull(r.Plan, "journey has no plan");
                     Assert.AreEqual(System.Enum.GetValues(typeof(BiomeId)).Length, r.Plan.Segments.Count);
                     Assert.Greater(r.WaterPlanes, 0, "the lake segment has no water");
-                    Assert.IsNotNull(boot.Atmosphere);
                     Assert.AreEqual(r.Plan.Segments[0].Biome, boot.Atmosphere.Dominant);
-                    Assert.AreEqual(boot.Biome, boot.Atmosphere.Dominant);
                 }
                 else
                 {
                     Assert.IsNull(r.Plan);
-                    Assert.IsNull(boot.Atmosphere);
                 }
+                Assert.IsNotNull(boot.Atmosphere);
+                Assert.AreEqual(boot.Biome, boot.Atmosphere.Dominant);
+                Assert.Greater(boot.Atmosphere.State.SunLux, 0f);
+                Assert.IsNotNull(boot.Humor);
+                Assert.IsNotNull(boot.FailureShow);
+                Assert.IsFalse(boot.FailureShow.Active);
                 Assert.IsNotNull(Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineBrain>());
 
                 double start = r.Rider.Position.Distance;

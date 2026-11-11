@@ -39,7 +39,9 @@ namespace Hushlands
 
         public BiomeId Biome => biome;
         public bool Journey => journey;
-        public JourneyAtmosphere Atmosphere { get; private set; }
+        public AtmospherePresenter Atmosphere { get; private set; }
+        public HumorPresenter Humor { get; private set; }
+        public FailurePresenter FailureShow { get; private set; }
 
         /// <summary>Ride the whole run (every biome in order) instead of one biome slice.</summary>
         public void AssignJourney(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge)
@@ -121,6 +123,7 @@ namespace Hushlands
             {
                 if (r.Scarf != null) r.Scarf.ResetPose();
                 if (r.Flex != null) r.Flex.ResetFlex();
+                if (Atmosphere != null) Atmosphere.Apply();
             };
             // The run is over at the end of the stretch: hold the world still under the summary.
             r.Run.RunEnded += _ => SetPaused(true);
@@ -153,11 +156,16 @@ namespace Hushlands
             Hazards = hazardsGo.AddComponent<HazardPresenter>();
             Hazards.Initialize(r.Run.Session, r, c.hazards.Settings, c.cloth.Settings, c.look.Settings, c.track.Settings, assets);
 
-            if (r.Plan != null)
-            {
-                Atmosphere = gameObject.AddComponent<JourneyAtmosphere>();
-                Atmosphere.Initialize(r, c.look.Settings, cameraDirector);
-            }
+            Atmosphere = gameObject.AddComponent<AtmospherePresenter>();
+            Atmosphere.Initialize(r, c.look.Settings, c.director.Settings, cameraDirector, biome);
+
+            var humorGo = new GameObject("Humor");
+            humorGo.transform.SetParent(transform, false);
+            Humor = humorGo.AddComponent<HumorPresenter>();
+            Humor.Initialize(r.Run.Session.Humor, c.director.Settings, r, assets);
+
+            FailureShow = gameObject.AddComponent<FailurePresenter>();
+            FailureShow.Initialize(c.director.Settings, r.Run.Flow, r.Rider, assets.Get("Feather"));
 
             if (mistLowPass != null) mistLowPass.Initialize(r.Mix, r.Mist, r.Rider.transform, r.Run.Session);
             if (mixBridge != null) mixBridge.Initialize(r.Mix, null);
