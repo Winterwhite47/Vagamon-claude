@@ -88,6 +88,8 @@ namespace Hushlands.Tests
                 Assert.IsNotNull(boot.Humor);
                 Assert.IsNotNull(boot.FailureShow);
                 Assert.IsFalse(boot.FailureShow.Active);
+                Assert.IsNotNull(boot.Sound);
+                Assert.IsNotNull(boot.Sound.Mix);
                 Assert.IsNotNull(Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineBrain>());
 
                 double start = r.Rider.Position.Distance;
@@ -100,6 +102,8 @@ namespace Hushlands.Tests
                 Assert.Greater(r.Rider.Position.Distance - start, 60d, "autopilot did not ride");
                 Assert.AreEqual(0, r.Run.Flow.Retries, "autopilot crashed on a fair stretch");
                 Assert.AreNotEqual(FlowPhase.FailureHold, r.Run.Flow.Phase);
+                Assert.Greater(boot.Sound.Mix.WindGain, 0f, "no wind bed while riding");
+                Assert.LessOrEqual(boot.Sound.Mix.WindGain, 1f);
             }
             finally
             {

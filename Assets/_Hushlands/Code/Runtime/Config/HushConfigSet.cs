@@ -34,6 +34,7 @@ namespace Hushlands
         public GoalConfig goals;
         public ClothConfig cloth;
         public DirectorConfig director;
+        public SoundConfig sound;
 
         /// <summary>Settings bundle for a RunSession.</summary>
         public Hushlands.Core.RunSettingsBundle RunBundle()
@@ -87,6 +88,7 @@ namespace Hushlands
             Collect(errors, nameof(goals), goals == null ? null : goals.Validate());
             Collect(errors, nameof(vehicles), vehicles == null ? null : vehicles.Validate());
             Collect(errors, nameof(director), director == null ? null : director.Validate());
+            Collect(errors, nameof(sound), sound == null ? null : sound.Validate());
             if (director != null && messages != null)
             {
                 foreach (Hushlands.Core.HumorBeatEntry b in director.Settings.humorBeats)

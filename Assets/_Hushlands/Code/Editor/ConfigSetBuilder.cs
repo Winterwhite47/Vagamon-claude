@@ -34,6 +34,7 @@ namespace Hushlands.Editor
             set.goals = Make<GoalConfig>("Meta");
             set.cloth = Make<ClothConfig>("Characters");
             set.director = Make<DirectorConfig>("Gameplay");
+            set.sound = Make<SoundConfig>("Audio");
             EditorUtility.SetDirty(set);
 
             foreach (string error in set.ValidateAll()) Debug.LogError("[Hushlands] Config: " + error, set);

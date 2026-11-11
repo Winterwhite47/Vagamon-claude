@@ -156,6 +156,16 @@ begin in calm. Humor: sparse sight gags behind the track 32 m ahead (kettle puff
 Failure choreography: the rider eases back and sits down (obstacle, landing); at a gap or under the slide a soft mist
 puff closes over the rider within 0.25 s, before anything unkind could be seen. Settles inside the 0.9 s hold.
 
+## Audio and camera integration (T16)
+Audio is synthesized at start-up (original, no imported clips; `SoundSettings`): a wind bed and a sled bed from
+low-passed noise loops, a soft open-fifth pad, and short gliding tones (pickup, rescue, landing, collapse warning, retry,
+humor). `SoundMix`: wind grows with speed, air time and squall; the sled sounds only on the ground and rises in pitch
+with pace; the pad opens in calm and steps back under tension; beds scale per camera state (Air: no sled; Danger: less
+pad; FailureHold: ducked, never silent) and ease at 5/s so nothing cuts. Pickups ring a step higher per kind; landings
+under 1 m/s are silent. The mist low-pass on the listener filters everything.
+Camera: along the journey the profile and the mix snapshot switch to the dominant biome at each border midpoint and
+blend over `biomeBlendSeconds` (3 s); the reveal-distance contract holds in every biome.
+
 ## Vehicles and garage (T11)
 | Vehicle | Jump | Flip | Drag | Friction | Unlock (lifetime spice coins) |
 |---|---|---|---|---|---|

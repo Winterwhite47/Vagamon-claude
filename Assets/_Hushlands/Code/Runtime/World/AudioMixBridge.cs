@@ -6,7 +6,8 @@ namespace Hushlands
 {
     /// <summary>
     /// Optional AudioMixer bridge: transitions to the snapshot named by AudioMixSettings whenever the camera state or
-    /// biome changes. The mixer asset (with snapshots named per AudioMixSettings) is authored in the Editor (T16).
+    /// biome changes. Without a mixer asset (authored audio, later) the synthesized beds in SoundPresenter follow the
+    /// same camera states through SoundSettings.bedScales.
     /// </summary>
     public sealed class AudioMixBridge : MonoBehaviour
     {

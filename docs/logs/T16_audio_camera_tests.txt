@@ -1,0 +1,10 @@
+  Passed Camera_AndMix_FollowTheDominantBiome_WithoutACut
+  Passed Landing_SoftIsSilent_HardIsFull_AndPickupsRingHigherByKind
+  Passed Loops_AreClean_Deterministic_AndSeamless
+  Passed Mix_NeverClips_NeverJumps_InAnyCameraState
+  Passed Mix_PadStepsBackUnderTension_AndEverythingDucksInTheFailureHold
+  Passed Mix_WindGrowsWithSpeedAirAndSquall_SledOnlyOnTheGround
+  Passed Settings_AreValid_AndRejectBrokenValues
+  Passed Tones_AreClean_StartAndEndSilent_AndLastAsConfigured
+Total tests: 8
+     Passed: 8

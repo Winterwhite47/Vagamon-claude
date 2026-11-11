@@ -298,6 +298,55 @@ namespace Hushlands.Tests
             CollectionAssert.IsEmpty(MistVisibility.Check(new LookSettings(), new CameraSettings(), fair));
         }
 
+        private sealed class RidingSignals : ICameraSignalSource
+        {
+            public CameraSignals Read(float dt)
+            {
+                return new CameraSignals { Rider = RiderState.Grounded, Speed = 12f, LandslideSeconds = float.PositiveInfinity };
+            }
+        }
+
+        [Test]
+        public void Camera_AndMix_FollowTheDominantBiome_WithoutACut()
+        {
+            // T16: along the whole run the camera profile and the mix snapshot change biome at each border, blended.
+            List<Chunk> s = Journey(2);
+            var slope = new StretchSlope(s);
+            var plan = new JourneyPlan(s, new BiomeSettings().transitionMeters);
+            var cam = new CameraSettings();
+            var mix = new MixDirector(new AudioMixSettings());
+            var applied = new List<BiomeId>();
+            mix.SnapshotChanged += (_, biome) => applied.Add(biome);
+            var director = new CameraDirectorCore(cam, slope, new RidingSignals(), mix, plan.Segments[0].Biome, false);
+            const float dt = 0.01f;
+            const double speed = 12d;
+            BiomeId dominant = plan.Segments[0].Biome;
+            CameraPose last = director.Tick(0d, dt);
+            int switches = 0;
+            for (double x = speed * dt; x < slope.Length; x += speed * dt)
+            {
+                BiomeId now = plan.BlendAt(x).Dominant;
+                if (now != dominant)
+                {
+                    dominant = now;
+                    switches++;
+                    director.SetBiome(now);
+                    Assert.AreEqual(now, mix.CurrentBiome, "mix did not follow the biome");
+                }
+                CameraPose pose = director.Tick(x, dt);
+                Assert.AreEqual(dominant, director.Biome);
+                Assert.Less(Math.Abs(pose.Z - last.Z), 0.25, "camera distance cut at " + x);
+                Assert.Less(Math.Abs(pose.FieldOfView - last.FieldOfView), 0.25f, "field of view cut at " + x);
+                Assert.Less(Math.Abs(pose.PitchDegrees - last.PitchDegrees), 0.5f, "pitch cut at " + x);
+                last = pose;
+            }
+            Assert.AreEqual(plan.Segments.Count - 1, switches);
+            Assert.AreEqual(BiomeId.MirrorLake, mix.CurrentBiome);
+            CollectionAssert.Contains(applied, BiomeId.PineHollow);
+            // Every biome's framing still shows the fairness reveal distance.
+            CollectionAssert.IsEmpty(FramingMath.CheckContract(cam, new FairnessSettings().visibleAheadMeters));
+        }
+
         [Test]
         public void Plan_RejectsAnEmptyStretch()
         {

@@ -7,7 +7,7 @@ namespace Hushlands
     /// Vertical slice entry point. Builds the biome slice, then wires rider, camera director, run flow, overlay,
     /// mist low-pass and mix bridge. Player input by default; "-hushAutopilot" (or ForceAutopilot) rides with the bot.
     /// </summary>
-    public sealed class SliceBootstrap : MonoBehaviour, IGameControl
+    public sealed class SliceBootstrap : MonoBehaviour, IGameControl, SoundPresenter.IGameState
     {
         /// <summary>Tests and captures can force the bot.</summary>
         public static bool ForceAutopilot;
@@ -42,6 +42,7 @@ namespace Hushlands
         public AtmospherePresenter Atmosphere { get; private set; }
         public HumorPresenter Humor { get; private set; }
         public FailurePresenter FailureShow { get; private set; }
+        public SoundPresenter Sound { get; private set; }
 
         /// <summary>Ride the whole run (every biome in order) instead of one biome slice.</summary>
         public void AssignJourney(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge)
@@ -166,6 +167,11 @@ namespace Hushlands
 
             FailureShow = gameObject.AddComponent<FailurePresenter>();
             FailureShow.Initialize(c.director.Settings, r.Run.Flow, r.Rider, assets.Get("Feather"));
+
+            var soundGo = new GameObject("Sound");
+            soundGo.transform.SetParent(transform, false);
+            Sound = soundGo.AddComponent<SoundPresenter>();
+            Sound.Initialize(c.sound.Settings, c.speed.Settings, r, cameraDirector, this, seed);
 
             if (mistLowPass != null) mistLowPass.Initialize(r.Mix, r.Mist, r.Rider.transform, r.Run.Session);
             if (mixBridge != null) mixBridge.Initialize(r.Mix, null);

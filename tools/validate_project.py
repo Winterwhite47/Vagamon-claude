@@ -94,7 +94,7 @@ for doc in ["docs/game-bible.md", "docs/playbook.md", "docs/decisions.md"]:
 # 10. T1: every settings block has a config asset wrapper, is linked in HushConfigSet and built by bootstrap.
 settings_src = "".join(f.read_text() for f in (CODE / "Core/Config").glob("*.cs"))
 settings = sorted(set(re.findall(r"class (\w+)Settings\s*:\s*ISettings", settings_src)))
-check(len(settings) == 23, f"expected 23 settings blocks, found {len(settings)}")
+check(len(settings) == 24, f"expected 24 settings blocks, found {len(settings)}")
 config_set = (CODE / "Runtime/Config/HushConfigSet.cs").read_text()
 builder = (CODE / "Editor/ConfigSetBuilder.cs").read_text()
 for name in settings:
@@ -269,6 +269,16 @@ for d in ["PacingDirector", "WeatherDirector", "HumorDirector", "DayDrift"]:
 check("WorstFogScale()" in (CODE / "Runtime/Config/HushConfigSet.cs").read_text(), "mist fairness must include weather fog")
 tlog = ROOT / "docs/logs/T15_director_tests.txt"
 check(tlog.is_file() and "Passed: 10" in tlog.read_text() and "Failed " not in tlog.read_text(), "missing passing T15 director log")
+
+# T16: synthesized placeholder audio and the camera/mix integration are present, wired and logged.
+for f in ["Core/Config/SoundSettings.cs", "Core/Audio/SoundModel.cs", "Runtime/Config/SoundConfig.cs",
+          "Runtime/World/SoundPresenter.cs", "Tests/EditMode/SoundTests.cs"]:
+    check((CODE / f).is_file(), f"missing {f}")
+check("Sound.Initialize(" in (CODE / "Runtime/World/SliceBootstrap.cs").read_text(), "slice must start the sound presenter")
+check(not list((ROOT / "Assets").rglob("*.wav")) and not list((ROOT / "Assets").rglob("*.mp3")) and not list((ROOT / "Assets").rglob("*.ogg")),
+      "audio must be synthesized or authored originals (no imported clips yet)")
+alog = ROOT / "docs/logs/T16_audio_camera_tests.txt"
+check(alog.is_file() and "Passed: 8" in alog.read_text() and "Failed " not in alog.read_text(), "missing passing T16 log")
 
 for e in errors:
     print("FAIL:", e)

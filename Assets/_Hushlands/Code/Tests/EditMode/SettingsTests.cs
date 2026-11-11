@@ -31,6 +31,7 @@ namespace Hushlands.Tests
             yield return new GoalSettings();
             yield return new UiSettings();
             yield return new DirectorSettings();
+            yield return new SoundSettings();
         }
 
         [TestCaseSource(nameof(AllDefaults))]

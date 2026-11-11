@@ -290,3 +290,9 @@ Format: ID · date · question · default used · status.
 - Failure choreography acts on the placeholder body only; a mist puff covers gap and landslide spills.
 - AtmospherePresenter now runs in every slice (replaces the journey-only blend), so slices and the journey share one path.
 - Status: open (needs Unity run and capture).
+
+## D-069 · 2026-11-11 · T16 audio is synthesized placeholder (default)
+- Original audio is required and none is authored, and an AudioMixer asset cannot be made without the Editor. Default: generate every clip in code at start-up (filtered noise beds, a sine pad, short tones) and mix with per-source gains that follow the camera state, so the game has sound and the mix rules are testable now. Authored clips and a mixer can replace the clips later without changing SoundMix; AudioMixBridge stays as the optional mixer path.
+- No music beyond the pad: composing is an authored-art item. No per-biome ambience yet (birds, water): same reason.
+- Camera pass found no defect: biome switches already blend in the rig; a journey-long continuity test now guards it.
+- Status: open (needs a listen in Unity; levels are first guesses).
