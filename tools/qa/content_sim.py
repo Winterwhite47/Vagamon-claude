@@ -59,6 +59,9 @@ def load():
                      re.findall(r"new SurfaceEntry\(SurfaceId\.(\w+), ([\d.]+f), ([\d.]+f)\)", src)}
     s["biomes"] = {m[0]: m[1] for m in
                    re.findall(r"new BiomeEntry\(BiomeId\.(\w+), [^)]*SurfaceId\.(\w+)\)", src)}
+    # Journey order and segment lengths (BiomeSettings.entries).
+    s["journey"] = [(m[0], float(m[2])) for m in sorted(
+        re.findall(r"new BiomeEntry\(BiomeId\.(\w+), (\d+), ([\d.]+)f", src), key=lambda m: int(m[1]))]
     veh = re.findall(r"new VehicleEntry\(VehicleId\.(\w+), ([\d.]+)f, ([\d.]+)f, ([\d.]+)f", src)
     s["defaultVehicle"] = re.search(r"defaultVehicle = VehicleId\.(\w+)", src).group(1)
     s["vehicles"] = {v[0]: {"friction": float(v[1]), "drag": float(v[2]), "jump": float(v[3])} for v in veh}
@@ -203,6 +206,23 @@ def generate(s, seed, biome, count):
     chunks, nest = [], [0]
     for i in range(count):
         chunks.append(build_chunk(s, rng, biome, seed, i, nest, jump))
+    return assemble(s, chunks, jump)
+
+
+def generate_journey(s, seed):
+    """Mirror of ChunkGenerator.GenerateJourney: every biome in order, each on its standalone random stream."""
+    C, jump = s["ContentSettings"], Jump(s)
+    mean = (C["minChunkLength"] + C["maxChunkLength"]) * 0.5
+    chunks, nest = [], [0]
+    for biome, length in s["journey"]:
+        rng = Rng(Rng.mix(seed, BIOMES.index(biome)))
+        for i in range(max(1, round(length / mean))):
+            chunks.append(build_chunk(s, rng, biome, seed, i, nest, jump))
+    return assemble(s, chunks, jump)
+
+
+def assemble(s, chunks, jump):
+    C, F = s["ContentSettings"], s["FairnessSettings"]
     cur = 0.0
     for c in chunks:
         c.start, cur = cur, cur + c.length
@@ -521,6 +541,7 @@ def main():
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--all-vehicles", action="store_true")
     ap.add_argument("--biome", help="validate only this biome (otherwise biomes cycle)")
+    ap.add_argument("--journey", action="store_true", help="validate full runs (every biome in order on one track)")
     a = ap.parse_args()
     s = load()
     if a.selftest:
@@ -536,7 +557,10 @@ def main():
     lines, passed, hazards, kinds, vehicle_runs = [], 0, 0, {}, {}
     for i in range(count):
         seed, biome = a.first_seed + i, (a.biome or BIOMES[i % len(BIOMES)])
-        chunks = generate(s, seed, biome, s["ContentSettings"]["chunksPerStretch"])
+        if a.journey:
+            biome, chunks = "Journey", generate_journey(s, seed)
+        else:
+            chunks = generate(s, seed, biome, s["ContentSettings"]["chunksPerStretch"])
         for c in chunks:
             for f in c.features:
                 if f.hazard:

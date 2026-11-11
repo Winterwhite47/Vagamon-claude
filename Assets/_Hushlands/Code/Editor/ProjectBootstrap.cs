@@ -41,7 +41,7 @@ namespace Hushlands.Editor
             EnsureBootScene(targets, look, profile);
 
             SliceMenu.BuildAll(set: null);
-            // Meadow Sea slice first so the player (and -hushCapture) opens it; other tuned biomes follow; Boot last.
+            // The journey first so the player (and -hushCapture) opens it; Meadow Sea and the other tuned slices follow; Boot last.
             var scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>();
             foreach (string path in SliceMenu.SliceScenes(AssetDatabase.LoadAssetAtPath<HushConfigSet>(HushPaths.ConfigSetAsset)))
                 scenes.Add(new EditorBuildSettingsScene(path, true));

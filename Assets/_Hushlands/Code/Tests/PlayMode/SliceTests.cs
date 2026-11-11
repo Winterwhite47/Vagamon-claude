@@ -45,6 +45,13 @@ namespace Hushlands.Tests
             yield return SliceBuildsAndRides("Slice_MirrorLake");
         }
 
+        [UnityTest]
+        [Timeout(180000)]
+        public IEnumerator Journey_Builds_AndAutopilotRides()
+        {
+            yield return SliceBuildsAndRides("Slice_Journey");
+        }
+
         private static IEnumerator SliceBuildsAndRides(string scene)
         {
             SliceBootstrap.ForceAutopilot = true;
@@ -64,6 +71,20 @@ namespace Hushlands.Tests
                 Assert.AreEqual(r.Mist.Banks.Count, r.MistVolumes);
                 Assert.IsNotNull(r.Sun);
                 Assert.IsNotNull(boot.Overlay);
+                if (boot.Journey)
+                {
+                    Assert.IsNotNull(r.Plan, "journey has no plan");
+                    Assert.AreEqual(System.Enum.GetValues(typeof(BiomeId)).Length, r.Plan.Segments.Count);
+                    Assert.Greater(r.WaterPlanes, 0, "the lake segment has no water");
+                    Assert.IsNotNull(boot.Atmosphere);
+                    Assert.AreEqual(r.Plan.Segments[0].Biome, boot.Atmosphere.Dominant);
+                    Assert.AreEqual(boot.Biome, boot.Atmosphere.Dominant);
+                }
+                else
+                {
+                    Assert.IsNull(r.Plan);
+                    Assert.IsNull(boot.Atmosphere);
+                }
                 Assert.IsNotNull(Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineBrain>());
 
                 double start = r.Rider.Position.Distance;

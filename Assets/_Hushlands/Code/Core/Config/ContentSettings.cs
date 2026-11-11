@@ -318,6 +318,8 @@ namespace Hushlands.Core
             new BiomeEntry(BiomeId.TerraceCountry, 3, 1200f, 0.25f, SurfaceId.TeaTerrace),
             new BiomeEntry(BiomeId.MirrorLake, 4, 1000f, 0.40f, SurfaceId.Boardwalk),
         };
+        /// <summary>Length over which neighbouring biomes blend in the full run (terrain, light, mist).</summary>
+        public float transitionMeters = 80f;
 
         public BiomeEntry Get(BiomeId id)
         {
@@ -341,6 +343,7 @@ namespace Hushlands.Core
                 SettingsCheck.Range(e, o, b.biome + ".baseMistDensity", b.baseMistDensity, 0f, 1f);
             }
             SettingsCheck.CoversEnum(e, o, keys);
+            SettingsCheck.NonNegative(e, o, nameof(transitionMeters), transitionMeters);
         }
     }
 }

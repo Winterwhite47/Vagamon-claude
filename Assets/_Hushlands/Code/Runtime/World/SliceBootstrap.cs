@@ -14,6 +14,7 @@ namespace Hushlands
 
         [SerializeField] private BiomeId biome = BiomeId.MeadowSea;
         [SerializeField] private int seed = 2;
+        [SerializeField] private bool journey;
         [SerializeField] private CameraDirector cameraDirector;
         [SerializeField] private MistLowPass mistLowPass;
         [SerializeField] private AudioMixBridge mixBridge;
@@ -37,6 +38,17 @@ namespace Hushlands
         private HushInputSource _playerInput;
 
         public BiomeId Biome => biome;
+        public bool Journey => journey;
+        public JourneyAtmosphere Atmosphere { get; private set; }
+
+        /// <summary>Ride the whole run (every biome in order) instead of one biome slice.</summary>
+        public void AssignJourney(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge)
+        {
+            journey = true;
+            cameraDirector = director;
+            mistLowPass = lowPass;
+            mixBridge = bridge;
+        }
 
         public void Assign(CameraDirector director, MistLowPass lowPass, AudioMixBridge bridge, BiomeId sliceBiome)
         {
@@ -63,7 +75,10 @@ namespace Hushlands
             Progression = new ProgressionService(Save, c.vehicles.Settings, c.goals.Settings);
             Garage = Progression.Garage;
             if (GetComponent<SaveFlusher>() == null) gameObject.AddComponent<SaveFlusher>();
-            SliceRefs r = SliceBuilder.Build(c, assets, biome, seed, transform, Garage.Selected);
+            SliceRefs r = journey
+                ? SliceBuilder.BuildJourney(c, assets, seed, transform, Garage.Selected)
+                : SliceBuilder.Build(c, assets, biome, seed, transform, Garage.Selected);
+            if (r.Plan != null) biome = r.Plan.Segments[0].Biome;
             Refs = r;
             Autopilot = ForceAutopilot || AutopilotInput.Requested();
 
@@ -137,6 +152,12 @@ namespace Hushlands
             hazardsGo.transform.SetParent(transform, false);
             Hazards = hazardsGo.AddComponent<HazardPresenter>();
             Hazards.Initialize(r.Run.Session, r, c.hazards.Settings, c.cloth.Settings, c.look.Settings, c.track.Settings, assets);
+
+            if (r.Plan != null)
+            {
+                Atmosphere = gameObject.AddComponent<JourneyAtmosphere>();
+                Atmosphere.Initialize(r, c.look.Settings, cameraDirector);
+            }
 
             if (mistLowPass != null) mistLowPass.Initialize(r.Mix, r.Mist, r.Rider.transform, r.Run.Session);
             if (mixBridge != null) mixBridge.Initialize(r.Mix, null);

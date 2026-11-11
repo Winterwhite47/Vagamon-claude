@@ -275,3 +275,10 @@ Format: ID · date · question · default used · status.
 - IL2CPP engine stripping could remove MeshCollider (only reached via CreatePrimitive(Quad)) → lake uses a plain mesh; link.xml preserves runtime-only collider/cloth types and the game assemblies.
 - CI relied on -executeMethod running before the test runner → EditorAutoBootstrap runs the idempotent bootstrap whenever the config set is missing.
 - Status: decided.
+
+## D-067 · 2026-11-11 · The journey: one continuous run over all five biomes (default)
+- Canon order and lengths come from BiomeSettings (Windmouth 900 m → Meadow 1200 → Pine 1100 → Terrace 1200 → Mirror Lake 1000; about 5.2 km, 59 chunks). Each biome draws from the same random stream as its standalone slice, so journey content is the content already validated per biome; nest groups are numbered across the whole run and mist is clamped across borders.
+- Borders blend over BiomeSettings.transitionMeters (80 m, smoothstep): backdrop terrain, sun, fog, exposure, scarf wind and audio mist base. Corridor and front-of-track rules hold for any blend. The lake bed fades in with the blend; water planes exist only on lake chunks. Fog heights follow the track as it descends (a single slice keeps its fixed heights).
+- The camera profile switches at the border midpoint (dominant biome). Slice_Journey is now the first build scene (what the player opens); single-biome slices stay for tuning, tests and captures.
+- Verified: 11 engine-free tests, Python mirror 40/40 journeys on all 6 vehicles (docs/logs/journey_content.txt), all assemblies compile. Not verified here: Unity run, frame time of the 5 km scene (terrain is built in one go; streaming is a T17 item if the 16.6 ms budget is missed).
+- Status: open (needs Unity run and capture).

@@ -249,6 +249,16 @@ check("SliceSceneFor" in (CODE / "Editor/World/SliceMenu.cs").read_text(), "slic
 check((ROOT / "docs/logs/T14_windmouth_content.txt").is_file(), "missing Windmouth content log")
 check("--biome" in (ROOT / "tools/qa/content_sim.py").read_text(), "content mirror needs per-biome mode")
 
+# Journey: one continuous run over every biome, mirrored and fair on every vehicle.
+jlog = ROOT / "docs/logs/journey_content.txt"
+check(jlog.is_file() and "40/40 passed" in jlog.read_text(), "missing passing journey content log")
+check("GenerateJourney" in (CODE / "Core/Content/ChunkGenerator.cs").read_text(), "generator needs the journey")
+check("generate_journey" in (ROOT / "tools/qa/content_sim.py").read_text(), "content mirror needs the journey")
+check((CODE / "Runtime/World/JourneyAtmosphere.cs").is_file(), "missing journey atmosphere blend")
+check("JourneyScene" in (CODE / "Editor/World/SliceMenu.cs").read_text(), "journey scene must be built")
+check("Slice_Journey" in (CODE / "Tests/PlayMode/SliceTests.cs").read_text(), "journey needs a play mode ride test")
+check((CODE / "Tests/EditMode/JourneyTests.cs").is_file(), "missing journey edit mode tests")
+
 for e in errors:
     print("FAIL:", e)
 print(f"validate_project: {checks - len(errors)}/{checks} checks passed, {len(errors)} failed")

@@ -19,6 +19,8 @@ namespace Hushlands.Editor
         public const string BootVolumeProfile = RenderingFolder + "/BootVolumeProfile.asset";
         public const string BootScene = Root + "/Scenes/Boot.unity";
         public const string SliceScene = Root + "/Scenes/Slice_MeadowSea.unity";
+        /// <summary>The full run: every biome in order on one track.</summary>
+        public const string JourneyScene = Root + "/Scenes/Slice_Journey.unity";
 
         public static string SliceSceneFor(Hushlands.Core.BiomeId biome)
         {

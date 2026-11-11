@@ -31,6 +31,8 @@ namespace Hushlands
         public int Props;
         public int WaterPlanes;
         public BiomeLook Look;
+        /// <summary>Set for the full journey (several biomes in one run); null for a single-biome slice.</summary>
+        public JourneyPlan Plan;
         public int MistVolumes;
         public int Obstacles;
         public int Nests;
@@ -47,19 +49,42 @@ namespace Hushlands
         public static SliceRefs Build(HushConfigSet c, SliceAssets assets, BiomeId biome, int seed, Transform parent,
             VehicleId vehicle)
         {
-            LookSettings ls = c.look.Settings;
-            BiomeLook look = ls.Get(biome);
-            var r = new SliceRefs { Root = new GameObject("Slice_" + biome) };
-            if (parent != null) r.Root.transform.SetParent(parent, false);
+            return Build(c, assets, biome, false, seed, parent, vehicle);
+        }
 
+        /// <summary>The full run: every biome in journey order on one continuous track, blended at the borders.</summary>
+        public static SliceRefs BuildJourney(HushConfigSet c, SliceAssets assets, int seed, Transform parent, VehicleId vehicle)
+        {
+            return Build(c, assets, default, true, seed, parent, vehicle);
+        }
+
+        private static SliceRefs Build(HushConfigSet c, SliceAssets assets, BiomeId biome, bool journey, int seed,
+            Transform parent, VehicleId vehicle)
+        {
+            LookSettings ls = c.look.Settings;
             JumpModel jump = JumpModel.ForAllVehicles(c.rider.Settings, c.speed.Settings, c.vehicles.Settings);
             var gen = new ChunkGenerator(c.content.Settings, c.fairness.Settings, c.biomes.Settings, jump);
-            r.Stretch = gen.Generate(seed, biome, c.content.Settings.chunksPerStretch);
+            var r = new SliceRefs();
+            if (journey)
+            {
+                r.Stretch = gen.GenerateJourney(seed);
+                r.Plan = new JourneyPlan(r.Stretch, c.biomes.Settings.transitionMeters);
+                biome = r.Plan.Segments[0].Biome;
+            }
+            else
+            {
+                r.Stretch = gen.Generate(seed, biome, c.content.Settings.chunksPerStretch);
+            }
+            BiomeLook look = ls.Get(biome);
+            r.Root = new GameObject(journey ? "Slice_Journey" : "Slice_" + biome);
+            if (parent != null) r.Root.transform.SetParent(parent, false);
             r.Slope = new StretchSlope(r.Stretch);
             double length = r.Slope.Length + c.track.Settings.runOutMeters;
 
             TrackBuilder.Build(r.Stretch, r.Slope, c.track.Settings, r.Root.transform);
-            r.Terrain = new TerrainSampler(r.Slope, r.Stretch, ls, look, seed);
+            r.Terrain = journey
+                ? new TerrainSampler(r.Slope, r.Stretch, ls, r.Plan, seed)
+                : new TerrainSampler(r.Slope, r.Stretch, ls, look, seed);
             var world = new GameObject("World").transform;
             world.SetParent(r.Root.transform, false);
             r.TerrainTiles = TerrainMeshBuilder.BuildTerrain(r.Terrain, ls, length, assets.Get("Grass"), world).Count;
@@ -68,8 +93,10 @@ namespace Hushlands
             AddObstacleVisuals(r, assets);
             r.Look = look;
             r.Props = AddScatter(r, ls, biome, length, seed, assets, world);
-            r.WaterPlanes = AddWater(r, look, assets, world);
-            r.Mist = new MistField(r.Stretch, c.biomes.Settings.Get(biome).baseMistDensity);
+            r.WaterPlanes = AddWater(r, ls, assets, world);
+            r.Mist = journey
+                ? new MistField(r.Stretch, c.biomes.Settings, r.Plan)
+                : new MistField(r.Stretch, c.biomes.Settings.Get(biome).baseMistDensity);
             r.MistVolumes = AddMistVolumes(r, ls, look, world);
             AddLighting(r, look, world);
             r.Loadout = VehicleLoadout.Build(c.vehicles.Settings.Get(vehicle), c.rider.Settings, c.speed.Settings, c.surfaces.Settings);
@@ -90,8 +117,8 @@ namespace Hushlands
             }
         }
 
-        /// <summary>One still water plane per chunk in the backdrop lake band, below that chunk's lowest track point.</summary>
-        private static int AddWater(SliceRefs r, BiomeLook look, SliceAssets assets, Transform world)
+        /// <summary>One still water plane per lake chunk in the backdrop lake band, below that chunk's lowest track point.</summary>
+        private static int AddWater(SliceRefs r, LookSettings ls, SliceAssets assets, Transform world)
         {
             if (!r.Terrain.HasWater) return 0;
             var root = new GameObject("Lake").transform;
@@ -99,6 +126,8 @@ namespace Hushlands
             int n = 0;
             foreach (IChunk c in r.Stretch)
             {
+                BiomeLook look = ls.Get(c.Biome);
+                if (look.waterMaxDepth <= 0f) continue;
                 float level = (float)r.Terrain.WaterLevel(c.StartDistance);
                 // Plain mesh, not CreatePrimitive(Quad): that drags in MeshCollider, which IL2CPP engine stripping may remove.
                 var water = new GameObject("Water_" + c.Id);
@@ -139,7 +168,10 @@ namespace Hushlands
             var root = new GameObject("Scatter").transform;
             root.SetParent(world, false);
             int n = 0;
-            foreach (PropPlacement p in PropScatterer.Place(ls, biome, r.Terrain, length, seed))
+            List<PropPlacement> placements = r.Plan != null
+                ? PropScatterer.Place(ls, r.Plan, r.Terrain, length, seed)
+                : PropScatterer.Place(ls, biome, r.Terrain, length, seed);
+            foreach (PropPlacement p in placements)
             {
                 Material mat = assets.Get(p.Material);
                 float y = (float)p.Y;

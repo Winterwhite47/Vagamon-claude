@@ -43,6 +43,29 @@ namespace Hushlands.Core
             return chunks;
         }
 
+        /// <summary>
+        /// The full run: every biome in journey order (BiomeSettings.order), each segment ~lengthMeters long.
+        /// Each biome draws from the same random stream as its standalone stretch, so segments match the validated
+        /// single-biome content; nest groups are numbered across the whole run and mist is clamped across borders.
+        /// </summary>
+        public List<Chunk> GenerateJourney(int seed)
+        {
+            var order = new List<BiomeEntry>(_biomes.entries);
+            order.Sort((a, b) => a.order.CompareTo(b.order));
+            var chunks = new List<Chunk>();
+            int nestGroup = 0;
+            double meanChunk = (_c.minChunkLength + _c.maxChunkLength) * 0.5;
+            foreach (BiomeEntry b in order)
+            {
+                var rng = new Rng(Rng.Mix(seed, (int)b.biome));
+                int count = Math.Max(1, (int)Math.Round(b.lengthMeters / meanChunk));
+                for (int i = 0; i < count; i++) chunks.Add(BuildChunk(rng, b.biome, seed, i, ref nestGroup));
+            }
+            Chunk.Assemble(chunks);
+            ClampMistOverReveals(chunks);
+            return chunks;
+        }
+
         private Chunk BuildChunk(Rng rng, BiomeId biome, int seed, int index, ref int nestGroup)
         {
             double length = rng.Range(_c.minChunkLength, _c.maxChunkLength);

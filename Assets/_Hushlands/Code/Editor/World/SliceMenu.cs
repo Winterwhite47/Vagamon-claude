@@ -29,11 +29,20 @@ namespace Hushlands.Editor
             {
                 if (look.tuned) BuildScene(look.biome);
             }
+            BuildJourneyScene();
+        }
+
+        [MenuItem("Hushlands/Slice/Build Journey")]
+        public static void BuildJourneyFromMenu()
+        {
+            BuildAll(null);
+            EditorSceneManager.OpenScene(HushPaths.JourneyScene);
         }
 
         public static System.Collections.Generic.List<string> SliceScenes(HushConfigSet set)
         {
-            var scenes = new System.Collections.Generic.List<string> { HushPaths.SliceSceneFor(BiomeId.MeadowSea) };
+            // The journey opens the game; the single-biome slices stay for tuning, tests and captures.
+            var scenes = new System.Collections.Generic.List<string> { HushPaths.JourneyScene, HushPaths.SliceSceneFor(BiomeId.MeadowSea) };
             foreach (BiomeLook look in set.look.Settings.biomes)
             {
                 string path = HushPaths.SliceSceneFor(look.biome);
@@ -101,6 +110,16 @@ namespace Hushlands.Editor
 
         public static void BuildScene(BiomeId biome)
         {
+            BuildScene(HushPaths.SliceSceneFor(biome), biome, false);
+        }
+
+        public static void BuildJourneyScene()
+        {
+            BuildScene(HushPaths.JourneyScene, default, true);
+        }
+
+        private static void BuildScene(string path, BiomeId biome, bool journey)
+        {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             var cameraGo = new GameObject("Main Camera") { tag = "MainCamera" };
@@ -119,9 +138,11 @@ namespace Hushlands.Editor
             director.AssignCamera(vcam);
 
             var slice = new GameObject("Slice");
-            slice.AddComponent<SliceBootstrap>().Assign(director, lowPass, bridge, biome);
+            SliceBootstrap bootstrap = slice.AddComponent<SliceBootstrap>();
+            if (journey) bootstrap.AssignJourney(director, lowPass, bridge);
+            else bootstrap.Assign(director, lowPass, bridge, biome);
 
-            EditorSceneManager.SaveScene(scene, HushPaths.SliceSceneFor(biome));
+            EditorSceneManager.SaveScene(scene, path);
         }
     }
 }
