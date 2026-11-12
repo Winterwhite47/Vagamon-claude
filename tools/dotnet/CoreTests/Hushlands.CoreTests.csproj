@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Runs the engine-free EditMode tests (NUnit) outside Unity. Engine-bound tests run in Unity's Test Runner only. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- NUnit analyzer style hints are not warnings in Unity's runner. -->
+    <NoWarn>$(NoWarn);NUnit2005;NUnit2006;NUnit2007;NUnit2015;NUnit2045;NUnit2003;NUnit2004;NUnit2010;NUnit2043</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../Assets/_Hushlands/Code/Tests/EditMode/*.cs"
+             Exclude="../../../Assets/_Hushlands/Code/Tests/EditMode/ConfigAssetTests.cs;../../../Assets/_Hushlands/Code/Tests/EditMode/InputSampleTests.cs;../../../Assets/_Hushlands/Code/Tests/EditMode/ProjectSetupTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Core/Hushlands.Core.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+</Project>

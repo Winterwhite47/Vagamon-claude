@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Compile check for Hushlands.Runtime outside Unity: Unity 6 engine reference assemblies (UNITY_REFS) plus
+    tools/dotnet/Stubs, a hand-written surface of HDRP / SRP Core / Cinemachine where every member was checked
+    against Unity's published source. This proves the code compiles against those APIs; it does not run anything.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>Hushlands.Runtime</AssemblyName>
+    <NoWarn>$(NoWarn);CS1701;CS1702</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../Assets/_Hushlands/Code/Runtime/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Core/Hushlands.Core.csproj" />
+    <ProjectReference Include="../Stubs/Hushlands.UnityPackageStubs.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(UNITY_REFS)/*.dll" Private="false" />
+  </ItemGroup>
+</Project>

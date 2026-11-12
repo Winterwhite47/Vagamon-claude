@@ -10,6 +10,8 @@
 /[Rr]ecordings/
 /Captures/
 *.csproj
+# Out-of-Unity build harness (CI compiles and tests with these).
+!tools/dotnet/**/*.csproj
 *.sln
 *.slnx
 *.suo

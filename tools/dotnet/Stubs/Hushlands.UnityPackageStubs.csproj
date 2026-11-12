@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- API surface of Unity packages not shipped as reference assemblies (HDRP, SRP Core, Cinemachine, Test Framework).
+       Each member mirrors a declaration in Unity's source; see the comment on each file for the source path. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>Hushlands.UnityPackageStubs</AssemblyName>
+    <NoWarn>$(NoWarn);CS0067;CS0649;CS0169;CS0414;CS1701;CS1702</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="$(UNITY_REFS)/*.dll" Private="false" />
+  </ItemGroup>
+</Project>

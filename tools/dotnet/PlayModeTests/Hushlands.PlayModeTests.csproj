@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Compile check (not a run) for PlayMode tests, with the same references as their asmdef (no Editor). They run in Unity's Test Runner. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>Hushlands.Tests.PlayMode</AssemblyName>
+    <NoWarn>$(NoWarn);CS1701;CS1702</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../Assets/_Hushlands/Code/Tests/PlayMode/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Core/Hushlands.Core.csproj" />
+    <ProjectReference Include="../Runtime/Hushlands.Runtime.csproj" />
+    <ProjectReference Include="../Stubs/Hushlands.UnityPackageStubs.csproj" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(UNITY_REFS)/*.dll" Private="false" />
+  </ItemGroup>
+</Project>
