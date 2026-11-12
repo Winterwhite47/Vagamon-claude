@@ -47,9 +47,12 @@ dotnet build tools/dotnet/EditModeUnityTests/Hushlands.EditModeUnityTests.csproj
 # Content: 200 stretches (Unity) / reference model (no Unity)
 Unity -batchmode -projectPath . -executeMethod Hushlands.Editor.ContentToolMenu.ValidateBatch
 python3 tools/qa/content_sim.py && python3 tools/qa/content_sim.py --selftest
+python3 tools/qa/content_sim.py --journey --count 40 --all-vehicles     # full runs, every biome on one track
+python3 tools/qa/hazard_sim.py                                         # landslide/squall over stretches and journeys
+python3 tools/validate_project.py                                      # static project checks
 # 4K capture (on Windows test GPU)
 Builds/Windows/Hushlands.exe -screen-width 3840 -screen-height 2160 -hushCapture -hushAutopilot
-# -> Captures/frametime_*.txt, Captures/frame_*.png
+# -> Captures/frametime_*.txt, Captures/frame_*.png  (opens Slice_Journey, the first build scene)
 ```
 
 ## Assets

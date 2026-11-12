@@ -33,6 +33,7 @@ jobs:
       - run: |
           python3 tools/qa/content_sim.py --all-vehicles
           python3 tools/qa/content_sim.py --selftest
+          python3 tools/qa/content_sim.py --journey --count 40 --all-vehicles
           python3 tools/qa/camera_sim.py
           python3 tools/qa/hazard_sim.py
           python3 tools/qa/scarf_sim.py

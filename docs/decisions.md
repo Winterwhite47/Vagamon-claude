@@ -303,3 +303,8 @@ Format: ID · date · question · default used · status.
 - Performance default: the journey's backdrop (terrain tiles, prop buckets, water, mist volumes) is switched on only within 700 m ahead / 350 m behind the rider (30 m hysteresis). The edge is under 10% transmittance in the thickest fog, so nothing visibly pops in; at most a third of the journey is on at once. Gameplay objects are never culled.
 - Not possible here (owed on the Windows test GPU): GPU matrix, 4K frame-time captures, real input devices, capture review of fairness and duckling safety in rendered frames.
 - Status: decided (fixes); open (hardware QA).
+
+## D-071 · 2026-11-12 · T18 polish and final build: what is done here and what is owed
+- Done: review pass over T14–T17 code; the autopilot now only rewinds on a backward move (a retry), so contact jitter at a landing cannot trigger an extra hop. CI also runs the journey mirror. Playbook lists every check.
+- The final Windows x64 player build is `BuildScript.BuildWindows` (CI job build-windows, GameCI, fails on any build warning). It needs a Unity licence and a Windows runner; neither exists in this environment, so the build, the 4K captures and the visual approvals (T7, T13, T14 per biome, journey) remain owed to the owner.
+- Status: open until a Unity build, PlayMode run and captures are attached.

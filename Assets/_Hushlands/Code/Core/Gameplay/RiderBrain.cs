@@ -90,6 +90,7 @@ namespace Hushlands.Core
         private readonly double _takeoffSeconds;
         private int _next;
         private int _jumpedFor = -1;
+        private double _lastDistance = double.NegativeInfinity;
 
         public BotPilot(System.Collections.Generic.IReadOnlyList<IChunk> stretch, double takeoffSeconds)
         {
@@ -123,11 +124,13 @@ namespace Hushlands.Core
         public void Drive(ScriptedInput input, double distance, double speed, bool grounded)
         {
             // A retry puts the rider back at a checkpoint: look again at the jumps between there and here.
-            if (_next > 0 && distance <= _hazards[_next - 1].End)
+            // Only a backward move counts (a rider riding on never goes back), so contact jitter cannot re-trigger a jump.
+            if (distance < _lastDistance && _next > 0 && distance <= _hazards[_next - 1].End)
             {
                 while (_next > 0 && distance <= _hazards[_next - 1].End) _next--;
                 _jumpedFor = -1;
             }
+            _lastDistance = distance;
             while (_next < _hazards.Count && distance > _hazards[_next].End) _next++;
             input.TapThisStep = false;
             input.IsHeld = false;
