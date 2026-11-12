@@ -122,6 +122,12 @@ namespace Hushlands.Core
         /// <summary>Fills input for this step from rider distance, horizontal speed and grounded state.</summary>
         public void Drive(ScriptedInput input, double distance, double speed, bool grounded)
         {
+            // A retry puts the rider back at a checkpoint: look again at the jumps between there and here.
+            if (_next > 0 && distance <= _hazards[_next - 1].End)
+            {
+                while (_next > 0 && distance <= _hazards[_next - 1].End) _next--;
+                _jumpedFor = -1;
+            }
             while (_next < _hazards.Count && distance > _hazards[_next].End) _next++;
             input.TapThisStep = false;
             input.IsHeld = false;

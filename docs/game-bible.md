@@ -136,9 +136,10 @@ collected pickups stay collected after retry. Score: 1 pt per metre of new groun
 100 per flip, 10 per coin, 250 per duckling group; all × the tea multiplier. HUD shows score on change, fades after 2.5 s.
 
 ## Landslide, collapse, squall (T10)
-Landslide: starts 30 m behind after a calm 4 s; speed = 0.95 × rider cruise target + 0.15 × (gap − 22 m), clamped
-6.3–17.5 m/s. A rider at cruise pulls ahead to ~24–28 m and is never caught (200/200 stretches, closest 12.3 m); only a
-rider stalled at the 6 m/s floor is slowly closed on (caught after ~87 s, Danger camera ~38 s earlier). Danger when it
+Landslide: starts 30 m behind after a calm 4 s; speed = 0.95 × pace + 0.15 × (gap − 22 m), clamped 6.3–17.5 m/s, where
+pace = the slower of the rider's cruise target and real speed (T17: on a 5 km journey the target reaches its cap while
+terrain holds the rider below it). A riding bot is never caught (200/200 stretches and 20/20 journeys, closest 22.4 m);
+only a rider stalled at the 6 m/s floor is slowly closed on (caught after ~107 s). Danger when it
 is gaining with < 2.5 s to contact or within 10 m. Catch = Landslide crash; retry puts it 30 m behind with the calm delay.
 Collapse zones: whole until the rider is within the warning lead (≥ 1 s at 18 m/s plus the takeoff zone), crack for
 1 s (Danger camera), then open; whole again ahead of a retry point.

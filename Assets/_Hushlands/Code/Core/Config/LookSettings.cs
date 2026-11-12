@@ -229,6 +229,14 @@ namespace Hushlands.Core
         public float gapDepth = 3f;
         public float trackStripHalfWidth = 1.5f;
 
+        // --- World window (T17): only the backdrop near the rider is switched on ---
+        public float windowAheadMeters = 700f;
+        public float windowBehindMeters = 350f;
+        /// <summary>Extra distance before something switches off again (no flicker at the edge).</summary>
+        public float windowHysteresisMeters = 30f;
+        /// <summary>Scatter props are grouped in buckets this long so they switch together.</summary>
+        public float windowBucketMeters = 64f;
+
         // --- Mist volumes ---
         /// <summary>Local fog mean free path for a mist bank of density 1 (denser = shorter).</summary>
         public float mistMeanFreePathAtFull = 45f;
@@ -334,6 +342,15 @@ namespace Hushlands.Core
             SettingsCheck.Positive(e, o, nameof(gapDepth), gapDepth);
             SettingsCheck.Positive(e, o, nameof(trackStripHalfWidth), trackStripHalfWidth);
             SettingsCheck.Ordered(e, o, nameof(trackStripHalfWidth), trackStripHalfWidth, nameof(corridorHalfWidth), corridorHalfWidth);
+            SettingsCheck.Positive(e, o, nameof(windowAheadMeters), windowAheadMeters);
+            SettingsCheck.Positive(e, o, nameof(windowBehindMeters), windowBehindMeters);
+            SettingsCheck.NonNegative(e, o, nameof(windowHysteresisMeters), windowHysteresisMeters);
+            SettingsCheck.Positive(e, o, nameof(windowBucketMeters), windowBucketMeters);
+            foreach (BiomeLook b in biomes)
+            {
+                // Whatever switches on at the window edge must already be lost in the fog (under 10% of its light left).
+                if (windowAheadMeters < b.fogMeanFreePath * 2.3f) e.Add(o + "." + b.biome + ": world window shorter than the fog hides");
+            }
             SettingsCheck.Positive(e, o, nameof(mistMeanFreePathAtFull), mistMeanFreePathAtFull);
             SettingsCheck.Positive(e, o, nameof(mistVolumeHeight), mistVolumeHeight);
             SettingsCheck.Positive(e, o, nameof(mistVolumeDepth), mistVolumeDepth);

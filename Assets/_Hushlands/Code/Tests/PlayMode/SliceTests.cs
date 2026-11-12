@@ -89,6 +89,9 @@ namespace Hushlands.Tests
                 Assert.IsNotNull(boot.FailureShow);
                 Assert.IsFalse(boot.FailureShow.Active);
                 Assert.IsNotNull(boot.Sound);
+                Assert.Greater(r.Window.Count, 0);
+                Assert.Greater(r.Window.OnCount, 0, "nothing switched on around the rider");
+                if (boot.Journey) Assert.Less(r.Window.OnCount, r.Window.Count, "the whole journey is switched on at once");
                 Assert.IsNotNull(boot.Sound.Mix);
                 Assert.IsNotNull(Object.FindAnyObjectByType<Unity.Cinemachine.CinemachineBrain>());
 

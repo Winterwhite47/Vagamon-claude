@@ -280,6 +280,18 @@ check(not list((ROOT / "Assets").rglob("*.wav")) and not list((ROOT / "Assets").
 alog = ROOT / "docs/logs/T16_audio_camera_tests.txt"
 check(alog.is_file() and "Passed: 8" in alog.read_text() and "Failed " not in alog.read_text(), "missing passing T16 log")
 
+# T17: QA soak, world window and landslide pacing on real speed.
+for f in ["Tests/EditMode/QaTests.cs", "Runtime/World/WorldWindow.cs"]:
+    check((CODE / f).is_file(), f"missing {f}")
+check("class WindowCuller" in (CODE / "Core/World/JourneyPlan.cs").read_text(), "missing engine-free window culler")
+check("Math.Min(_targetModel.TargetSpeed(_run), _rider.Speed)" in (CODE / "Core/Meta/RunSession.cs").read_text(),
+      "landslide must be paced on the slower of target and real speed")
+check("min(target, v)" in (ROOT / "tools/qa/hazard_sim.py").read_text(), "hazard mirror must pace on real speed")
+hlog = (ROOT / "docs/logs/T10_hazard_sim.txt").read_text()
+check("20 full journeys" in hlog and "RESULT PASS" in hlog, "hazard log must cover full journeys")
+qlog = ROOT / "docs/logs/T17_qa_tests.txt"
+check(qlog.is_file() and "Passed: 6" in qlog.read_text() and "Failed " not in qlog.read_text(), "missing passing T17 QA log")
+
 for e in errors:
     print("FAIL:", e)
 print(f"validate_project: {checks - len(errors)}/{checks} checks passed, {len(errors)} failed")

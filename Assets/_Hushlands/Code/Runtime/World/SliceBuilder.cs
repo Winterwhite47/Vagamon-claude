@@ -33,6 +33,7 @@ namespace Hushlands
         public BiomeLook Look;
         /// <summary>Set for the full journey (several biomes in one run); null for a single-biome slice.</summary>
         public JourneyPlan Plan;
+        public WorldWindow Window;
         public int MistVolumes;
         public int Obstacles;
         public int Nests;
@@ -87,7 +88,15 @@ namespace Hushlands
                 : new TerrainSampler(r.Slope, r.Stretch, ls, look, seed);
             var world = new GameObject("World").transform;
             world.SetParent(r.Root.transform, false);
-            r.TerrainTiles = TerrainMeshBuilder.BuildTerrain(r.Terrain, ls, length, assets.Get("Grass"), world).Count;
+            r.Window = world.gameObject.AddComponent<WorldWindow>();
+            r.Window.Initialize(ls);
+            List<GameObject> tiles = TerrainMeshBuilder.BuildTerrain(r.Terrain, ls, length, assets.Get("Grass"), world);
+            r.TerrainTiles = tiles.Count;
+            foreach (GameObject tile in tiles)
+            {
+                Bounds b = tile.GetComponent<MeshFilter>().sharedMesh.bounds;
+                r.Window.Register(tile, b.min.x, b.max.x);
+            }
             TerrainMeshBuilder.BuildTrackStrip(r.Terrain, ls, length, assets.Get("Track"), world, c.track.Settings.stripLift);
 
             AddObstacleVisuals(r, assets);
@@ -101,6 +110,7 @@ namespace Hushlands
             AddLighting(r, look, world);
             r.Loadout = VehicleLoadout.Build(c.vehicles.Settings.Get(vehicle), c.rider.Settings, c.speed.Settings, c.surfaces.Settings);
             BuildRider(r, c, assets, c.vehicles.Settings.Get(vehicle));
+            r.Window.Follow(r.Rider.transform);
             r.Mix = new MixDirector(c.audioMix.Settings);
             return r;
         }
@@ -139,6 +149,7 @@ namespace Hushlands
                     new Vector3((float)(c.StartDistance + c.Length * 0.5), level, look.waterMinDepth + depth * 0.5f),
                     Quaternion.Euler(90f, 0f, 0f));
                 water.transform.localScale = new Vector3((float)c.Length, depth, 1f);
+                r.Window.Register(water, c.StartDistance, c.StartDistance + c.Length);
                 n++;
             }
             return n;
@@ -165,8 +176,10 @@ namespace Hushlands
         private static int AddScatter(SliceRefs r, LookSettings ls, BiomeId biome, double length, int seed, SliceAssets assets,
             Transform world)
         {
-            var root = new GameObject("Scatter").transform;
-            root.SetParent(world, false);
+            var scatter = new GameObject("Scatter").transform;
+            scatter.SetParent(world, false);
+            // Props are grouped in buckets along the run so the world window switches them together.
+            var buckets = new Dictionary<int, Transform>();
             int n = 0;
             List<PropPlacement> placements = r.Plan != null
                 ? PropScatterer.Place(ls, r.Plan, r.Terrain, length, seed)
@@ -175,6 +188,14 @@ namespace Hushlands
             {
                 Material mat = assets.Get(p.Material);
                 float y = (float)p.Y;
+                int key = Mathf.FloorToInt((float)p.X / ls.windowBucketMeters);
+                if (!buckets.TryGetValue(key, out Transform root))
+                {
+                    root = new GameObject("Bucket_" + key).transform;
+                    root.SetParent(scatter, false);
+                    buckets[key] = root;
+                    r.Window.Register(root.gameObject, key * ls.windowBucketMeters, (key + 1) * ls.windowBucketMeters);
+                }
                 if (p.Shape == "Post")
                 {
                     GameObject post = Primitive(PrimitiveType.Cylinder, p.Name, root, mat);
@@ -227,6 +248,7 @@ namespace Hushlands
                 fog.parameters.albedo = new Color(cr, cg, cb, 1f);
                 fog.parameters.meanFreePath = (float)MistVisibility.MeanFreePath(ls, bank.Value);
                 fog.parameters.size = new Vector3((float)(bank.Key.End - bank.Key.Start), ls.mistVolumeHeight, ls.mistVolumeDepth);
+                r.Window.Register(go, bank.Key.Start, bank.Key.End);
                 n++;
             }
             return n;

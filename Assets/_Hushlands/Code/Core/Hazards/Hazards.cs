@@ -55,8 +55,11 @@ namespace Hushlands.Core
             return (float)(gap / closing);
         }
 
-        /// <summary>Advances; returns true if the front reached the rider.</summary>
-        public bool Step(double riderX, float riderTargetSpeed, float dt, float footprint)
+        /// <summary>
+        /// Advances; returns true if the front reached the rider. riderPace is the slower of the rider's cruise target
+        /// and real speed, so the slide settles behind the rider (gap = preferred + pace × (1 − ratio) / gain).
+        /// </summary>
+        public bool Step(double riderX, float riderPace, float dt, float footprint)
         {
             if (!_s.landslideEnabled) return false;
             if (_delay > 0f)
@@ -65,7 +68,7 @@ namespace Hushlands.Core
                 return false;
             }
             double gap = Gap(riderX);
-            double v = _s.landslidePaceRatio * riderTargetSpeed + _s.landslideGapGain * (gap - _s.landslidePreferredGap);
+            double v = _s.landslidePaceRatio * riderPace + _s.landslideGapGain * (gap - _s.landslidePreferredGap);
             if (v < _s.landslideMinSpeed) v = _s.landslideMinSpeed;
             if (v > _s.landslideMaxSpeed) v = _s.landslideMaxSpeed;
             Speed = (float)v;

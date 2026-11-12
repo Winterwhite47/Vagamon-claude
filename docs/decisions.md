@@ -296,3 +296,10 @@ Format: ID · date · question · default used · status.
 - No music beyond the pad: composing is an authored-art item. No per-biome ambience yet (birds, water): same reason.
 - Camera pass found no defect: biome switches already blend in the rig; a journey-long continuity test now guards it.
 - Status: open (needs a listen in Unity; levels are first guesses).
+
+## D-070 · 2026-11-12 · T17 QA findings and fixes
+- Soak (whole run session over full journeys, duckling audit every step) found a real bug: the landslide was paced on the cruise target, which ramps to the 18 m/s cap after ~270 s, while terraces and boardwalk hold the rider near 13.7 m/s. On a 5 km journey the slide caught a perfect rider twice (seed 2). Fix: pace on the slower of target and real speed. Mirror updated; 200/200 stretches and 20/20 journeys never caught (closest 22.4 m, was 10.5 m); a stalled rider is still caught (107 s, was 87 s), so the chase stays real.
+- Second bug: BotPilot never rewound after a retry teleport, so the autopilot (captures, soak runs, play mode tests) skipped every jump between the checkpoint and the spill and spilled again. Fix: rewind its hazard cursor when the rider is moved back.
+- Performance default: the journey's backdrop (terrain tiles, prop buckets, water, mist volumes) is switched on only within 700 m ahead / 350 m behind the rider (30 m hysteresis). The edge is under 10% transmittance in the thickest fog, so nothing visibly pops in; at most a third of the journey is on at once. Gameplay objects are never culled.
+- Not possible here (owed on the Windows test GPU): GPU matrix, 4K frame-time captures, real input devices, capture review of fairness and duckling safety in rendered frames.
+- Status: decided (fixes); open (hardware QA).

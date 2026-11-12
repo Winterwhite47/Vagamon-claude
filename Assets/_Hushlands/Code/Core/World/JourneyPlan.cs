@@ -91,3 +91,60 @@ namespace Hushlands.Core
         }
     }
 }
+
+namespace Hushlands.Core
+{
+    /// <summary>
+    /// Which stretches of backdrop are switched on around the rider (engine-free). Items are spans along the run;
+    /// an item is on while it overlaps [x - behind, x + ahead] and stays on for a hysteresis margin beyond it.
+    /// </summary>
+    public sealed class WindowCuller
+    {
+        private readonly List<Span> _spans = new List<Span>();
+        private readonly List<bool> _on = new List<bool>();
+        private readonly double _ahead;
+        private readonly double _behind;
+        private readonly double _hysteresis;
+
+        public WindowCuller(double aheadMeters, double behindMeters, double hysteresisMeters)
+        {
+            _ahead = Math.Max(0d, aheadMeters);
+            _behind = Math.Max(0d, behindMeters);
+            _hysteresis = Math.Max(0d, hysteresisMeters);
+        }
+
+        public int Count => _spans.Count;
+        public int OnCount { get; private set; }
+
+        /// <summary>Registers an item (off until the first Update). Returns its index.</summary>
+        public int Add(double min, double max)
+        {
+            _spans.Add(new Span(Math.Min(min, max), Math.Max(min, max)));
+            _on.Add(false);
+            return _spans.Count - 1;
+        }
+
+        public bool IsOn(int index)
+        {
+            return _on[index];
+        }
+
+        /// <summary>Moves the window to x. Calls changed(index, on) for every item that switched.</summary>
+        public void Update(double x, Action<int, bool> changed)
+        {
+            double lo = x - _behind;
+            double hi = x + _ahead;
+            for (int i = 0; i < _spans.Count; i++)
+            {
+                Span s = _spans[i];
+                bool inside = s.End >= lo && s.Start <= hi;
+                bool near = s.End >= lo - _hysteresis && s.Start <= hi + _hysteresis;
+                bool on = _on[i] ? near : inside;
+                if (on == _on[i]) continue;
+                _on[i] = on;
+                OnCount += on ? 1 : -1;
+                changed?.Invoke(i, on);
+            }
+        }
+    }
+}

@@ -134,7 +134,10 @@ namespace Hushlands.Core
             _targetModel.TargetBonus = bonus;
             Collapse.Step(p.Distance, dt);
 
-            bool caught = Landslide.Step(p.Distance, _targetModel.TargetSpeed(_run), dt, _b.Fairness.riderFootprintMeters);
+            // Paced on the slower of the cruise target and the rider's real speed: on long runs the target ramps to the
+            // cap while terrain and surfaces hold the rider below it, and a slide paced on the target alone would catch them.
+            float pace = Math.Min(_targetModel.TargetSpeed(_run), _rider.Speed);
+            bool caught = Landslide.Step(p.Distance, pace, dt, _b.Fairness.riderFootprintMeters);
             Stats.Flips = Score.Flips;
             Stats.Coins = Score.SpiceCoins;
             Stats.Rescues = Score.Rescues;

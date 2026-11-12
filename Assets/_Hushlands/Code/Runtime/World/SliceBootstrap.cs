@@ -105,6 +105,7 @@ namespace Hushlands
             r.Rider.Initialize(riderSettings, r.Loadout.Speed, r.Loadout.Surfaces, r.Slope, input, true);
             double start = c.content.Settings.checkpointOffsetMeters;
             r.Rider.ResetTo(new SlopePoint(start, r.Slope.HeightAt(start)), c.speed.Settings.startSpeed);
+            r.Window.Refresh();
 
             r.Signals = new RiderCameraSignals(r.Rider, r.Stretch);
             if (cameraDirector != null)
@@ -125,6 +126,8 @@ namespace Hushlands
                 if (r.Scarf != null) r.Scarf.ResetPose();
                 if (r.Flex != null) r.Flex.ResetFlex();
                 if (Atmosphere != null) Atmosphere.Apply();
+                // The checkpoint may be outside the window that was on at the spill.
+                r.Window.Refresh();
             };
             // The run is over at the end of the stretch: hold the world still under the summary.
             r.Run.RunEnded += _ => SetPaused(true);

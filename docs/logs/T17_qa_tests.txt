@@ -1,0 +1,8 @@
+  Passed BotPilot_RetakesJumpsAfterBeingMovedBack
+  Passed EveryConfigBlock_ValidatesClean
+  Passed Soak_FullJourney_BotRidesClean_DucklingsAlwaysSafe_DirectorsRun
+  Passed Soak_RepeatedSpills_EveryRetryRecovers_DucklingsAlwaysSafe
+  Passed WorldWindow_EdgeIsHiddenByFog_AndJourneyTerrainIsMostlyOff
+  Passed WorldWindow_SwitchesOnlyNearTheRider_WithoutFlicker
+Total tests: 6
+     Passed: 6

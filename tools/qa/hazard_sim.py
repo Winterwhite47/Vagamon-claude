@@ -117,7 +117,7 @@ def ride(s, H, chunks, seed, stall=False):
             if y <= ground(d):
                 y, air = ground(d), False
         steps += 1
-        caught = slide.step(d, target, dt, foot)
+        caught = slide.step(d, min(target, v), dt, foot)  # RunSession: slower of target and real speed
         if slide.delay <= 0:
             gap = d - slide.front
             min_gap = min(min_gap, gap)
@@ -147,10 +147,18 @@ def main():
         worst_gap, worst_ttc = min(worst_gap, g), min(worst_ttc, t)
         squalls += pk > 0.99
         lines.append(f"{'PASS' if ok else 'CAUGHT'} {biome} seed={seed} time={secs:.0f}s closest_gap={g:.1f}m min_ttc={t:.2f}s squall_peak={pk:.2f} danger={dfrac * 100:.1f}%")
+    # Full journeys (every biome on one track, ~5 km): the long run is where the target ramp reaches its cap.
+    jn = 20
+    for seed in range(1, jn + 1):
+        ch = cs.generate_journey(s, seed)
+        ok, g, t, secs, pk, dfrac = ride(s, H, ch, seed)
+        ok_all &= ok
+        worst_gap, worst_ttc = min(worst_gap, g), min(worst_ttc, t)
+        lines.append(f"{'PASS' if ok else 'CAUGHT'} Journey seed={seed} time={secs:.0f}s closest_gap={g:.1f}m min_ttc={t:.2f}s danger={dfrac * 100:.1f}%")
     ch = cs.generate(s, 2, "MeadowSea", C["chunksPerStretch"])
     stall_ok, _, _, stall_t, _, _ = ride(s, H, ch, 2, stall=True)
     lines.append(f"stalled rider at minimum speed: {'caught after ' + format(stall_t, '.0f') + ' s' if not stall_ok else 'NOT caught'}")
-    lines.append(f"summary: bot never caught in {sum(l.startswith('PASS') for l in lines)}/{C['validationStretchCount']} stretches, "
+    lines.append(f"summary: bot never caught in {sum(l.startswith('PASS') for l in lines)}/{C['validationStretchCount'] + jn} runs ({jn} full journeys), "
                  f"closest gap {worst_gap:.1f} m, shortest time-to-contact {worst_ttc:.2f} s (Danger below "
                  f"{cs.scalars(cs.class_body((cs.CFG / 'PresentationSettings.cs').read_text(), 'CameraSettings'))['dangerLandslideSeconds']} s), "
                  f"full squalls in {squalls} stretches, Danger camera {danger_total / C['validationStretchCount'] * 100:.1f}% of ride time")
