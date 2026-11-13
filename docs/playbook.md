@@ -50,6 +50,8 @@ python3 tools/qa/content_sim.py && python3 tools/qa/content_sim.py --selftest
 python3 tools/qa/content_sim.py --journey --count 40 --all-vehicles     # full runs, every biome on one track
 python3 tools/qa/hazard_sim.py                                         # landslide/squall over stretches and journeys
 python3 tools/validate_project.py                                      # static project checks
+# Everything Unity-side on a Windows PC with Unity Hub (bootstrap, EditMode, PlayMode, build, 4K capture)
+powershell -ExecutionPolicy Bypass -File tools/unity/run_local.ps1     # -> QA/local/summary.txt
 # 4K capture (on Windows test GPU)
 Builds/Windows/Hushlands.exe -screen-width 3840 -screen-height 2160 -hushCapture -hushAutopilot
 # -> Captures/frametime_*.txt, Captures/frame_*.png  (opens Slice_Journey, the first build scene)
