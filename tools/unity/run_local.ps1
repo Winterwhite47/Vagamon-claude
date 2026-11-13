@@ -8,7 +8,8 @@
 param(
     [string]$UnityExe = "",
     [switch]$SkipBuild,
-    [switch]$SkipCapture
+    [switch]$SkipCapture,
+    [int]$CaptureTimeoutSeconds = 900
 )
 
 $ErrorActionPreference = "Stop"
@@ -42,7 +43,8 @@ function Step([string]$name, [string[]]$unityArgs) {
 
 $proj = @("-batchmode", "-projectPath", "`"$root`"")
 $ok = $true
-$ok = (Step "bootstrap" ($proj + @("-quit", "-executeMethod", "Hushlands.Editor.ProjectBootstrap.Run")) -eq 0) -and $ok
+# Parenthesise the call: "Step a b -eq 0" would pass -eq and 0 to Step as extra arguments.
+$ok = ((Step "bootstrap" ($proj + @("-quit", "-executeMethod", "Hushlands.Editor.ProjectBootstrap.Run"))) -eq 0) -and $ok
 foreach ($mode in @("EditMode", "PlayMode")) {
     $xml = Join-Path $out "$($mode.ToLower()).xml"
     $code = Step $mode.ToLower() ($proj + @("-runTests", "-testPlatform", $mode, "-testResults", "`"$xml`""))
@@ -54,22 +56,52 @@ foreach ($mode in @("EditMode", "PlayMode")) {
         foreach ($t in $r.SelectNodes("//test-case[@result='Failed']")) {
             Add-Content $summary ("  FAILED " + $t.fullname + " :: " + ($t.failure.message.'#cdata-section' -replace "\s+", " "))
         }
+        if ([int]$run.failed -gt 0 -or [int]$run.total -eq 0) { $ok = $false }
+    } else {
+        Add-Content $summary "  $mode tests: no results file (compile error or crash; see $($mode.ToLower()).log)"
+        $ok = $false
     }
     $ok = ($code -eq 0) -and $ok
 }
 if (-not $SkipBuild) {
-    $ok = (Step "build" ($proj + @("-quit", "-executeMethod", "Hushlands.Editor.BuildScript.BuildWindows")) -eq 0) -and $ok
+    $ok = ((Step "build" ($proj + @("-quit", "-executeMethod", "Hushlands.Editor.BuildScript.BuildWindows"))) -eq 0) -and $ok
 }
 if (-not $SkipCapture -and -not $SkipBuild) {
     $exe = Join-Path $root "Builds\Windows\Hushlands.exe"
-    if (Test-Path $exe) {
+    if (-not (Test-Path $exe)) {
+        Add-Content $summary "capture    MISSING $exe"
+        $ok = $false
+    } else {
         Write-Host "== capture (4K, autopilot, journey)"
-        $p = Start-Process -FilePath $exe -WorkingDirectory $root -Wait -PassThru -ArgumentList @(
-            "-screen-width", "3840", "-screen-height", "2160", "-hushCapture", "-hushAutopilot",
+        # The player writes Captures\ next to its _Data folder (Builds\Windows\Captures), not in the repo root.
+        $caps = Join-Path (Split-Path $exe) "Captures"
+        $before = @(Get-ChildItem $caps -Filter "frametime_*.txt" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+        $p = Start-Process -FilePath $exe -WorkingDirectory (Split-Path $exe) -PassThru -ArgumentList @(
+            "-screen-width", "3840", "-screen-height", "2160", "-screen-fullscreen", "1", "-hushCapture", "-hushAutopilot",
             "-logFile", "`"$(Join-Path $out 'player.log')`"")
-        Add-Content $summary ("capture    exit " + $p.ExitCode)
-        $caps = Join-Path $root "Captures"
-        if (Test-Path $caps) { Copy-Item (Join-Path $caps "frametime_*.txt") $out -ErrorAction SilentlyContinue }
+        $null = $p.Handle  # cache the handle so ExitCode is readable after exit
+        if (-not $p.WaitForExit($CaptureTimeoutSeconds * 1000)) {
+            $p.Kill()
+            Add-Content $summary "capture    TIMEOUT after $CaptureTimeoutSeconds s"
+            $ok = $false
+        } else {
+            # Exit 0 = within budget, 2 = over budget (FrameTimeCapture.QuitAfterCapture).
+            Add-Content $summary ("capture    exit " + $p.ExitCode)
+            $ok = ($p.ExitCode -eq 0) -and $ok
+        }
+        $new = @(Get-ChildItem $caps -Filter "frametime_*.txt" -ErrorAction SilentlyContinue | Where-Object { $before -notcontains $_.FullName })
+        if ($new.Count -eq 0) {
+            Add-Content $summary "capture    no new frametime_*.txt in $caps"
+            $ok = $false
+        }
+        foreach ($f in $new) {
+            Copy-Item $f.FullName $out
+            $png = Join-Path $caps (($f.BaseName -replace "^frametime_", "frame_") + ".png")
+            if (Test-Path $png) { Copy-Item $png $out }
+            foreach ($kv in Get-Content $f.FullName | Where-Object { $_ -match "^(resolution|gpu|avg_ms|p\d+_ms|budget_ms|within_budget)=" }) {
+                Add-Content $summary ("  " + $kv)
+            }
+        }
     }
 }
 

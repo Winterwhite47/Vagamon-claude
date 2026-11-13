@@ -308,3 +308,11 @@ Format: ID · date · question · default used · status.
 - Done: review pass over T14–T17 code; the autopilot now only rewinds on a backward move (a retry), so contact jitter at a landing cannot trigger an extra hop. CI also runs the journey mirror. Playbook lists every check.
 - The final Windows x64 player build is `BuildScript.BuildWindows` (CI job build-windows, GameCI, fails on any build warning). It needs a Unity licence and a Windows runner; neither exists in this environment, so the build, the 4K captures and the visual approvals (T7, T13, T14 per biome, journey) remain owed to the owner.
 - Status: open until a Unity build, PlayMode run and captures are attached.
+
+## D-072 · 2026-11-13 · Local Unity runner fixes (no Unity in this session)
+- `run_local.ps1` fixes found by parsing and dry-running it under PowerShell 7 with stub Unity and player executables:
+  - `Step a b -eq 0` passed `-eq 0` to Step as extra arguments, so bootstrap and build always counted as FAIL. The calls are now parenthesised.
+  - The player writes `Captures\` beside its `_Data` folder (`Builds\Windows\Captures`). The script was looking in the repo root, so it never found the capture. It now reads that folder, copies the new frametime txt and png into `QA/local`, and writes the budget lines to the summary.
+  - Capture exit code (0 within budget, 2 over) now counts toward RESULT, and so do a missing capture, a missing test XML or any failed test. The capture has a timeout (`-CaptureTimeoutSeconds`, default 900).
+- Default used: the 900 s timeout is a script argument, not game config, because it bounds the QA tool, not the game.
+- Status: open until the script runs on Windows with Unity 6000.3.0f1.
